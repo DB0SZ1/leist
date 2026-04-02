@@ -31,7 +31,7 @@ class SmtpAccount(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     
 class Campaign(Base):
-    __tablename__ = "campaigns"
+    __tablename__ = "sending_campaigns"
     
     id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
     workspace_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("workspaces.id", ondelete="CASCADE"), index=True)
@@ -43,7 +43,7 @@ class CampaignStep(Base):
     __tablename__ = "campaign_steps"
     
     id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    campaign_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("campaigns.id", ondelete="CASCADE"), index=True)
+    campaign_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("sending_campaigns.id", ondelete="CASCADE"), index=True)
     step_number: Mapped[int] = mapped_column(Integer)
     wait_days: Mapped[int] = mapped_column(Integer, default=1)
     
@@ -54,7 +54,7 @@ class CampaignProspect(Base):
     __tablename__ = "campaign_prospects"
     
     id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    campaign_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("campaigns.id", ondelete="CASCADE"), index=True)
+    campaign_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("sending_campaigns.id", ondelete="CASCADE"), index=True)
     job_result_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("job_results.id", ondelete="CASCADE"), nullable=True)
     
     email: Mapped[str] = mapped_column(String(255), index=True)
@@ -68,7 +68,7 @@ class EmailEvent(Base):
     __tablename__ = "email_events"
     
     id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    campaign_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("campaigns.id", ondelete="CASCADE"), index=True)
+    campaign_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("sending_campaigns.id", ondelete="CASCADE"), index=True)
     prospect_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("campaign_prospects.id", ondelete="CASCADE"), index=True)
     smtp_account_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), ForeignKey("smtp_accounts.id", ondelete="SET NULL"), nullable=True)
     
