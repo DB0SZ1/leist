@@ -1,0 +1,141 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Pre-Send AI Copilot | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Pre-Send AI Copilot</div>
+    <div class="page-sub">Analyze your email draft for deliverability risks before you send.</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 340px;gap:20px;" x-data="copilotApp">
+  <!-- Left Side: Input Form -->
+  <div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;">
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Subject Line</label>
+        <input type="text" class="form-input" style="font-size:14px;padding:10px 14px;" x-model="subject" placeholder="e.g. Quick question about your team's workflow">
+      </div>
+      <div>
+        <label class="form-label">Email Body</label>
+        <textarea class="form-input" style="height:320px;font-size:14px;padding:14px;resize:vertical;" x-model="body" placeholder="Hi {{ user.full_name.split()[0] if user.full_name else 'there' }},\n\nI noticed that..."></textarea>
+      </div>
+      <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+        <button class="btn-primary" @click="analyze()" :disabled="loading || !subject || !body" style="padding:10px 24px;">
+          <span x-show="!loading">Run Analysis</span>
+          <span x-show="loading">Analyzing...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Analysis Results -->
+  <div>
+    <template x-if="!result && !loading">
+      <div style="background:#f9fafb;border:1px dashed var(--border);border-radius:12px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;color:var(--muted);">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;"><path d="M12 2a2 2 0 0 1 2 2c0 1.1-.9 2-2 2s-2-.9-2-2a2 2 0 0 1 2-2zM12 6v12M12 18l-4 4M12 18l4 4M8 12a4 4 0 0 0 8 0"/></svg>
+        <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;">Ready to analyze</div>
+        <div style="font-size:12px;">Paste your draft and click Run Analysis to get feedback on spam triggers, aggressiveness, and readability.</div>
+      </div>
+    </template>
+
+    <template x-if="loading">
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;">
+        <div class="spinner" style="width:24px;height:24px;border:3px solid rgba(27,96,21,0.2);border-top-color:#1b6015;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px;"></div>
+        <div style="font-size:13px;font-weight:600;">AI is reviewing your draft...</div>
+      </div>
+    </template>
+
+    <template x-if="result && !loading">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <!-- Scores -->
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:12px;font-weight:700;">Spam Risk</div>
+            <div style="font-weight:800;font-size:14px;" :style="result.spam_score > 60 ? 'color:#e24b4a;' : (result.spam_score > 30 ? 'color:#d97706;' : 'color:#1b6015;')">
+              <span x-text="result.spam_score"></span>/100
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <div style="font-size:12px;font-weight:700;">Aggressiveness</div>
+            <div style="font-weight:800;font-size:14px;" :style="result.aggressiveness_score > 70 ? 'color:#e24b4a;' : 'color:#1b6015;'">
+              <span x-text="result.aggressiveness_score"></span>/100
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="font-size:12px;font-weight:700;">Readability</div>
+            <div style="font-weight:800;font-size:14px;" :style="result.readability_score < 50 ? 'color:#e24b4a;' : 'color:#1b6015;'">
+              <span x-text="result.readability_score"></span>/100
+            </div>
+          </div>
+        </div>
+
+        <!-- Triggers -->
+        <template x-if="result.spam_triggers_found && result.spam_triggers_found.length > 0">
+          <div style="background:#fff;border:1px solid #fcd8d8;border-radius:12px;padding:16px;">
+            <div style="font-size:12px;font-weight:800;color:#b31c1c;margin-bottom:8px;">Spam Triggers Detected</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <template x-for="trigger in result.spam_triggers_found">
+                <span style="font-size:11px;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;padding:2px 8px;border-radius:12px;" x-text="trigger"></span>
+              </template>
+            </div>
+          </div>
+        </template>
+
+        <!-- Feedback -->
+        <div style="background:rgba(27,96,21,0.03);border:1px solid rgba(27,96,21,0.1);border-radius:12px;padding:16px;">
+          <div style="font-size:12px;font-weight:800;color:var(--primary);margin-bottom:8px;">Copilot Feedback</div>
+          <div style="font-size:13px;line-height:1.5;color:var(--text);" x-text="result.feedback"></div>
+        </div>
+      </div>
+    </template>
+  </div>
+</div>
+<style>
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('copilotApp', () => ({
+        subject: '',
+        body: '',
+        loading: false,
+        result: null,
+        error: null,
+        
+        async analyze() {
+            if (!this.subject || !this.body) return;
+            
+            this.loading = true;
+            this.error = null;
+            
+            try {
+                const res = await apiFetch('/api/v1/copilot/analyze', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        subject: this.subject,
+                        body: this.body
+                    })
+                });
+                
+                if (res.success && res.analysis) {
+                    this.result = res.analysis;
+                } else {
+                    this.error = res.error || "Failed to analyze";
+                    window.toastStore && toastStore.show('error', 'Analysis failed', this.error);
+                }
+            } catch(e) {
+                this.error = "An unexpected error occurred.";
+                window.toastStore && toastStore.show('error', 'Error', this.error);
+            } finally {
+                this.loading = false;
+            }
+        }
+    }));
+});
+</script>
+{% endblock %}

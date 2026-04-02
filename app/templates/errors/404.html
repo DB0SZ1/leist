@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar" style="border-bottom:1px solid var(--border);"><div style="display:flex;align-items:center;gap:8px;"><div class="logo-sm"><div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div><span class="lname-sm">List<span>Intel</span></span></div></div></div>
+<div style="display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:calc(100vh - 56px);background:var(--bg);padding:24px;text-align:center;">
+    <div style="font-size:120px;font-weight:800;color:rgba(42,84,38,.1);line-height:1;margin-bottom:24px;letter-spacing:-.04em;">404</div>
+    <div style="font-size:32px;font-weight:800;color:var(--text);letter-spacing:-.02em;margin-bottom:16px;">Page not found</div>
+    <div style="font-size:16px;color:var(--muted);max-width:400px;margin-bottom:32px;line-height:1.5;">This page doesn't exist or was moved. Check the URL or go back to the dashboard.</div>
+    <button class="btn-primary" onclick="window.location.href='/dashboard'" style="padding:12px 24px;font-size:14px;">← Back to dashboard</button>
+</div>
+{% endblock %}

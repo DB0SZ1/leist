@@ -1,0 +1,60 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Notifications | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+  <div class="page-title">Notifications</div>
+  <button class="btn-sm-g" style="font-size:11px;padding:5px 12px;">Mark all read</button>
+</div>
+
+<div class="card">
+  <div class="card-body" style="padding:0 16px;">
+    
+    <div class="notif unread">
+      <div class="notif-dot" style="background:#1b6015;"></div>
+      <div class="notif-body">
+        <div class="notif-title">Job complete — uk_leads_q1.csv</div>
+        <div class="notif-sub">12,400 emails processed · 8,210 fresh (66%) · 847 Mimecast flagged · 12,400 credits used</div>
+      </div>
+      <div class="notif-time">2m ago</div>
+    </div>
+    
+    <div class="notif unread">
+      <div class="notif-dot" style="background:#f59e0b;"></div>
+      <div class="notif-body">
+        <div class="notif-title">Credits running low</div>
+        <div class="notif-sub">You have {{ "{:,}".format(user.credits_remaining|default(0)) }} credits remaining this month. Upgrade or buy a credit pack to continue.</div>
+      </div>
+      <div class="notif-time">1h ago</div>
+    </div>
+    
+    <div class="notif unread">
+      <div class="notif-dot" style="background:#1a4c9a;"></div>
+      <div class="notif-body">
+        <div class="notif-title">Trade matched — SaaS list (8,400 leads)</div>
+        <div class="notif-sub">A match was found for your listing. Confirm the trade before it expires in 48 hours.</div>
+      </div>
+      <div class="notif-time">3h ago</div>
+    </div>
+    
+    <div class="notif">
+      <div class="notif-dot" style="background:#d8d8cf;"></div>
+      <div class="notif-body">
+        <div class="notif-title" style="font-weight:600;opacity:.7;">Job complete — saas_prospects.csv</div>
+        <div class="notif-sub">8,900 emails processed · 5,440 fresh (61%)</div>
+      </div>
+      <div class="notif-time">Yesterday</div>
+    </div>
+    
+    <div class="notif">
+      <div class="notif-dot" style="background:#d8d8cf;"></div>
+      <div class="notif-body">
+        <div class="notif-title" style="font-weight:600;opacity:.7;">Welcome to List Intel</div>
+        <div class="notif-sub">Your account is active. You have {{ "{:,}".format(user.credits_monthly|default(0)) }} free credits to start.</div>
+      </div>
+      <div class="notif-time">Mar 20</div>
+    </div>
+    
+  </div>
+</div>
+{% endblock %}

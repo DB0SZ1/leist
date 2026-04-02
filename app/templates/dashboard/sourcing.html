@@ -1,0 +1,104 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Lead Sourcing | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header" style="margin-bottom:24px;">
+  <div class="page-title">Lead Sourcing (Tool 2)</div>
+  <div style="font-size:14px;color:var(--muted);margin-top:8px;">Search and extract verified B2B prospects directly into your campaigns.</div>
+</div>
+
+<div x-data="leadSourcing()" style="display:flex;flex-direction:column;gap:24px;">
+    
+    <!-- Search Bar -->
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:24px;">
+        <div style="display:flex;gap:16px;">
+            <div style="flex:1;">
+                <label class="form-label">Job Title / Company Keywords</label>
+                <input type="text" class="form-input" x-model="query" placeholder="e.g. CTO, VP Engineering, SaaS..." @keyup.enter="performSearch">
+            </div>
+            <div style="width:200px;">
+                <label class="form-label">Industry</label>
+                <select class="form-input" x-model="industry">
+                    <option value="">Any Industry</option>
+                    <option value="software">Software / IT</option>
+                    <option value="finance">Finance</option>
+                    <option value="healthcare">Healthcare</option>
+                </select>
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+                <button class="btn-primary" @click="performSearch" :disabled="loading" style="height:40px;line-height:40px;padding:0 24px;">
+                    <span x-show="!loading">Search Network</span>
+                    <span x-show="loading">Scanning...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+        <table style="width:100%;border-collapse:collapse;text-align:left;">
+            <thead>
+                <tr style="background:#f9fafb;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:0.5px;">
+                    <th style="padding:16px 24px;">Name</th>
+                    <th style="padding:16px 24px;">Role & Company</th>
+                    <th style="padding:16px 24px;">Email Status</th>
+                    <th style="padding:16px 24px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="lead in results" :key="lead.email">
+                    <tr style="border-bottom:1px solid var(--border);transition:0.2s;">
+                        <td style="padding:16px 24px;">
+                            <div style="font-weight:600;font-size:14px;color:var(--text);" x-text="lead.name"></div>
+                        </td>
+                        <td style="padding:16px 24px;">
+                            <div style="font-size:13px;color:var(--text);" x-text="lead.title"></div>
+                            <div style="font-size:12px;color:var(--muted);" x-text="lead.company"></div>
+                        </td>
+                        <td style="padding:16px 24px;">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <div style="width:6px;height:6px;border-radius:50%;background:#10b981;"></div>
+                                <span style="font-size:12px;font-family:monospace;color:var(--text);" x-text="lead.email"></span>
+                            </div>
+                        </td>
+                        <td style="padding:16px 24px;">
+                            <button class="btn-secondary" style="padding:4px 12px;font-size:11px;">Save to List</button>
+                        </td>
+                    </tr>
+                </template>
+                <tr x-show="!loading && results.length === 0">
+                    <td colspan="4" style="padding:48px;text-align:center;color:var(--muted);font-size:14px;">
+                        Run a search to populate verified prospects.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('leadSourcing', () => ({
+        query: '',
+        industry: '',
+        loading: false,
+        results: [],
+        async performSearch() {
+            this.loading = true;
+            try {
+                const url = new URL(window.location.origin + '/api/v1/sourcing/search');
+                if(this.query) url.searchParams.append('q', this.query);
+                if(this.industry) url.searchParams.append('industry', this.industry);
+                
+                const res = await apiFetch(url.toString());
+                if(res.results) {
+                    this.results = res.results;
+                }
+            } catch(e) {}
+            this.loading = false;
+        }
+    }));
+});
+</script>
+{% endblock %}

@@ -1,0 +1,64 @@
+{
+    "GWS": [
+        "google.com",
+        "googlemail.com",
+        "aspmx.l.google.com",
+        "alt1.aspmx.l.google.com",
+        "alt2.aspmx.l.google.com",
+        "smtp.google.com"
+    ],
+    "M365": [
+        "outlook.com",
+        "hotmail.com",
+        "protection.outlook.com",
+        "olc.protection.outlook.com",
+        "mail.protection.outlook.com"
+    ],
+    "Exchange": [
+        "mail.protection.outlook.com",
+        "outlook.com"
+    ],
+    "Zoho": [
+        "zoho.com",
+        "zohomail.com",
+        "zmx.zoho.com"
+    ],
+    "Yahoo": [
+        "yahoodns.net",
+        "yahoo.com",
+        "yahoo-inc.com"
+    ],
+    "Fastmail": [
+        "fastmail.com",
+        "messagingengine.com"
+    ],
+    "Proton": [
+        "protonmail.ch",
+        "proton.me",
+        "protonmail.com"
+    ],
+    "iCloud": [
+        "icloud.com",
+        "me.com",
+        "apple.com"
+    ],
+    "Rackspace": [
+        "emailsrvr.com",
+        "rackspace.com"
+    ],
+    "GoDaddy": [
+        "secureserver.net",
+        "godaddy.com"
+    ],
+    "Namecheap": [
+        "registrar-servers.com",
+        "privateemail.com"
+    ],
+    "Yandex": [
+        "yandex.net",
+        "yandex.ru"
+    ],
+    "Titan": [
+        "titan.email"
+    ]
+}

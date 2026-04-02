@@ -1,0 +1,527 @@
+List Intel — Phased Feature Expansion Plan
+Complete implementation plan covering all strategic shifts, new features, layer compliance, and UI additions. Divided into 5 phases with tasks and subtasks.
+
+Source Documents
+Strategic Shifts: 10 repositioning decisions from the user's product brief
+10 Adopted Features: Send Readiness Score, Auto Fix, AI Copilot, List Half-Life, Diff Engine, Kill Switch, Stealth Segmentation, Campaign Simulator, Warmup Intel, Burn Alert
+LAYERS.md: 8-layer pipeline spec (1,854 lines) — the source of truth for processing
+PRODUCT_VISION.md: Full product vision (1,396 lines) — Tier 1-4 features, outreach, agency suite, data network moats
+Current State
+The core codebase is built with 14 feature folders: 
+auth
+, billing, 
+jobs
+, processing, burn, bounces, 
+marketplace
+, api_keys, exports, notifications, 
+settings
+, onboarding, admin. Templates, CSS, JS, and dashboard layout all exist.
+
+What still needs work before expansion:
+
+Ensure all 8 processing layers match 
+LAYERS.md
+ spec exactly
+Ensure 
+BaseLayer
+ contract, 
+LayerResult
+ dataclass, and 
+pipeline.py
+ orchestrator are production-ready
+Ensure signature files (
+spam_filters.json
+, 
+infra_providers.json
+, disposable_domains.txt) are populated
+PHASE 1 — FOUNDATION HARDENING + QUICK WINS
+Task 1.1.3 — Layer 1: Syntax + MX
+ Verify EMAIL_REGEX matches spec: r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$'
+ Verify ROLE_PREFIXES frozenset has all 40+ entries from LAYERS.md lines 231–244
+ Verify partial match logic: startswith(prefix + "-") and startswith(prefix + "_")
+ Verify disposable domain loading from signatures/disposable_domains.txt at startup (frozenset)
+ Verify MX lookup uses aiodns with nameservers ["8.8.8.8", "8.8.4.4", "1.1.1.1"], timeout=3.0, tries=2
+ Verify MX records are sorted by priority and hostnames are .rstrip(".").lower()
+ Verify output includes mx_records list for downstream layers
+Task 1.1.4 — Layer 2: Spam Filter Detection
+ Verify 
+signatures/spam_filters.json
+ contains all 9 providers: Mimecast, Proofpoint, Barracuda, Ironscales, Sophos, Cisco, Forcepoint, Avanan, Microsoft Defender
+ Verify detection algorithm: iterate MX records → iterate providers → iterate patterns → first match wins → return provider name
+ Verify returns None (not empty string) when no gateway detected
+Task 1.1.5 — Layer 3: Infrastructure Detection
+ Verify 
+signatures/infra_providers.json
+ contains all 9 providers: GWS, M365, Exchange, Zoho, Yahoo, Fastmail, Proton, iCloud, Rackspace
+ Verify returns "SMTP" (not None) when no provider matches — critical difference from Layer 2
+ Verify reads from same mx_records context as Layer 2
+Task 1.1.6 — Layer 4: Catch-All Detection
+ Verify SMTP probe generates random local part: "zzz" + 10 random alphanumeric chars
+ Verify SMTP handshake: EHLO → MAIL FROM → RCPT TO → check response code → QUIT
+ Verify domain deduplication: probes once per unique domain, not per email
+ Verify confidence levels: high (250 OK), low (550 rejected), medium (4xx), unknown (error/timeout)
+ Verify port 25 primary, port 587 fallback
+Task 1.1.7 — Layer 5: Bounce History
+ Verify bulk lookup query: SELECT email_hash, COUNT(), SUM(CASE hard), SUM(CASE soft) with 90-day window
+ Verify scoring formula: min(hard_bounces * 3 + soft_bounces * 1, 10)
+ Verify bounce type normalisation: "hard"/"permanent"/"5xx" → hard; "soft"/"temporary"/"4xx" → soft
+ Verify emails not in pool get score=0, type="none"
+Task 1.1.8 — Layer 6: Domain Age
+ Verify Redis-first strategy with MGET for batch cache checking
+ Verify asyncio.to_thread(whois.whois, domain) for python-whois
+ Verify 
+_parse_creation_date
+ handles both datetime and list[datetime] return types
+ Verify risk classification: Safe (365+), Medium (180-365), High (60-180), VeryHigh (<60), Unknown (null)
+ Verify TTLs: 30 days for known ages, 7 days for failures
+ Verify subdomain extraction: john@mail.company.com → WHOIS on company.com
+Task 1.1.9 — Layer 7: AI Spam Trap Detection
+ Verify 5 trigger conditions from LAYERS.md lines 1301–1332
+ Verify conditional execution: AI only runs when ≥1 trigger fires
+ Verify OpenRouter API call: model mistralai/mistral-7b-instruct:free, max_tokens=120, temperature=0.1
+ Verify JSON parsing with markdown fence stripping
+ Verify score clamped to 0.0–1.0, flagged threshold at 0.7
+ Verify graceful fallback on JSON parse failure
+Task 1.1.10 — Layer 8: Burn Score
+ Verify bulk insert: SHA-256 hash only, no plaintext, no deduplication on insert
+ Verify bulk lookup: COUNT(DISTINCT user_id) with 90-day window
+ Verify tag classification: Fresh (0–20), Warm (21–50), Burned (51–80), Torched (81–100)
+ Verify composite index: idx_burn_hash_date ON burn_pool(email_hash, uploaded_at)
+ Verify cleanup task: deletes entries >180 days old (not 90)
+Task 1.1.11 — Signature Files Population
+ Create/verify 
+app/features/processing/signatures/spam_filters.json
+ with all 9 providers and their MX patterns
+ Create/verify 
+app/features/processing/signatures/infra_providers.json
+ with all 9 providers
+ Create/verify 
+app/features/processing/signatures/disposable_domains.txt
+ with ~8,000 domains
+1.2 Strategic Shifts (Code-Level)
+Task 1.2.1 — Marketplace → "Coming Soon"
+ Replace marketplace page content with a "Coming Soon" widget
+ Keep the sidebar nav item but add a "(Soon)" badge
+ Remove marketplace from onboarding checklist
+ UI: Create a premium "Coming Soon" card with illustration, email capture field, and estimated launch date
+Task 1.2.2 — Burn Score Contextual Display
+ Add "based on X uploads" context text next to every burn score display
+ In job detail page: show "Burn pool size: {pool_size} emails from {user_count} senders" stats
+ Add a tooltip/info icon explaining what burn score means and current pool density
+ Strategic: Delay burn score as a primary sort/filter until pool has 500+ users
+Task 1.2.3 — "Score + Action" Pattern
+ Every score display MUST include a recommended next action
+ Burn score 73 → "High saturation. Consider trading in the Marketplace or sourcing fresh leads."
+ Domain risk "VeryHigh" → "This domain is <60 days old. Exclude from outreach — possible spam trap."
+ Spam filter "Mimecast" → "Enterprise gateway detected. Use a warmed dedicated domain or skip."
+ Bounce score 7 → "This email has bounced multiple times. Remove from all lists."
+ UI: Add an action_hint field to the job detail enrichment cards
+Task 1.2.4 — Friction Gate for Free Tier
+ Enforce email verification before first job upload (already exists — verify it works)
+ Add rate limiting: max 1 job per hour on free tier
+ Add IP-based registration tracking (already implemented — verify)
+ Consider invite-only toggle (INVITE_ONLY_MODE env var, default False)
+Task 1.2.5 — "Open List Intel Before Every Send" Positioning
+ Update all empty state copy to reinforce pre-send positioning
+ Dashboard headline: "Check your list before you send"
+ Upload zone subtitle: "Upload your campaign list for a pre-send intelligence check"
+ Weekly email digest subject: "Your pre-send report is ready"
+1.3 Quick-Win Features
+Task 1.3.1 — Send Readiness Score
+A live composite score: "Safe to send 2k/day" / "Throttle to 200" / "You will hit spam."
+
+ Backend: Create 
+app/features/jobs/readiness.py
+ — compute from job results:
+Fresh % (weight 30%)
+Spam filter exposure % (weight 25%)
+Bounce history avg (weight 20%)
+Domain risk distribution (weight 15%)
+Catch-all % (weight 10%)
+ Backend: Return readiness score (0–100) + readiness label + safe send volume + action items
+ Backend: Add GET /api/v1/jobs/{id}/readiness endpoint
+ UI: Add "Send Readiness" card to job detail page with meter/gauge visual
+ UI: Add interactive sliders: volume/day, domains used → recalculates readiness live
+Task 1.3.2 — Auto Fix My List
+One-click: remove bad emails, segment by infra, output ready-to-send batches.
+
+ Backend: Create 
+app/features/exports/auto_fix.py
+:
+Remove invalid syntax
+Remove disposable domains
+Remove bounce_score ≥ 7
+Remove burn_tag == "Torched"
+Remove spam_copy_flagged == True
+ Backend: Segment output into batches: fixed_gws.csv, fixed_m365.csv, fixed_smtp.csv
+ Backend: Add POST /api/v1/jobs/{id}/auto-fix endpoint → returns download URLs for each batch
+ UI: Add "Auto Fix" button on job detail page
+ UI: Show before/after comparison: total → cleaned count, removed count by reason
+Task 1.3.3 — Deliverability Kill Switch
+Hard warning before download: "STOP. 37% chance of domain damage."
+
+ Backend: Compute risk level in 
+readiness.py
+: if spam_filter_pct > 30% OR avg_burn > 60 OR bounce_pct > 5% → trigger kill switch
+ UI: When kill switch triggers on job detail, show a red danger modal:
+"WARNING: Sending to this list as-is has a high probability of damaging your sender domain."
+Must click "I understand the risks" to proceed with full download
+Recommend "Auto Fix" or "Fresh Only" export instead
+ UI: Kill switch modal uses 
+sysConfirm
+ danger variant with requiresTyping: true
+PHASE 2 — INTELLIGENCE EXPANSION + INTEGRATIONS
+Trigger: After 200 users / $1k MRR (Month 2–3) Goal: Add the features that differentiate List Intel from any other tool.
+
+2.1 Sending Domain Reputation Checker
+Task 2.1.1 — Backend
+ Create app/features/domain_health/ feature folder: 
+init
+.py
+, 
+router.py
+, 
+service.py
+, 
+schemas.py
+, 
+models.py
+ Implement async DNS RBL lookups across 50+ blacklists (Spamhaus ZEN, Barracuda BRBL, SORBS, SpamCop, URIBL, Invaluement, etc.)
+ Implement SPF record parsing + validation (check ≤10 lookups)
+ Implement DKIM selector probing (common selectors: default, google, mail, k1, k2)
+ Implement DMARC policy check (none/quarantine/reject)
+ Implement PTR reverse DNS check
+ Cross-reference with internal bounce pool: bounces FROM this domain
+ Compute Sender Score 0–100 with specific issue list + fix instructions
+ Add POST /api/v1/domain-health/check and GET /api/v1/domain-health/{id} endpoints
+Task 2.1.2 — Database
+ Create domain_reputation_checks table: 
+id
+, user_id, 
+domain
+, sender_score, blacklists_hit, spf_valid, dkim_found, dmarc_policy, full_results (JSONB), checked_at
+ Alembic migration
+Task 2.1.3 — UI
+ New page: /domain-health (or tab within Settings/Dashboard)
+ Domain input field + "Check" button
+ Results card: Sender Score gauge, SPF/DKIM/DMARC status badges, blacklist hit list, fix instructions
+ Add sidebar nav item
+Task 2.1.4 — Plan Gating
+ Free: 1 domain check/day, top 10 RBLs only
+ Starter+: unlimited checks, all 50+ RBLs, full DKIM discovery
+2.2 Webhook Engine
+Task 2.2.1 — Backend
+ Create app/features/webhooks/ feature folder
+ Implement webhook CRUD: POST /api/v1/webhooks, GET, DELETE, PATCH (enable/disable)
+ Implement HMAC-SHA256 signature generation: X-ListIntel-Signature: sha256={hmac_digest}
+ Implement Celery task fire_webhook with exponential backoff retries (max 5 retries)
+ Support event types: job.complete, job.failed, trade.matched, trade.confirmed, credits.low, credits.zero, report.ready, domain_check.done
+Task 2.2.2 — Database
+ Create webhooks table: 
+id
+, user_id, url, secret, events[], is_active, last_fired_at, failure_count, created_at
+ Create webhook_deliveries table: 
+id
+, webhook_id, event, payload (JSONB), status_code, response_body, delivered_at, error
+ Alembic migration
+Task 2.2.3 — UI
+ Add Webhooks section to Settings page
+ Webhook management table: URL, events, active status, edit/delete
+ "Add Webhook" modal: URL input, event type checkboxes, auto-generate secret
+ Delivery history: last 20 deliveries with status codes
+ Plan gating: Starter+ only
+2.3 List Deduplication + Merge
+Task 2.3.1 — Backend
+ Add POST /api/v1/jobs/merge endpoint: accepts 2–10 CSVs
+ Options: keep (all/first/last), 
+enrich
+ (bool), show_overlap (bool)
+ Deduplicate by email hash: detect cross-list overlap
+ Generate overlap matrix: file1×file2, file1×file3, etc.
+ Output merged CSV with source_file, appeared_in_n_lists, is_duplicate columns
+ If enrich=true, run merged list through 8-layer pipeline
+Task 2.3.2 — UI
+ Modify upload zone to accept multiple files (when "Merge" toggle is on)
+ Merge results page: overlap matrix visualization, per-file stats
+ Download merged + enriched CSV
+2.4 Suppression List Manager
+Task 2.4.1 — Backend
+ Create app/features/suppression/ feature folder
+ POST /api/v1/suppression/upload — accepts CSV of emails, stores only SHA-256 hashes
+ GET /api/v1/suppression/count — return count of suppressed hashes
+ DELETE /api/v1/suppression — clear all suppressed hashes for user
+ Auto-apply suppression filter on every job download (Fresh Only and full)
+ Reasons: unsubscribe, bounce, dnc, manual
+Task 2.4.2 — Database
+ Create suppression_list table: 
+id
+, user_id, email_hash, 
+reason
+, added_at, UNIQUE(user_id, email_hash)
+ Index: idx_suppression_user_hash ON suppression_list(user_id, email_hash)
+ Plan gating: Free (1,000), Starter (10,000), Growth+ (unlimited)
+Task 2.4.3 — UI
+ Add Suppression section to Settings page
+ Upload suppression list button
+ Show count of suppressed contacts
+ "Clear all" with danger confirmation
+2.5 Public Burn Score API
+Task 2.5.1 — Backend
+ Add GET /api/v1/public/score?email={email} — no auth required
+ IP-based rate limiting: 10 requests/hour per IP
+ Response: email_hash, burn_score, burn_tag, times_seen, last_seen_bucket (quarter), upgrade_url
+ API key auth unlocks higher limits (100/hr free, unlimited Pro+)
+Task 2.5.2 — Landing Page
+ Add a "Try it free" section: paste an email, get burn score live
+ CTA: "Want unlimited checks? Get an API key"
+2.6 "What Changed?" Diff Engine
+Task 2.6.1 — Backend
+ Detect re-upload of same list (match by filename + column structure)
+ Compare current job results against previous job's results for same list
+ Output diff: new burned contacts, new risky domains, infra changes, burn score deltas
+ Store diff summary in job_diffs table
+Task 2.6.2 — UI
+ On job detail: if a previous version exists, show "Changes since last upload" card
+ Delta display: "+847 burned", "-23 invalid (fixed)", "3 domains changed infra"
+ Side-by-side comparison mode
+PHASE 3 — RETENTION + NETWORK EFFECTS
+Trigger: After 500 users / $3k MRR (Month 4–6) Goal: Build the features that make users come back weekly and compound the data moat.
+
+3.1 List Aging Monitor (List Half-Life Tracker)
+Task 3.1.1 — Backend
+ Add monitored boolean + last_rescored_at to 
+jobs
+ table
+ Celery beat task: nightly, find monitored jobs where last_rescored_at > configured interval
+ Re-run ONLY burn score + bounce history layers (fast — no MX/DNS needed)
+ Compute delta: if burn_score_change > 10 OR burned_count_increase > 500 → notify
+ Create notification + fire webhook list.aged
+Task 3.1.2 — UI
+ Toggle on job detail: "Monitor this list" (switch)
+ Show freshness decay chart (burn score over time)
+ "Predicted burnout date" based on score velocity
+ Plan gating: Free (none), Starter+ (3 lists), Growth+ (unlimited, configurable 30d/14d/7d)
+3.2 Niche Burn Benchmarks
+Task 3.2.1 — Backend
+ Add niche field to 
+jobs
+ table (user selects on upload: SaaS, Ecom, Finance, Healthcare, Real Estate, Agency, Other)
+ Celery beat daily task: compute per-niche avg burn score, percentile distribution from last 90 days
+ Cache in Redis with 24hr TTL: benchmark:{niche}
+ Add GET /api/v1/benchmarks/{niche} endpoint
+Task 3.2.2 — UI
+ On job detail: show "Your SaaS list avg burn: 43 — Better than 71% of SaaS lists"
+ Bar chart showing niche distribution: Fresh/Warm/Burned/Torched percentages
+ Niche selector dropdown on upload form
+3.3 Campaign Timing Intelligence
+Task 3.3.1 — Backend
+ Track upload patterns per niche (timestamp + niche tag)
+ Compute weekly competition heatmap per niche
+ GET /api/v1/timing/{niche} → per-day competition level + recommendation
+Task 3.3.2 — UI
+ On job detail: "Campaign Timing" card with day-of-week heatmap
+ Recommendation text: "Launch Monday or Friday for lowest inbox competition."
+3.4 Stealth Segmentation Engine
+Task 3.4.1 — Backend
+ Post-enrichment auto-segmentation in 
+exports/service.py
+:
+Corporate vs personal (domain pattern analysis)
+High-filter vs low-filter recipients
+Likely decision-makers (title column if present)
+By infra: GWS / M365 / Other
+ Add segments JSONB to job summary
+Task 3.4.2 — UI
+ On job detail: "Smart Segments" panel showing auto-detected groups
+ One-click download per segment
+ Segment size + quality stats
+3.5 Burn Alert System
+Task 3.5.1 — Backend
+ Celery beat weekly task: for each user's recent jobs, check burn pool changes
+ Alert: "23% of your list was used by 41 senders this week"
+ Create notification + fire webhook burn.alert
+ GET /api/v1/alerts endpoint
+Task 3.5.2 — UI
+ Notification bell shows burn alerts with red urgency styling
+ Dashboard widget: "Burn Alert" card if any active alerts exist
+3.6 Pre-Send AI Copilot
+Task 3.6.1 — Backend
+ Create app/features/copy_check/ feature folder
+ POST /api/v1/copy-check — accepts email subject + body text
+ LLM analysis (Mistral 7B via OpenRouter): check for spam trigger words, Mimecast-triggering patterns, Promotions tab triggers
+ Return: issues found, rewritten version, reasoning per issue
+ Rate limit: 5/day free, 50/day Starter, unlimited Growth+
+Task 3.6.2 — UI
+ New page or modal: "Copy Checker"
+ Paste subject + body → get ruthless feedback
+ Side-by-side: original vs rewritten
+ Issue tags: "Triggers Mimecast", "Lands in Promotions", "Too many links"
+3.7 Community Spam Filter Reports
+Task 3.7.1 — Backend
+ POST /api/v1/community/report — domain, gateway_detected, evidence
+ Moderation queue (admin review)
+ Approved reports update 
+spam_filters.json
+ Reward: 100 credits per approved report
+Task 3.7.2 — UI
+ "Report Missed Gateway" button on job detail when user gets blocked
+ Admin panel: review queue
+3.8 Bounce Pool Incentive Program
+Task 3.8.1 — Backend
+ Track bounce submissions per user per month
+ Credit rewards: 100 bounces → 50 credits, 1k → 500, 5k → 2,500
+ Anti-gaming validation: reject if >50% emails never seen in any job, or bounce rate >95%
+ "Data Contributor" badge at 5,000+ submissions
+Task 3.8.2 — UI
+ Bounces page: upload area + submission history + credit earned badge
+ Leaderboard badge on profile
+PHASE 4 — PLATFORM EXPANSION
+Trigger: After $5k MRR (Month 6–9) Goal: Expand from intelligence tool to intelligence platform.
+
+4.1 Inbox Placement Predictor (Campaign Outcome Simulator)
+Task 4.1.1 — Backend
+ POST /api/v1/predict — accepts: sending domain + email template + job_id (enriched list)
+ Phase 1: rule-based scoring model:
+Sender factors (40%): sender score, SPF/DKIM/DMARC, domain age, RBL hits
+Recipient factors (40%): spam filter %, avg burn score, catch-all %, role %
+Content factors (20%): spam word density (via LLM), link count, HTML ratio
+ Return: predicted inbox %, spam %, block %, specific recommendations
+Task 4.1.2 — UI
+ New page: "Campaign Simulator"
+ Interactive sliders: volume/day, domains used
+ Results: inbox/spam/block pie chart, provider-by-provider breakdown
+ "Optimize" suggestions with one-click apply
+4.2 Team Workspaces (Agency Suite)
+Task 4.2.1 — Backend
+ Create app/features/workspaces/ feature folder
+ workspaces table: 
+id
+, 
+name
+, owner_id, plan, created_at
+ workspace_members table: 
+id
+, workspace_id, user_id, 
+role
+ (owner/admin/analyst/viewer)
+ Permission matrix: Owner (all), Admin (most), Analyst (run+view+download), Viewer (view only)
+ Shared credit pool across workspace
+ CRUD endpoints: create, invite, remove, change role
+Task 4.2.2 — UI
+ Workspace settings page: member list, invite form, role management
+ Workspace switcher in topbar (if user belongs to multiple)
+ Credit usage breakdown by member
+4.3 Client Reporting (Branded PDFs)
+Task 4.3.1 — Backend
+ Create app/features/reports/ feature folder
+ PDF generation via weasyprint or reportlab
+ Agency branding: logo upload, primary colour, company name, footer text
+ Report template: Executive Summary, Key Findings, Spam Filter Exposure, Infra Distribution, Recommended Action
+ POST /api/v1/jobs/{id}/report → generate + return PDF URL
+Task 4.3.2 — UI
+ "Generate Report" button on job detail (Growth+ only)
+ Branding settings in workspace settings
+4.4 Audit Log
+Task 4.4.1 — Backend
+ Create audit_events table: 
+id
+, workspace_id, user_id, event_type, resource_type, resource_id, metadata (JSONB), ip_address, created_at
+ Append-only: no UPDATE or DELETE ever
+ Log events: job., credits., api_key., webhook., trade., member., suppression., report.
+ 2-year retention (Celery beat purge)
+ GET /api/v1/audit with pagination + filtering
+Task 4.4.2 — UI
+ Audit log page: filterable, searchable event table
+ CSV export for compliance
+4.5 Warmup Intelligence Layer
+Task 4.5.1 — Backend
+ Not a sending tool — advisory only
+ Integrate with domain health checker: detect fake warmup signals
+ Recommend warmup ramp schedule based on domain age + sending infrastructure
+ GET /api/v1/domain-health/{domain}/warmup — returns warmup status + recommendations
+Task 4.5.2 — UI
+ Warmup advisor card within domain health page
+ Weekly warmup progress visualization
+ "Safe to increase volume" / "Hold current volume" recommendations
+4.6 n8n / Make / Zapier Integration Nodes
+Task 4.6.1 — n8n Community Node
+ Build n8n-nodes-listintel TypeScript package
+ Operations: Check Email, Upload List, Get Job Result, Get Burn Score, Check Sending Domain, Submit Bounces, Get Niche Benchmark
+ Publish to npm + submit to n8n Community Nodes marketplace
+ Write tutorial: "How to automate cold email list verification with n8n + List Intel"
+Task 4.6.2 — Make.com Module
+ Same operations as n8n, built as Make custom app
+ Trigger modules: Watch for completed jobs, Watch for trade matches, Watch for low credits
+ Apply for partner verification at 500+ users
+Task 4.6.3 — Zapier Integration
+ Triggers: Job completed, Credits below threshold, Trade matched
+ Actions: Check single email, Get burn score, Submit bounce event
+ Searches: Find job by filename, Get job results
+4.7 White-Label API
+Task 4.7.1 — Backend
+ Wholesale API tier: $49/mo for branded API access
+ Custom API key prefix for partners
+ Usage dashboard for partners
+ Separate rate limit tiers for white-label keys
+PHASE 5 — FULL PLATFORM + OUTREACH
+Trigger: After $15k MRR (Month 9–12) Goal: Own the full loop: list quality → send → track → improve.
+
+5.1 SMTP Connection Manager
+ Create app/features/sending/ feature folder
+ SMTP credential storage with Fernet encryption at rest
+ Account types: Gmail, Outlook, Custom SMTP
+ Per-account health monitoring: daily sends, bounce rate, reply rate
+ Warning thresholds: >5% bounce (orange), >10% bounce (red pause), >0.3% spam complaint (immediate pause)
+5.2 Campaign Builder
+ Sequence editor: up to 5 steps with configurable delays
+ Merge tags: {{first_name}}, {{company}}, {{email_infra}}, any CSV column
+ Conditional sending based on enrichment: if GWS → template_gws, if Mimecast → skip
+ Sending via connected SMTP accounts with rotation + daily limits
+5.3 Open & Click Tracking
+ Tracking pixel insertion (1x1 transparent GIF via tracking subdomain)
+ Link rewriting for click tracking
+ Unsubscribe handling (CAN-SPAM compliant)
+ Auto-add unsubscribes to suppression list
+5.4 Reply Detection
+ IMAP polling (Celery beat every 5 minutes)
+ Reply classification: positive, out-of-office, not interested, bounce, unsubscribe
+ Auto-stop sequence on reply
+5.5 Campaign Analytics
+ Performance by infrastructure: open rate + reply rate by GWS/M365/SMTP
+ Performance by burn score bracket: Fresh vs Warm vs Burned
+ Auto-submit bounces back to burn pool
+ This insight is ONLY possible because List Intel has both enrichment + send data
+5.6 List Source (Tool 2)
+ Shared auth with List Intel (same user account)
+ Niche list building from public sources
+ Cross-sell from every job detail: "60% burned? Find fresh leads →"
+ Separate pricing, same Paystack customer
+5.7 Managed n8n for Agency Plan
+ Docker container on Railway (~$15/mo per instance)
+ Pre-configured with List Intel node + cold email automation templates
+ Charge $49/mo extra (margin: $34/mo per agency user)
+PHASE SUMMARY TABLE
+Phase	Trigger	# Tasks	Key Features
+1	Now	14 tasks	Layer compliance, marketplace "Coming Soon", Send Readiness Score, Auto Fix, Kill Switch, strategic copy changes
+2	200 users / $1k MRR	10 tasks	Domain Reputation, Webhooks, Dedup/Merge, Suppression, Public API, Diff Engine
+3	500 users / $3k MRR	13 tasks	List Aging, Benchmarks, Timing Intel, Segmentation, Burn Alerts, AI Copilot, Community Reports, Bounce Incentives
+4	$5k MRR	12 tasks	Inbox Predictor, Workspaces, Client Reports, Audit Log, Warmup Intel, n8n/Make/Zapier, White-Label
+5	$15k MRR	7 tasks	SMTP Manager, Campaign Builder, Tracking, Reply Detection, Analytics, List Source, Managed n8n
+Verification Plan
+Test deleting an account and verifying the DB row is removed.
+Test registering two accounts from the same IP, verifying only the first gets free credits (or the second is blocked).
+Verify that the modals appear perfectly centered on screen.
+Per Phase
+Run all processing layers against a test CSV (1,000 emails with known characteristics)
+Verify each layer output matches LAYERS.md specifications exactly
+Browser test all new UI pages/components
+Test webhook delivery with a webhook.site endpoint
+Test plan gating: ensure free users cannot access gated features
+Automated Tests
+pytest for all new service functions
+Layer output validation: each layer tested with edge case inputs from LAYERS.md tables
+API endpoint integration tests
+Manual Verification
+Upload real CSV → verify enrichment results match expected output
+Test domain health checker against known blacklisted domain
+Test suppression list auto-removal on download

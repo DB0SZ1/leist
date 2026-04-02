@@ -1,0 +1,20 @@
+{% extends "emails/layout.html" %}
+
+{% block body %}
+<h2>{{ title|default("System Update") }}</h2>
+
+<p>
+    {{ message|default("We've processed your latest dataset. Please log into your dashboard to view the enriched output.") }}
+</p>
+
+{% if show_button %}
+<div class="btn-wrap">
+    <a href="{{ action_url|default('#') }}" class="btn">{{ action_text|default("View Details") }}</a>
+</div>
+{% endif %}
+
+<p style="font-size:13px; color:#8899a6; margin-top:32px;">
+    Thank you for using List Intel!<br>
+    The List Intel Team
+</p>
+{% endblock %}

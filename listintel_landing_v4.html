@@ -1,0 +1,498 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f2f1ec;--white:#fff;--dark:#172617;--dark2:#1c2e1c;
+  --accent:#2a5426;--accent2:#3d7a36;--yellow:#cce836;
+  --text:#172617;--muted:#6a796a;--border:#d8d8cf;
+  --font:'Bricolage Grotesque',Georgia,sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:rgba(242,241,236,.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 48px;display:flex;align-items:center;justify-content:space-between;height:60px;}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+.logo-mark{width:28px;height:28px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.logo-name{font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.4px;}
+.logo-name span{color:var(--accent);}
+.nav-links{display:flex;gap:26px;}
+.nav-links a{font-size:14px;color:var(--muted);text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--text);}
+.nav-r{display:flex;gap:10px;align-items:center;}
+.btn-ghost{background:none;border:none;font-family:var(--font);font-size:14px;color:var(--muted);cursor:pointer;padding:8px 14px;border-radius:6px;transition:all .2s;}
+.btn-ghost:hover{background:rgba(0,0,0,.05);color:var(--text);}
+.btn-cta{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:7px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-cta:hover{background:var(--accent2);transform:translateY(-1px);}
+
+/* HERO */
+#hero{padding:72px 48px 0;text-align:center;}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.09em;text-transform:uppercase;margin-bottom:20px;border:1px solid rgba(42,84,38,.25);background:rgba(42,84,38,.07);padding:5px 13px;border-radius:100px;}
+.eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--accent2);}
+h1{font-size:clamp(42px,6vw,80px);font-weight:800;line-height:.96;letter-spacing:-.035em;color:var(--text);max-width:780px;margin:0 auto 20px;}
+.uw{position:relative;display:inline-block;color:var(--accent);}
+.uw::after{content:'';position:absolute;left:0;bottom:-3px;width:100%;height:5px;background:var(--yellow);border-radius:2px;}
+.hero-sub{font-size:17px;color:var(--muted);max-width:460px;margin:0 auto 34px;line-height:1.65;}
+.hero-btns{display:flex;justify-content:center;gap:12px;margin-bottom:56px;}
+.btn-p{background:var(--accent);color:#fff;border:none;padding:13px 26px;border-radius:8px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-p:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(42,84,38,.25);}
+.btn-o{background:#fff;color:var(--text);border:1px solid var(--border);padding:13px 26px;border-radius:8px;font-family:var(--font);font-size:15px;font-weight:500;cursor:pointer;transition:all .2s;}
+.btn-o:hover{border-color:var(--accent);color:var(--accent);}
+
+/* EXCEL CARD */
+.hero-card{max-width:960px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 4px 40px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.05);}
+.titlebar{background:#eeede7;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:7px;}
+.dot{width:11px;height:11px;border-radius:50%;}
+.fname{font-size:12px;color:var(--muted);margin-left:6px;font-weight:500;}
+.fname b{color:var(--accent);}
+.toolbar{background:#f5f4ee;border-bottom:1px solid var(--border);padding:5px 14px;display:flex;align-items:center;gap:14px;font-size:11px;color:var(--muted);}
+.tbtn{background:#fff;border:1px solid #ddddd4;padding:3px 10px;border-radius:4px;font-size:11px;color:var(--muted);font-family:var(--font);cursor:default;}
+.tinfo{margin-left:auto;font-size:10px;}
+.excel-scroll{overflow-x:auto;}
+table.xl{width:100%;border-collapse:collapse;min-width:920px;}
+table.xl thead th{padding:7px 10px;background:#e6e6de;border-right:1px solid #d0d0c8;border-bottom:2px solid #c4c4bc;font-size:9px;font-weight:700;color:#666;letter-spacing:.06em;text-transform:uppercase;text-align:left;white-space:nowrap;position:sticky;top:0;}
+table.xl thead th.rn{background:#ddddd5;color:#aaa;text-align:center;width:30px;padding:7px 6px;}
+table.xl thead th.hi{background:#c4d8c0;color:var(--accent);}
+table.xl tbody tr:nth-child(odd){background:#fff;}
+table.xl tbody tr:nth-child(even){background:#f9f9f5;}
+table.xl tbody tr:hover{background:#eff4ee;}
+table.xl tbody tr.sel{background:#e6f3e4!important;}
+table.xl td{padding:6px 10px;border-right:1px solid #eeeee6;border-bottom:1px solid #eeeee6;font-size:11.5px;color:#333;white-space:nowrap;vertical-align:middle;}
+table.xl td.rn{background:#f2f2ea;color:#bbb;text-align:center;font-size:10px;border-right:2px solid #d4d4cc;font-weight:600;width:30px;}
+table.xl td.em{font-weight:600;color:#111;min-width:160px;}
+table.xl td.hi2{background:#f0f8ee!important;}
+table.xl td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.p{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.02em;}
+.pg{background:#d4eecf;color:#1b6015;}
+.pr{background:#fcd8d8;color:#b31c1c;}
+.po{background:#fde3c0;color:#964800;}
+.pb{background:#d6e8fc;color:#1a4c9a;}
+.py{background:#fdf5c0;color:#786500;}
+.pm{background:#ecd8fc;color:#5a1a96;}
+.sbw{display:inline-flex;align-items:center;gap:5px;}
+.sb{width:46px;height:4px;background:#e8e8e0;border-radius:2px;overflow:hidden;display:inline-block;}
+.sbf{height:100%;border-radius:2px;display:block;}
+
+/* MARQUEE STRIP */
+.mq-section{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:#fff;padding:18px 0;margin-top:52px;overflow:hidden;}
+.mq-label{text-align:center;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:14px;}
+.mq-track{display:flex;overflow:hidden;position:relative;}
+.mq-track::before,.mq-track::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none;}
+.mq-track::before{left:0;background:linear-gradient(to right,#fff,transparent);}
+.mq-track::after{right:0;background:linear-gradient(to left,#fff,transparent);}
+.mq-inner{display:flex;animation:mq 30s linear infinite;white-space:nowrap;}
+.mq-inner:hover{animation-play-state:paused;}
+.li{display:inline-flex;align-items:center;gap:9px;padding:0 28px;border-right:1px solid var(--border);font-size:13px;font-weight:700;color:#aaa;flex-shrink:0;transition:color .2s;}
+.li:hover{color:var(--muted);}
+.li svg{flex-shrink:0;}
+@keyframes mq{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* FEATURES */
+#features{padding:96px 48px;max-width:1160px;margin:0 auto;}
+.sec-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;border:1px solid rgba(42,84,38,.2);background:rgba(42,84,38,.06);padding:5px 12px;border-radius:100px;}
+h2{font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:-.03em;line-height:1.08;margin-bottom:12px;}
+.sec-sub{font-size:16px;color:var(--muted);max-width:460px;line-height:1.65;margin-bottom:52px;}
+.bento{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.bc{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;overflow:hidden;transition:box-shadow .25s,transform .25s;}
+.bc:hover{box-shadow:0 8px 32px rgba(0,0,0,.09);transform:translateY(-2px);}
+.bc.wide{grid-column:1/3;}
+.bt{font-size:19px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:-.02em;}
+.bd{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px;}
+.xbtn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:7px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.xbtn:hover{background:var(--accent2);}
+.tr{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0e8;font-size:13px;color:var(--text);}
+.tr:last-child{border-bottom:none;}
+.tog{width:36px;height:20px;border-radius:100px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tog.on{background:var(--accent);}
+.tog.off{background:#d8d8d0;}
+.tog::after{content:'';position:absolute;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s;}
+.tog.on::after{left:19px;}
+.tog.off::after{left:3px;}
+.tcard{background:#f7f7f2;border:1px solid var(--border);border-radius:9px;padding:11px 14px;margin-bottom:8px;}
+.tcard:last-child{margin-bottom:0;}
+.tt{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.tname{font-size:13px;font-weight:700;color:var(--text);}
+.tsub{font-size:11px;color:var(--muted);}
+
+/* INTEGRATIONS DARK */
+#integrations{background:var(--dark);padding:80px 0;overflow:hidden;}
+.int-center{max-width:860px;margin:0 auto;text-align:center;padding:0 48px;}
+#integrations h2{color:#fff;}
+#integrations .sec-sub{color:rgba(255,255,255,.42);margin:0 auto 36px;}
+#integrations .sec-tag{background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);border-color:rgba(255,255,255,.1);}
+.int-btn{background:none;border:none;font-family:var(--font);font-size:14px;color:rgba(255,255,255,.4);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:color .2s;margin-bottom:44px;}
+.int-btn:hover{color:var(--yellow);}
+.dk-mq{overflow:hidden;position:relative;padding:8px 0;}
+.dk-mq::before,.dk-mq::after{content:'';position:absolute;top:0;bottom:0;width:100px;z-index:2;pointer-events:none;}
+.dk-mq::before{left:0;background:linear-gradient(to right,var(--dark),transparent);}
+.dk-mq::after{right:0;background:linear-gradient(to left,var(--dark),transparent);}
+.dk-inner{display:flex;animation:mq 24s linear infinite;}
+.dk-inner:hover{animation-play-state:paused;}
+.dl{display:inline-flex;align-items:center;gap:10px;padding:12px 24px;margin:0 6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;white-space:nowrap;flex-shrink:0;font-size:13px;font-weight:700;color:rgba(255,255,255,.5);cursor:default;transition:all .2s;}
+.dl:hover{background:rgba(255,255,255,.12);color:rgba(255,255,255,.9);border-color:rgba(255,255,255,.2);}
+.dl svg{opacity:.6;}
+.dl:hover svg{opacity:1;}
+
+/* PRICING */
+#pricing{padding:96px 48px;max-width:1160px;margin:0 auto;}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:52px;}
+.pcard{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;transition:box-shadow .25s,transform .25s;}
+.pcard:hover{box-shadow:0 8px 32px rgba(0,0,0,.09);transform:translateY(-2px);}
+.pcard.feat{border:2px solid var(--accent);}
+.feat-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:.07em;padding:4px 12px;border-radius:0 0 8px 8px;text-transform:uppercase;white-space:nowrap;}
+.plan-name{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:10px;}
+.plan-price{font-size:40px;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1;margin-bottom:3px;}
+.plan-price sup{font-size:18px;font-weight:700;vertical-align:super;}
+.plan-period{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.plan-credits{font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.pf{font-size:13px;color:var(--muted);padding:5px 0;display:flex;align-items:center;gap:7px;}
+.pf::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--border);flex-shrink:0;}
+.pf.inc{color:var(--text);}
+.pf.inc::before{background:var(--accent);}
+.plan-btn{display:block;width:100%;margin-top:24px;padding:11px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid var(--border);background:transparent;color:var(--muted);}
+.plan-btn:hover{color:var(--text);border-color:var(--accent);}
+.plan-btn.fb{background:var(--accent);border-color:var(--accent);color:#fff;}
+.plan-btn.fb:hover{background:var(--accent2);}
+
+/* QUOTE */
+#quote{padding:96px 48px;text-align:center;}
+.qm{font-size:52px;color:var(--accent);font-family:Georgia,serif;line-height:.5;margin-bottom:16px;}
+.qt{font-size:clamp(20px,3vw,32px);font-weight:700;color:var(--text);max-width:680px;margin:0 auto 28px;line-height:1.3;letter-spacing:-.02em;}
+.qa{display:flex;align-items:center;gap:12px;justify-content:center;}
+.qaimg{width:42px;height:42px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;}
+.qaname{font-size:14px;font-weight:700;color:var(--text);text-align:left;}
+.qarole{font-size:12px;color:var(--muted);}
+
+/* STATS */
+#stats{padding:56px 48px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;justify-content:center;gap:80px;flex-wrap:wrap;}
+.si{text-align:center;}
+.sn{font-size:54px;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1;}
+.sl{font-size:13px;color:var(--muted);margin-top:4px;}
+
+/* FOOTER CTA */
+#fcta{background:var(--dark);padding:72px 48px;display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap;}
+.fh{color:#fff;font-size:clamp(24px,4vw,44px);font-weight:800;letter-spacing:-.03em;line-height:1.1;max-width:480px;}
+.fh .ul{text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--yellow);}
+.fbtns{display:flex;gap:12px;flex-shrink:0;}
+.btn-yl{background:var(--yellow);color:var(--dark);border:none;padding:13px 22px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-yl:hover{background:#d6f040;transform:translateY(-1px);}
+.btn-wo{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2);padding:13px 22px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;}
+.btn-wo:hover{border-color:rgba(255,255,255,.5);}
+
+/* FOOTER */
+footer{background:var(--dark2);padding:44px 48px 26px;border-top:1px solid rgba(255,255,255,.08);}
+.fg{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px;margin-bottom:40px;}
+.fbrand{font-size:16px;font-weight:800;font-family:var(--font);color:#fff;margin-bottom:9px;}
+.fbrand span{color:#4a8c42;}
+.fdesc{font-size:13px;color:rgba(255,255,255,.36);line-height:1.6;max-width:210px;}
+.fcon{font-size:12px;color:rgba(255,255,255,.32);margin-top:10px;line-height:1.9;}
+.fc h5{font-size:11px;font-weight:700;color:rgba(255,255,255,.28);letter-spacing:.09em;text-transform:uppercase;margin-bottom:13px;}
+.fc a{display:block;font-size:13px;color:rgba(255,255,255,.48);text-decoration:none;margin-bottom:8px;transition:color .2s;}
+.fc a:hover{color:#fff;}
+.fbot{display:flex;justify-content:space-between;align-items:center;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);}
+.fcopy{font-size:12px;color:rgba(255,255,255,.26);}
+.fsoc{display:flex;gap:16px;}
+.fsoc a{font-size:12px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s;}
+.fsoc a:hover{color:#fff;}
+
+/* REVEAL */
+.r{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;}
+.r.v{opacity:1;transform:none;}
+.d1{transition-delay:.08s;}.d2{transition-delay:.16s;}.d3{transition-delay:.24s;}.d4{transition-delay:.32s;}
+
+/* HERO FADE */
+@keyframes fu{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+.ha{opacity:0;animation:fu .6s ease forwards;}
+.ha1{animation-delay:.05s;}.ha2{animation-delay:.15s;}.ha3{animation-delay:.25s;}.ha4{animation-delay:.35s;}.ha5{animation-delay:.45s;}
+</style>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".35"/></svg>
+    </div>
+    <div class="logo-name">List<span>Intel</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="#">Features</a><a href="#">Pricing</a><a href="#">API</a><a href="#">Docs</a>
+  </div>
+  <div class="nav-r">
+    <button class="btn-ghost">Log In</button>
+    <button class="btn-cta">Start for Free</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="eyebrow ha ha1"><div class="eyebrow-dot"></div>Built for serious cold email teams</div>
+  <h1 class="ha ha2">One tool to <span class="uw">verify</span><br>lists and your campaigns</h1>
+  <p class="hero-sub ha ha3">Upload any email list. Get back spam filter tags, burn scores, domain age, and infra detection — enriched CSV ready to send.</p>
+  <div class="hero-btns ha ha4">
+    <button class="btn-p">Start for Free</button>
+    <button class="btn-o">Get a Demo</button>
+  </div>
+
+  <!-- EXCEL HERO CARD -->
+  <div class="hero-card ha ha5">
+    <div class="titlebar">
+      <div class="dot" style="background:#ff5f57"></div>
+      <div class="dot" style="background:#febc2e"></div>
+      <div class="dot" style="background:#28c840"></div>
+      <span class="fname">listintel_<b>enriched_output.csv</b> — 12,400 rows</span>
+    </div>
+    <div class="toolbar">
+      <span class="tbtn">File</span><span class="tbtn">Edit</span><span class="tbtn">View</span><span class="tbtn">Filter ▾</span>
+      <span class="tinfo">Rows 1–12 of 12,400 &nbsp;·&nbsp; <b style="color:#1b6015">8,210 fresh</b> &nbsp;·&nbsp; <b style="color:#b31c1c">3,105 burned</b> &nbsp;·&nbsp; <b style="color:#964800">1,085 flagged</b></span>
+    </div>
+    <div class="excel-scroll">
+      <table class="xl">
+        <thead><tr>
+          <th class="rn">#</th><th class="hi">email</th><th>first_name</th><th>company</th>
+          <th>syntax</th><th>mx_valid</th><th>spam_filter</th><th>infra</th>
+          <th>domain_age</th><th>domain_risk</th><th class="hi">burn_score</th><th>burn_tag</th><th>bounce</th><th>catchall</th>
+        </tr></thead>
+        <tbody>
+          <tr class="sel"><td class="rn">1</td><td class="em hi2">john@techcorp.io</td><td>John</td><td>TechCorp</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">847</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:8%;background:#1b6015"></div></div><b style="color:#1b6015">8</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">2</td><td class="em hi2">vp@enterprise.co</td><td>Sarah</td><td>Enterprise Co</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td><span class="p pr">Mimecast</span></td><td><span class="p pb">M365</span></td><td class="num">2,104</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:72%;background:#b31c1c"></div></div><b style="color:#b31c1c">72</b></div></td><td><span class="p pr">Burned</span></td><td class="num">3</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">3</td><td class="em hi2">cto@newco.ai</td><td>Marcus</td><td>NewCo AI</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pm">SMTP</span></td><td class="num">14</td><td><span class="p pr">VeryHigh</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:3%;background:#1b6015"></div></div><b style="color:#1b6015">3</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">4</td><td class="em hi2">info@bigcorp.com</td><td>—</td><td>BigCorp Inc</td><td><span class="p po">role</span></td><td><span class="p pg">✓</span></td><td><span class="p po">Proofpoint</span></td><td><span class="p pb">M365</span></td><td class="num">3,841</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:91%;background:#b31c1c"></div></div><b style="color:#b31c1c">91</b></div></td><td><span class="p pr">Torched</span></td><td class="num">8</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">5</td><td class="em hi2">ops@saas.dev</td><td>Mike</td><td>SaaS Dev</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">620</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:19%;background:#964800"></div></div><b style="color:#964800">19</b></div></td><td><span class="p py">Warm</span></td><td class="num">1</td><td><span class="p po">Yes</span></td></tr>
+          <tr><td class="rn">6</td><td class="em hi2">ceo@growth.agency</td><td>Priya</td><td>Growth Agency</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td><span class="p pr">Barracuda</span></td><td><span class="p pb">M365</span></td><td class="num">1,204</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:55%;background:#964800"></div></div><b style="color:#964800">55</b></div></td><td><span class="p po">Warm</span></td><td class="num">2</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">7</td><td class="em hi2">hello@dispose.ml</td><td>—</td><td>—</td><td><span class="p pr">disposable</span></td><td><span class="p pr">✗</span></td><td>—</td><td>—</td><td class="num" style="color:#ccc">—</td><td>—</td><td class="hi2" style="color:#ccc">—</td><td>—</td><td class="num" style="color:#ccc">—</td><td>—</td></tr>
+          <tr><td class="rn">8</td><td class="em hi2">founder@techstars.io</td><td>James</td><td>Techstars</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">2,910</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:6%;background:#1b6015"></div></div><b style="color:#1b6015">6</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">9</td><td class="em hi2">mkt@cloudco.io</td><td>Anna</td><td>CloudCo</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td><span class="p pr">Mimecast</span></td><td><span class="p pb">M365</span></td><td class="num">788</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:82%;background:#b31c1c"></div></div><b style="color:#b31c1c">82</b></div></td><td><span class="p pr">Torched</span></td><td class="num">6</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">10</td><td class="em hi2">bd@fintech.co</td><td>Lena</td><td>FinTech Co</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">1,566</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:11%;background:#1b6015"></div></div><b style="color:#1b6015">11</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">11</td><td class="em hi2">alex@ventures.vc</td><td>Alex</td><td>Ventures VC</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">4,102</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:2%;background:#1b6015"></div></div><b style="color:#1b6015">2</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">12</td><td class="em hi2">noreply@spam.net</td><td>—</td><td>—</td><td><span class="p pr">role</span></td><td><span class="p pr">✗</span></td><td>—</td><td>—</td><td class="num" style="color:#ccc">—</td><td>—</td><td class="hi2" style="color:#ccc">—</td><td>—</td><td class="num" style="color:#ccc">—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MARQUEE STRIP -->
+  <div class="mq-section">
+    <div class="mq-label">Used alongside</div>
+    <div class="mq-track"><div class="mq-inner" id="mqi">
+      <!-- Instantly: lightning bolt -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF6B2B"/><path d="M11 3L5 11h5l-1 6 7-9h-5l1-5z" fill="white"/></svg>Instantly</div>
+      <!-- Smartlead: S mark -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#6366F1"/><path d="M13 6.5C13 5.1 11.88 4 10.5 4h-1C8.12 4 7 5.12 7 6.5S8.12 9 9.5 9h1c1.38 0 2.5 1.12 2.5 2.5S11.88 16 10.5 16h-1C8.12 16 7 14.9 7 13.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>Smartlead</div>
+      <!-- OmniVerifier: checkmark -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#0EA5E9"/><path d="M5 10.5l3.5 3.5 6.5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>OmniVerifier</div>
+      <!-- Apollo: rocket -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#1A1A2E"/><path d="M10 3c0 0 4 2 4 7-1.5.5-2.5.5-4 0-1.5.5-2.5.5-4 0C6 5 10 3 10 3z" fill="#7C3AED"/><circle cx="10" cy="11" r="2" fill="white"/><path d="M8 14l-2 3M12 14l2 3" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"/></svg>Apollo</div>
+      <!-- Clay: diamond -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#F59E0B"/><path d="M10 3l5 4-5 10-5-10z" fill="white" opacity=".9"/><path d="M5 7h10" stroke="white" stroke-width="1.2"/></svg>Clay</div>
+      <!-- Lemlist: envelope -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#EF4444"/><rect x="4" y="6" width="12" height="8" rx="1" stroke="white" stroke-width="1.5"/><path d="M4 7l6 5 6-5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>Lemlist</div>
+      <!-- n8n: nodes -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#EA4B71"/><circle cx="5" cy="10" r="2" fill="white"/><circle cx="15" cy="6" r="2" fill="white"/><circle cx="15" cy="14" r="2" fill="white"/><path d="M7 10h3M10 10l3-4M10 10l3 4" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg>n8n</div>
+      <!-- HubSpot: sprocket -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF7A59"/><circle cx="10" cy="10" r="2.5" fill="white"/><path d="M10 4v2M10 14v2M4 10h2M14 10h2M5.76 5.76l1.42 1.42M12.82 12.82l1.42 1.42M5.76 14.24l1.42-1.42M12.82 7.18l1.42-1.42" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>HubSpot</div>
+      <!-- Zapier: Z bolt -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF4A00"/><path d="M6 6h8L8 10h8M6 14h8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Zapier</div>
+      <!-- duplicate set -->
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF6B2B"/><path d="M11 3L5 11h5l-1 6 7-9h-5l1-5z" fill="white"/></svg>Instantly</div>
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#6366F1"/><path d="M13 6.5C13 5.1 11.88 4 10.5 4h-1C8.12 4 7 5.12 7 6.5S8.12 9 9.5 9h1c1.38 0 2.5 1.12 2.5 2.5S11.88 16 10.5 16h-1C8.12 16 7 14.9 7 13.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>Smartlead</div>
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#0EA5E9"/><path d="M5 10.5l3.5 3.5 6.5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>OmniVerifier</div>
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#1A1A2E"/><path d="M10 3c0 0 4 2 4 7-1.5.5-2.5.5-4 0-1.5.5-2.5.5-4 0C6 5 10 3 10 3z" fill="#7C3AED"/><circle cx="10" cy="11" r="2" fill="white"/><path d="M8 14l-2 3M12 14l2 3" stroke="#7C3AED" stroke-width="1.5" stroke-linecap="round"/></svg>Apollo</div>
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#F59E0B"/><path d="M10 3l5 4-5 10-5-10z" fill="white" opacity=".9"/><path d="M5 7h10" stroke="white" stroke-width="1.2"/></svg>Clay</div>
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#EF4444"/><rect x="4" y="6" width="12" height="8" rx="1" stroke="white" stroke-width="1.5"/><path d="M4 7l6 5 6-5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>Lemlist</div>
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#EA4B71"/><circle cx="5" cy="10" r="2" fill="white"/><circle cx="15" cy="6" r="2" fill="white"/><circle cx="15" cy="14" r="2" fill="white"/><path d="M7 10h3M10 10l3-4M10 10l3 4" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg>n8n</div>
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF7A59"/><circle cx="10" cy="10" r="2.5" fill="white"/><path d="M10 4v2M10 14v2M4 10h2M14 10h2M5.76 5.76l1.42 1.42M12.82 12.82l1.42 1.42M5.76 14.24l1.42-1.42M12.82 7.18l1.42-1.42" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>HubSpot</div>
+      <div class="li"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF4A00"/><path d="M6 6h8L8 10h8M6 14h8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Zapier</div>
+    </div></div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="sec-tag r">⬡ Features</div>
+  <h2 class="r d1">Intelligence to ensure your<br>list is actually sendable</h2>
+  <p class="sec-sub r d2">8 layers no standard verifier provides — all running server-side in parallel.</p>
+  <div class="bento">
+    <div class="bc r">
+      <div class="bt">Burn Score Network</div>
+      <div class="bd">See how many senders have already blasted every email. SHA-256 hashed — GDPR safe. The moat grows with every upload.</div>
+      <button class="xbtn">Explore →</button>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:18px;">
+        <thead><tr style="background:#f5f5f0;"><th style="padding:6px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);">hash (sha-256)</th><th style="padding:6px 10px;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);text-align:right;">seen by</th><th style="padding:6px 10px;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);">tag</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;font-family:monospace;font-size:10px;color:#999;">a3f8...c91e</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;text-align:right;font-size:12px;">1 user</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;"><span class="p pg">Fresh</span></td></tr>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;font-family:monospace;font-size:10px;color:#999;">b72d...44ab</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;text-align:right;font-size:12px;">47 users</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;"><span class="p pr">Burned</span></td></tr>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;font-family:monospace;font-size:10px;color:#999;">cc1e...f033</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;text-align:right;font-size:12px;">91 users</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;"><span class="p pr">Torched</span></td></tr>
+          <tr><td style="padding:7px 10px;font-family:monospace;font-size:10px;color:#999;">d904...7bbf</td><td style="padding:7px 10px;text-align:right;font-size:12px;">12 users</td><td style="padding:7px 10px;"><span class="p py">Warm</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="bc r d1">
+      <div class="bt">Spam Filter Detector</div>
+      <div class="bd">Tag every email with which security gateway guards it — before your campaign hits it.</div>
+      <div class="tr"><span>Flag Mimecast addresses</span><div class="tog on"></div></div>
+      <div class="tr"><span>Flag Proofpoint addresses</span><div class="tog on"></div></div>
+      <div class="tr"><span>Flag Barracuda addresses</span><div class="tog on"></div></div>
+      <div class="tr"><span>Flag Ironscales addresses</span><div class="tog off"></div></div>
+      <div class="tr"><span>Auto-exclude in Fresh Only</span><div class="tog on"></div></div>
+    </div>
+    <div class="bc wide r d2">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start;">
+        <div>
+          <div class="bt">Burned List Marketplace</div>
+          <div class="bd">Trade your burned list for a fresher one in the same niche. Automated, server-matched, fully anonymous.</div>
+          <button class="xbtn">Learn more →</button>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;">Active trades</div>
+          <div class="tcard"><div class="tt"><span class="tname">SaaS list · 8,400 leads</span><span class="p pg">Matched</span></div><span class="tsub">Avg burn: 74 · Awaiting confirmation</span></div>
+          <div class="tcard"><div class="tt"><span class="tname">Ecom · 22,000 leads</span><span class="p py">Pending</span></div><span class="tsub">Avg burn: 61 · Searching...</span></div>
+          <div class="tcard"><div class="tt"><span class="tname">Finance · 5,100 leads</span><span class="p pg">Matched</span></div><span class="tsub">Avg burn: 88 · Ready to confirm</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section id="integrations">
+  <div class="int-center">
+    <div class="sec-tag r" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);border-color:rgba(255,255,255,.1);">⬡ Integrations</div>
+    <h2 class="r d1">Don't replace. Integrate.</h2>
+    <p class="sec-sub r d2">Works with the tools already in your stack. REST API on Pro and Agency plans.</p>
+    <button class="int-btn r d3">All integrations →</button>
+  </div>
+  <div class="dk-mq"><div class="dk-inner">
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF6B2B"/><path d="M11 3L5 11h5l-1 6 7-9h-5l1-5z" fill="white"/></svg>Instantly</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#6366F1"/><path d="M13 6.5C13 5.1 11.88 4 10.5 4h-1C8.12 4 7 5.12 7 6.5S8.12 9 9.5 9h1c1.38 0 2.5 1.12 2.5 2.5S11.88 16 10.5 16h-1C8.12 16 7 14.9 7 13.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>Smartlead</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#0EA5E9"/><path d="M5 10.5l3.5 3.5 6.5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>OmniVerifier</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#1A1A2E"/><path d="M10 3c0 0 4 2 4 7-1.5.5-2.5.5-4 0-1.5.5-2.5.5-4 0C6 5 10 3 10 3z" fill="#7C3AED"/><circle cx="10" cy="11" r="2" fill="white"/></svg>Apollo</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#F59E0B"/><path d="M10 3l5 4-5 10-5-10z" fill="white" opacity=".9"/><path d="M5 7h10" stroke="white" stroke-width="1.2"/></svg>Clay</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#EF4444"/><rect x="4" y="6" width="12" height="8" rx="1" stroke="white" stroke-width="1.5"/><path d="M4 7l6 5 6-5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>Lemlist</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#EA4B71"/><circle cx="5" cy="10" r="2" fill="white"/><circle cx="15" cy="6" r="2" fill="white"/><circle cx="15" cy="14" r="2" fill="white"/><path d="M7 10h3M10 10l3-4M10 10l3 4" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg>n8n</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF7A59"/><circle cx="10" cy="10" r="2.5" fill="white"/><path d="M10 4v2M10 14v2M4 10h2M14 10h2" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>HubSpot</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF4A00"/><path d="M6 6h8L8 10h8M6 14h8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Zapier</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#00C7B7"/><path d="M6 14L14 6M6 6h8v8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Make</div>
+    <!-- duplicate -->
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF6B2B"/><path d="M11 3L5 11h5l-1 6 7-9h-5l1-5z" fill="white"/></svg>Instantly</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#6366F1"/><path d="M13 6.5C13 5.1 11.88 4 10.5 4h-1C8.12 4 7 5.12 7 6.5S8.12 9 9.5 9h1c1.38 0 2.5 1.12 2.5 2.5S11.88 16 10.5 16h-1C8.12 16 7 14.9 7 13.5" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>Smartlead</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#0EA5E9"/><path d="M5 10.5l3.5 3.5 6.5-7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>OmniVerifier</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#1A1A2E"/><path d="M10 3c0 0 4 2 4 7-1.5.5-2.5.5-4 0-1.5.5-2.5.5-4 0C6 5 10 3 10 3z" fill="#7C3AED"/><circle cx="10" cy="11" r="2" fill="white"/></svg>Apollo</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#F59E0B"/><path d="M10 3l5 4-5 10-5-10z" fill="white" opacity=".9"/><path d="M5 7h10" stroke="white" stroke-width="1.2"/></svg>Clay</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#EF4444"/><rect x="4" y="6" width="12" height="8" rx="1" stroke="white" stroke-width="1.5"/><path d="M4 7l6 5 6-5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>Lemlist</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#EA4B71"/><circle cx="5" cy="10" r="2" fill="white"/><circle cx="15" cy="6" r="2" fill="white"/><circle cx="15" cy="14" r="2" fill="white"/><path d="M7 10h3M10 10l3-4M10 10l3 4" stroke="white" stroke-width="1.3" stroke-linecap="round"/></svg>n8n</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF7A59"/><circle cx="10" cy="10" r="2.5" fill="white"/><path d="M10 4v2M10 14v2M4 10h2M14 10h2" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>HubSpot</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#FF4A00"/><path d="M6 6h8L8 10h8M6 14h8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Zapier</div>
+    <div class="dl"><svg width="22" height="22" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="5" fill="#00C7B7"/><path d="M6 14L14 6M6 6h8v8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Make</div>
+  </div></div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="sec-tag r">⬡ Pricing</div>
+  <h2 class="r d1">Start free.<br>Scale when ready.</h2>
+  <p class="sec-sub r d2">Full SaaS from day one. Paystack billing — USD globally, NGN locally.</p>
+  <div class="pgrid">
+    <div class="pcard r">
+      <div class="plan-name">Free</div>
+      <div class="plan-price">$0</div>
+      <div class="plan-period">forever</div>
+      <div class="plan-credits">500 credits / month</div>
+      <div class="pf inc">Syntax validation</div>
+      <div class="pf inc">MX / domain check</div>
+      <div class="pf inc">Spam filter detector</div>
+      <div class="pf inc">Infra detector</div>
+      <div class="pf">Burn score</div>
+      <div class="pf">Fresh Only export</div>
+      <div class="pf">Marketplace</div>
+      <button class="plan-btn">Get started</button>
+    </div>
+    <div class="pcard r d1">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price"><sup>$</sup>19</div>
+      <div class="plan-period">per month</div>
+      <div class="plan-credits">25,000 credits / month</div>
+      <div class="pf inc">Everything in Free</div>
+      <div class="pf inc">Burn score</div>
+      <div class="pf inc">Fresh Only export</div>
+      <div class="pf inc">Bounce data submission</div>
+      <div class="pf">Marketplace</div>
+      <div class="pf">API access</div>
+      <button class="plan-btn">Get started</button>
+    </div>
+    <div class="pcard feat r d2">
+      <div class="feat-badge">Most popular</div>
+      <div class="plan-name">Growth</div>
+      <div class="plan-price"><sup>$</sup>49</div>
+      <div class="plan-period">per month</div>
+      <div class="plan-credits">100,000 credits / month</div>
+      <div class="pf inc">Everything in Starter</div>
+      <div class="pf inc">Marketplace access</div>
+      <div class="pf inc">Bounce history score</div>
+      <div class="pf inc">3 team seats</div>
+      <div class="pf">API access</div>
+      <button class="plan-btn fb">Get started</button>
+    </div>
+    <div class="pcard r d3">
+      <div class="plan-name">Pro</div>
+      <div class="plan-price"><sup>$</sup>99</div>
+      <div class="plan-period">per month</div>
+      <div class="plan-credits">500,000 credits / month</div>
+      <div class="pf inc">Everything in Growth</div>
+      <div class="pf inc">REST API access</div>
+      <div class="pf inc">API key management</div>
+      <div class="pf inc">10 team seats</div>
+      <div class="pf inc">Priority processing</div>
+      <button class="plan-btn">Get started</button>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section id="quote">
+  <div class="qm r">"</div>
+  <p class="qt r d1">List Intel helped our agency cut bounce rates in half and stop wasting sends on Mimecast-guarded inboxes we never knew about."</p>
+  <div class="qa r d2">
+    <div class="qaimg">DN</div>
+    <div><div class="qaname">David N.</div><div class="qarole">Head of Growth · B2B Agency</div></div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div id="stats">
+  <div class="si r"><div class="sn">8+</div><div class="sl">Intelligence layers</div></div>
+  <div class="si r d1"><div class="sn">95%</div><div class="sl">Gross margin from day 1</div></div>
+  <div class="si r d2"><div class="sn">$19</div><div class="sl">Starting price / month</div></div>
+</div>
+
+<!-- FOOTER CTA -->
+<section id="fcta">
+  <h2 class="fh r">Discover the full power of<br><span class="ul">List Intel</span> capabilities</h2>
+  <div class="fbtns r d1">
+    <button class="btn-wo">Get a Demo</button>
+    <button class="btn-yl">Start for Free</button>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="fg">
+    <div>
+      <div class="fbrand">List<span>Intel</span></div>
+      <p class="fdesc">Email list intelligence for cold email teams. Verify, enrich, and score before every send.</p>
+      <div class="fcon">✉ hello@listintel.io<br>Built in Nigeria · Serving the world</div>
+    </div>
+    <div class="fc"><h5>Solution</h5><a href="#">Burn Score</a><a href="#">Spam Filters</a><a href="#">Domain Age</a><a href="#">Marketplace</a><a href="#">REST API</a></div>
+    <div class="fc"><h5>Customers</h5><a href="#">Agencies</a><a href="#">Solo operators</a><a href="#">Developers</a><a href="#">Enterprise</a></div>
+    <div class="fc"><h5>Resources</h5><a href="#">Pricing</a><a href="#">API Docs</a><a href="#">Changelog</a><a href="#">Blog</a></div>
+  </div>
+  <div class="fbot">
+    <div class="fcopy">© 2026 List Intel. All rights reserved.</div>
+    <div class="fsoc"><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">GitHub</a></div>
+  </div>
+</footer>
+
+<script>
+const obs = new IntersectionObserver(es => es.forEach(e => { if(e.isIntersecting){e.target.classList.add('v');obs.unobserve(e.target);}}),{threshold:.1});
+document.querySelectorAll('.r').forEach(el => obs.observe(el));
+document.querySelectorAll('.tog').forEach(t => t.addEventListener('click',()=>{t.classList.toggle('on');t.classList.toggle('off');}));
+</script>

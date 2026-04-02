@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="main-layout" style="background: var(--bg); min-height: 100vh;">
+    <div class="topbar">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div>
+            <span class="lname">List<span>Intel</span></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);">
+            <div style="width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">
+                {{ user.full_name[:2].upper() if user.full_name else '??' }}
+            </div>
+            {{ user.full_name }}
+        </div>
+    </div>
+
+    <div style="padding:32px;max-width:600px;margin:0 auto;">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Getting started</div>
+        <div class="page-title">Welcome to List Intel, {{ user.full_name.split()[0] if user.full_name else 'there' }}</div>
+        <div class="page-sub">Complete these steps to get the most out of your account</div>
+
+        <div class="card">
+            <div class="card-body" style="padding:8px 16px;">
+                {% for step in steps %}
+                <div class="step-row">
+                    <div class="step-num {{ 'step-done' if step.status == 'done' else 'step-active' if step.status == 'active' else 'step-todo' }}">
+                        {% if step.status == 'done' %}
+                            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3.5 3.5 5.5-6" stroke="#1b6015" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        {% else %}
+                            {{ step.id }}
+                        {% endif %}
+                    </div>
+                    <div style="flex:1;">
+                        <div class="step-title" style="{{ 'text-decoration:line-through;opacity:.5;' if step.status == 'done' else '' }}">{{ step.title }}</div>
+                        <div class="step-sub" style="{{ 'opacity:.5;' if step.status == 'done' else '' }}">{{ step.sub }}</div>
+                    </div>
+                    {% if step.status == 'done' %}
+                        <span class="pill pg">Done</span>
+                    {% elif step.status == 'active' %}
+                        {% if step.id == 3 %}
+                        <button class="btn-sm-p" onclick="completeOnboarding()">Upload now →</button>
+                        {% else %}
+                        <span class="pill pb">Next up</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="pill py">Pending</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
+            <div>
+                <div style="font-size:13px;font-weight:700;margin-bottom:2px;">You're on the Free plan</div>
+                <div style="font-size:12px;color:var(--muted);">500 credits/month · Upgrade anytime for more</div>
+            </div>
+            <button class="btn-sm-p" onclick="window.location.href='/billing'">View plans →</button>
+        </div>
+        
+        <div style="text-align:center; padding-top:24px;">
+            <a href="javascript:void(0)" onclick="completeOnboarding(true)" style="font-size:13px; color:var(--muted); text-decoration:none;">Skip for now</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function completeOnboarding(skip = false) {
+    try {
+        await fetch('/api/v1/onboarding/complete', { 
+            method: 'POST', 
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ skip: skip }),
+            credentials: 'include' 
+        });
+    } catch(e) {}
+    window.location.href = '/dashboard';
+}
+</script>
+{% endblock %}

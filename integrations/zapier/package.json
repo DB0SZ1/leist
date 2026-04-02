@@ -1,0 +1,18 @@
+{
+  "name": "listintel-zapier",
+  "version": "1.0.0",
+  "description": "List Intel Zapier Integration",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --testTimeout 10000"
+  },
+  "dependencies": {
+    "zapier-platform-core": "14.1.2"
+  },
+  "devDependencies": {
+    "jest": "29.7.0"
+  },
+  "zapier": {
+    "appId": 123456
+  }
+}

@@ -1,0 +1,141 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Compare Jobs | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+  <div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:4px;"><a href="/jobs" style="color:var(--muted);text-decoration:none;">← Job History</a></div>
+    <div class="page-title">What Changed? — Diff Engine</div>
+    <div class="page-sub">Compare two completed jobs to see exactly what changed between list uploads.</div>
+  </div>
+</div>
+
+<!-- Job Selector -->
+<div class="table-card" style="margin-bottom:20px;">
+  <div class="table-header"><div class="th-title">Select jobs to compare</div></div>
+  <div style="padding:20px;">
+    <form method="GET" action="/jobs/compare" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+      <div style="flex:1;min-width:200px;">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">Job A (Before)</label>
+        <select name="a" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;">
+          <option value="">Select a job...</option>
+          {% for j in jobs %}
+          <option value="{{ j.id }}" {% if selected_a == j.id|string %}selected{% endif %}>
+            {{ j.input_file_path.split('_', 1)[1] if '_' in j.input_file_path else j.input_file_path }} — {{ j.created_at.strftime('%b %d, %H:%M') }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="font-size:18px;font-weight:800;color:var(--muted);padding-bottom:8px;">→</div>
+      <div style="flex:1;min-width:200px;">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px;">Job B (After)</label>
+        <select name="b" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;">
+          <option value="">Select a job...</option>
+          {% for j in jobs %}
+          <option value="{{ j.id }}" {% if selected_b == j.id|string %}selected{% endif %}>
+            {{ j.input_file_path.split('_', 1)[1] if '_' in j.input_file_path else j.input_file_path }} — {{ j.created_at.strftime('%b %d, %H:%M') }}
+          </option>
+          {% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn-primary" style="padding:10px 20px;">Compare</button>
+    </form>
+  </div>
+</div>
+
+{% if diff %}
+  {% if diff.error is defined %}
+  <div class="table-card">
+    <div style="padding:24px;text-align:center;color:#b31c1c;font-size:14px;">{{ diff.error }}</div>
+  </div>
+  {% else %}
+
+  <!-- Delta Stats -->
+  <div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:12px;margin-bottom:20px;">
+    <div class="stat-card">
+      <div class="sc-label">Added</div>
+      <div class="sc-val" style="color:#1b6015;">+{{ "{:,}".format(diff.added) }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">Removed</div>
+      <div class="sc-val" style="color:#b31c1c;">-{{ "{:,}".format(diff.removed) }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">Unchanged</div>
+      <div class="sc-val">{{ "{:,}".format(diff.unchanged) }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">Burn Δ</div>
+      <div class="sc-val" style="color:{% if diff.burn_delta > 0 %}#b31c1c{% elif diff.burn_delta < 0 %}#1b6015{% else %}var(--text){% endif %};">
+        {{ "+" if diff.burn_delta > 0 }}{{ "{:,}".format(diff.burn_delta) }}
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="sc-label">Fresh Δ</div>
+      <div class="sc-val" style="color:{% if diff.fresh_delta > 0 %}#1b6015{% elif diff.fresh_delta < 0 %}#b31c1c{% else %}var(--text){% endif %};">
+        {{ "+" if diff.fresh_delta > 0 }}{{ "{:,}".format(diff.fresh_delta) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Side-by-Side Comparison -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+    <!-- Job A -->
+    <div class="table-card">
+      <div class="table-header"><div class="th-title">Job A — Before</div></div>
+      <div style="padding:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div style="text-align:center;padding:12px;background:var(--bg);border-radius:8px;">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;">Total</div>
+            <div style="font-size:20px;font-weight:800;">{{ "{:,}".format(diff.job_a_total) }}</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:#f4fbf2;border-radius:8px;">
+            <div style="font-size:11px;color:#1b6015;font-weight:700;">Fresh</div>
+            <div style="font-size:20px;font-weight:800;color:#1b6015;">{{ "{:,}".format(diff.job_a_fresh) }}</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:#fef5f5;border-radius:8px;">
+            <div style="font-size:11px;color:#b31c1c;font-weight:700;">Burned</div>
+            <div style="font-size:20px;font-weight:800;color:#b31c1c;">{{ "{:,}".format(diff.job_a_burned) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job B -->
+    <div class="table-card">
+      <div class="table-header"><div class="th-title">Job B — After</div></div>
+      <div style="padding:16px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+          <div style="text-align:center;padding:12px;background:var(--bg);border-radius:8px;">
+            <div style="font-size:11px;color:var(--muted);font-weight:700;">Total</div>
+            <div style="font-size:20px;font-weight:800;">{{ "{:,}".format(diff.job_b_total) }}</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:#f4fbf2;border-radius:8px;">
+            <div style="font-size:11px;color:#1b6015;font-weight:700;">Fresh</div>
+            <div style="font-size:20px;font-weight:800;color:#1b6015;">{{ "{:,}".format(diff.job_b_fresh) }}</div>
+          </div>
+          <div style="text-align:center;padding:12px;background:#fef5f5;border-radius:8px;">
+            <div style="font-size:11px;color:#b31c1c;font-weight:700;">Burned</div>
+            <div style="font-size:20px;font-weight:800;color:#b31c1c;">{{ "{:,}".format(diff.job_b_burned) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% endif %}
+{% else %}
+  {% if not selected_a %}
+  <div class="table-card">
+    <div class="empty-state">
+      <div class="es-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M16 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V8z" stroke="#2a5426" stroke-width="1.7"/><path d="M16 3v5h5M9 13l2 2 4-4" stroke="#2a5426" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="es-title">Select two jobs to compare</div>
+      <div class="es-sub">Choose a "before" and "after" job to see exactly what emails were added, removed, and how burn scores changed.</div>
+    </div>
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

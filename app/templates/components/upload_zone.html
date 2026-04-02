@@ -1,0 +1,74 @@
+<div id="upload-wrapper"
+     ondragover="handleDragOver(event)" 
+     ondragleave="handleDragLeave(event)" 
+     ondrop="handleDrop(event)"
+     style="width: 100%;">
+     
+  <!-- Merge Toggle -->
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px;">
+    <span style="font-size:12px;font-weight:600;color:var(--muted);">Merge Mode</span>
+    <label class="switch">
+      <input type="checkbox" id="merge-toggle" onchange="toggleMergeMode()">
+      <span class="slider round"></span>
+    </label>
+  </div>
+
+  <!-- STATE: DEFAULT -->
+  <div id="uz-default" class="upload-zone">
+    <div style="width:40px;height:40px;border-radius:10px;background:rgba(42,84,38,.08);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 4v12M6 8l6-6 6 6" stroke="#2a5426" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18h16" stroke="#2a5426" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+    <div style="font-size:13px;font-weight:700;margin-bottom:3px;" id="uz-drop-title">Drop your CSV here</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;" id="uz-drop-sub">or <label style="cursor:pointer;color:var(--accent);font-weight:600;"><input type="file" id="file-input" style="display:none;" onchange="handleFileSelect(event)" accept=".csv"/>click to browse</label> · .csv · Max 50MB</div>
+  </div>
+
+  <!-- STATE: UPLOADING -->
+  <div id="uz-uploading" class="upload-zone uploading" style="padding:20px;display:none;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+      <div style="width:36px;height:36px;border-radius:8px;background:rgba(42,84,38,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#2a5426" stroke-width="1.8"/><path d="M14 2v6h6" stroke="#2a5426" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div style="flex:1;text-align:left;">
+        <div style="font-size:13px;font-weight:700;" id="uz-filename">filename.csv</div>
+        <div style="font-size:11px;color:var(--muted);" id="uz-filemeta">Detected email column: 'Email'</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;color:var(--accent);" id="uz-progress-pct">0%</span>
+    </div>
+    <div class="prog-track"><div id="uz-progress-fill" class="prog-fill" style="width:0%"></div></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px;" id="uz-progress-text">Uploading...</div>
+  </div>
+
+  <!-- STATE: COMPLETE -->
+  <div id="uz-complete" class="upload-zone" style="border-color:#1b8c12;border-style:solid;background:#f4fbf2;display:none;">
+    <div style="width:40px;height:40px;border-radius:50%;background:#d4eecf;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#1b6015" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#1b6015;margin-bottom:4px;">Processing complete</div>
+    <div style="font-size:12px;color:#1b6015;opacity:.8;margin-bottom:10px;" id="uz-result-meta">Total emails processed.</div>
+    <a href="#" id="uz-view-results" class="btn-sm-p" style="font-size:12px;text-decoration:none;">View results &rarr;</a>
+  </div>
+
+  <!-- STATE: ERROR -->
+  <div id="uz-error" class="upload-zone error" style="display:none;">
+    <div style="width:40px;height:40px;border-radius:10px;background:#fcd8d8;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 8v4m0 4h.01" stroke="#b31c1c" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#b31c1c" stroke-width="1.8"/></svg>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#b31c1c;margin-bottom:3px;" id="uz-error-title">Upload failed</div>
+    <div style="font-size:12px;color:#b31c1c;opacity:.8;margin-bottom:10px;" id="uz-error-msg">Something went wrong</div>
+    <button class="btn-sm-g" style="font-size:12px;" onclick="resetUploadZone()">Try again</button>
+  </div>
+
+  <!-- STATE: NO CREDITS -->
+  <div id="uz-no-credits" class="upload-zone error" style="border-color:#f59e0b;background:#fffbee;display:none;">
+    <div style="width:40px;height:40px;border-radius:10px;background:#fde3c0;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" stroke="#964800" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#964800;margin-bottom:3px;">Not enough credits</div>
+    {% if user.plan_id == 'free' and user.credits_monthly == 0 %}
+    <div style="font-size:12px;color:#964800;opacity:.8;margin-bottom:10px;" id="uz-credits-msg">Free trial requires a business email domain. Upgrade to a paid plan.</div>
+    {% else %}
+    <div style="font-size:12px;color:#964800;opacity:.8;margin-bottom:10px;" id="uz-credits-msg">You don't have enough credits for this list.</div>
+    {% endif %}
+    <button class="btn-sm-p" style="font-size:12px;background:#f59e0b;" onclick="window.location.href='/billing'">Upgrade plan &rarr;</button>
+  </div>
+</div>

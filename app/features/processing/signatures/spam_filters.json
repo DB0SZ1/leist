@@ -1,0 +1,76 @@
+{
+    "Mimecast": [
+        "mimecast.com",
+        "mimecast.co.za",
+        "mimecast-offshore"
+    ],
+    "Proofpoint": [
+        "pphosted.com",
+        "proofpoint.com",
+        "ppe-hosted.com"
+    ],
+    "Barracuda": [
+        "barracudanetworks.com",
+        "barracuda.com",
+        "ess.barracuda"
+    ],
+    "Ironscales": [
+        "ironscales.com"
+    ],
+    "Sophos": [
+        "sophos.com",
+        "reflexion.net"
+    ],
+    "Cisco IronPort": [
+        "iphmx.com",
+        "ironport.com",
+        "ciscosystems"
+    ],
+    "Forcepoint": [
+        "forcepoint.com",
+        "mailcontrol.com"
+    ],
+    "Avanan": [
+        "avanan.net",
+        "avanan.com"
+    ],
+    "Microsoft Defender": [
+        "mail.protection.outlook.com",
+        "eo.outlook.com"
+    ],
+    "Abnormal Security": [
+        "abnormalsecurity.com"
+    ],
+    "FortiMail": [
+        "fortimail.com",
+        "fortinet.com"
+    ],
+    "SpamTitan": [
+        "spamtitan.com"
+    ],
+    "Trend Micro": [
+        "trendmicro.com",
+        "tmes.trendmicro"
+    ],
+    "Symantec": [
+        "messagelabs.com",
+        "symantec.com",
+        "broadcom.com"
+    ],
+    "FireEye": [
+        "fireeye.com"
+    ],
+    "Hornet Security": [
+        "hornetsecurity.com",
+        "antispameurope.com"
+    ],
+    "ZeroSpam": [
+        "zerospam.ca"
+    ],
+    "SpamHero": [
+        "spamhero.com"
+    ],
+    "MailGuard": [
+        "mailguard.com.au"
+    ]
+}

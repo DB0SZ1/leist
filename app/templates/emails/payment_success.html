@@ -1,0 +1,48 @@
+{% extends "emails/layout.html" %}
+
+{% block body %}
+<!-- 
+Expected context variables:
+- plan_name: "Pro Plan", "Growth Plan", etc.
+- amount: "$49.00"
+- date: "Oct 24, 2026"
+- receipt_url: "https://paystack.com/..."
+-->
+<div style="text-align:center; padding:16px 0;">
+    <div style="width:48px;height:48px;border-radius:50%;background:#d4eecf;display:inline-block;vertical-align:middle;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style="margin-top:12px;">
+            <path d="M5 12l5 5L19 7" stroke="#1b6015" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+    </div>
+</div>
+
+<h2 style="text-align:center; margin-bottom:8px;">Payment Successful!</h2>
+<p style="text-align:center; color:#475467; margin-bottom:32px;">
+    Thank you for subscribing to the <strong>{{ plan_name|default("Pro Plan") }}</strong>. Your account has been upgraded instantly and credits have been replenished.
+</p>
+
+<table width="100%" style="border-spacing:0; background-color:#fafbfc; border-radius:12px; border:1px solid rgba(0,0,0,0.05); margin-bottom:24px;">
+    <tr>
+        <td style="padding:16px; border-bottom:1px solid rgba(0,0,0,0.05);">
+            <span style="color:#475467; font-size:14px;">Amount Paid</span>
+        </td>
+        <td style="padding:16px; text-align:right; border-bottom:1px solid rgba(0,0,0,0.05);">
+            <strong style="font-size:16px;">{{ amount|default("$49.00") }}</strong>
+        </td>
+    </tr>
+    <tr>
+        <td style="padding:16px;">
+            <span style="color:#475467; font-size:14px;">Date</span>
+        </td>
+        <td style="padding:16px; text-align:right;">
+            <strong style="font-size:14px;">{{ date|default("Oct 24, 2026") }}</strong>
+        </td>
+    </tr>
+</table>
+
+<div class="btn-wrap">
+    <a href="{{ receipt_url|default('#') }}" class="btn" style="background-color:#f1f5f9; color:#1e293b; border:1px solid #cbd5e1;">View Receipt</a>
+    &nbsp;&nbsp;
+    <a href="{{ dashboard_url|default('#') }}" class="btn">Go to Dashboard</a>
+</div>
+{% endblock %}

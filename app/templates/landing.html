@@ -1,0 +1,1412 @@
+{% extends "base.html" %}
+{% block title %}List Intel — Know Before You Send{% endblock %}
+{% block description %}Cold email list intelligence. Burn scores, spam filter detection, domain age, infra tagging, and a marketplace to trade burned lists. One upload.{% endblock %}
+
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f2f1ec;--white:#fff;--dark:#172617;--dark2:#1c2e1c;
+  --accent:#2a5426;--accent2:#3d7a36;--yellow:#cce836;
+  --text:#172617;--muted:#6a796a;--border:#d8d8cf;
+  --font:'Bricolage Grotesque',Georgia,sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;}
+
+/* ── NAV ─────────────────────────────────────────────────────── */
+nav{position:sticky;top:0;z-index:200;background:rgba(242,241,236,.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 48px;display:flex;align-items:center;justify-content:space-between;height:60px;transition:background .3s,box-shadow .3s;}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+.lmark{width:28px;height:28px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.lname{font-size:16px;font-weight:800;color:var(--text);letter-spacing:-.4px;}
+.lname span{color:var(--accent);}
+.nlinks{display:flex;gap:26px;}
+.nlinks a{font-size:14px;color:var(--muted);text-decoration:none;transition:color .2s;}
+.nlinks a:hover{color:var(--text);}
+.nr{display:flex;gap:10px;align-items:center;}
+.bgh{background:none;border:none;font-family:var(--font);font-size:14px;color:var(--muted);cursor:pointer;padding:8px 14px;border-radius:6px;transition:all .2s;text-decoration:none;display:inline-block;}
+.bgh:hover{background:rgba(0,0,0,.05);color:var(--text);}
+.bcta{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:7px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-block;}
+.bcta:hover{background:var(--accent2);transform:translateY(-1px);}
+
+/* ── HERO ────────────────────────────────────────────────────── */
+#hero{padding:80px 48px 0;text-align:center;position:relative;min-height:580px;overflow:hidden;}
+.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.09em;text-transform:uppercase;margin-bottom:20px;border:1px solid rgba(42,84,38,.25);background:rgba(42,84,38,.07);padding:5px 13px;border-radius:100px;}
+.edot{width:6px;height:6px;border-radius:50%;background:var(--accent2);}
+h1{font-size:clamp(42px,6vw,80px);font-weight:800;line-height:.96;letter-spacing:-.035em;color:var(--text);max-width:780px;margin:0 auto 20px;}
+.uw{position:relative;display:inline-block;color:var(--accent);}
+.uw::after{content:'';position:absolute;left:0;bottom:-3px;width:100%;height:5px;background:var(--yellow);border-radius:2px;}
+.hsub{font-size:17px;color:var(--muted);max-width:460px;margin:0 auto 34px;line-height:1.65;}
+.hbtns{display:flex;justify-content:center;gap:12px;margin-bottom:56px;}
+.bp{background:var(--accent);color:#fff;border:none;padding:13px 26px;border-radius:8px;font-family:var(--font);font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;}
+.bp:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(42,84,38,.25);}
+.bo{background:#fff;color:var(--text);border:1px solid var(--border);padding:13px 26px;border-radius:8px;font-family:var(--font);font-size:15px;font-weight:500;cursor:pointer;transition:all .2s;}
+.bo:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── BLURRY PAPERS ───────────────────────────────────────────── */
+.blurry-papers{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;z-index:0;pointer-events:none;}
+.blurry-paper{position:absolute;background:rgba(255,255,255,.9);border:1px solid rgba(0,0,0,.07);box-shadow:0 8px 32px rgba(0,0,0,.06);padding:32px;border-radius:8px;filter:blur(2px) opacity(75%);color:#888;font-family:monospace;font-size:10px;line-height:1.8;overflow:hidden;}
+.bp1{top:5%;left:-5%;width:400px;height:500px;transform:rotate(-12deg);animation:float1 15s ease-in-out infinite alternate;}
+.bp2{top:20%;right:-10%;width:500px;height:600px;transform:rotate(8deg);animation:float2 18s ease-in-out infinite alternate;filter:blur(3px) opacity(65%);}
+.bp3{top:60%;left:15%;width:350px;height:450px;transform:rotate(-6deg);animation:float1 20s ease-in-out infinite alternate-reverse;}
+@keyframes float1{0%{transform:translateY(0) rotate(-12deg);}100%{transform:translateY(-40px) rotate(-8deg);}}
+@keyframes float2{0%{transform:translateY(0) rotate(8deg);}100%{transform:translateY(-50px) rotate(12deg);}}
+
+/* ── FLOATERS ────────────────────────────────────────────────── */
+.floaters{position:absolute;top:60px;left:0;right:0;height:520px;pointer-events:none;z-index:1;}
+.hcontent{position:relative;z-index:2;}
+.fc{position:absolute;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:14px;padding:10px 14px 10px 10px;box-shadow:0 4px 20px rgba(0,0,0,.09),0 1px 4px rgba(0,0,0,.05);pointer-events:auto;white-space:nowrap;transition:box-shadow .2s,transform .15s;}
+.fc:hover{box-shadow:0 10px 36px rgba(0,0,0,.14);transform:translateY(-3px) scale(1.02)!important;}
+.favatar{width:46px;height:46px;border-radius:10px;overflow:hidden;flex-shrink:0;background:#e8e8e0;}
+.favatar img{width:100%;height:100%;object-fit:cover;display:block;}
+.finfo{text-align:left;}
+.fname-fc{font-size:13px;font-weight:700;color:var(--text);line-height:1.2;}
+.frole{font-size:11px;color:var(--muted);font-weight:500;margin-top:1px;}
+.ftag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;margin-top:4px;letter-spacing:.02em;}
+.fdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.fc1{top:110px;left:clamp(4px,3%,60px);}
+.fc2{top:90px;right:clamp(4px,3%,60px);}
+.fc3{top:290px;left:clamp(4px,1%,30px);}
+.fc4{top:270px;right:clamp(4px,1%,30px);}
+@keyframes fl1{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+@keyframes fl2{0%,100%{transform:translateY(-5px);}50%{transform:translateY(5px);}}
+@keyframes fl3{0%,100%{transform:translateY(-3px);}50%{transform:translateY(7px);}}
+@keyframes fl4{0%,100%{transform:translateY(0);}40%{transform:translateY(-8px);}80%{transform:translateY(3px);}}
+@keyframes fi1{0%{opacity:0;transform:translateY(16px);}30%{opacity:1;transform:translateY(0);}100%{opacity:1;transform:translateY(-9px);}}
+.fc1{animation:fi1 .6s ease .3s both,fl1 6s ease-in-out 1s infinite;}
+.fc2{animation:fi1 .6s ease .45s both,fl2 7s ease-in-out 1.1s infinite;}
+.fc3{animation:fi1 .6s ease .6s both,fl3 5.5s ease-in-out 1.2s infinite;}
+.fc4{animation:fi1 .6s ease .75s both,fl4 6.5s ease-in-out 1.3s infinite;}
+.arrow{position:absolute;font-size:15px;color:var(--accent);opacity:.35;pointer-events:none;}
+.ar1{top:158px;left:calc(clamp(4px,3%,60px) + 220px);animation:fl1 5s ease-in-out infinite;}
+.ar2{top:140px;right:calc(clamp(4px,3%,60px) + 210px);transform:scaleX(-1);animation:fl2 5s ease-in-out infinite .4s;}
+@keyframes fu{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+.ha{opacity:0;animation:fu .6s ease forwards;}
+.ha1{animation-delay:.05s;}.ha2{animation-delay:.15s;}.ha3{animation-delay:.25s;}.ha4{animation-delay:.35s;}
+
+/* ── EXCEL TABLE ─────────────────────────────────────────────── */
+.hero-card{max-width:960px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 4px 40px rgba(0,0,0,.1),0 1px 3px rgba(0,0,0,.05);}
+.tbar{background:#eeede7;border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:7px;}
+.wdot{width:11px;height:11px;border-radius:50%;}
+.fname2{font-size:12px;color:var(--muted);margin-left:6px;font-weight:500;}
+.fname2 b{color:var(--accent);}
+.toolbar{background:#f5f4ee;border-bottom:1px solid var(--border);padding:5px 14px;display:flex;align-items:center;gap:14px;font-size:11px;color:var(--muted);}
+.tbtn{background:#fff;border:1px solid #ddddd4;padding:3px 10px;border-radius:4px;font-size:11px;color:var(--muted);font-family:var(--font);cursor:default;}
+.exc-scroll{overflow-x:auto;}
+table.xl{width:100%;border-collapse:collapse;min-width:920px;}
+table.xl thead th{padding:7px 10px;background:#e6e6de;border-right:1px solid #d0d0c8;border-bottom:2px solid #c4c4bc;font-size:9px;font-weight:700;color:#666;letter-spacing:.06em;text-transform:uppercase;text-align:left;white-space:nowrap;}
+table.xl thead th.rn{background:#ddddd5;color:#aaa;text-align:center;width:30px;padding:7px 6px;}
+table.xl thead th.hi{background:#c4d8c0;color:var(--accent);}
+table.xl tbody tr:nth-child(odd){background:#fff;}
+table.xl tbody tr:nth-child(even){background:#f9f9f5;}
+table.xl tbody tr:hover{background:#eff4ee;}
+table.xl tbody tr.sel{background:#e6f3e4!important;}
+table.xl td{padding:6px 10px;border-right:1px solid #eeeee6;border-bottom:1px solid #eeeee6;font-size:11.5px;color:#333;white-space:nowrap;vertical-align:middle;}
+table.xl td.rn{background:#f2f2ea;color:#bbb;text-align:center;font-size:10px;border-right:2px solid #d4d4cc;font-weight:600;width:30px;}
+table.xl td.em{font-weight:600;color:#111;min-width:160px;}
+table.xl td.hi2{background:#f0f8ee!important;}
+table.xl td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.p{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.02em;}
+.pg{background:#d4eecf;color:#1b6015;}.pr{background:#fcd8d8;color:#b31c1c;}
+.po{background:#fde3c0;color:#964800;}.pb{background:#d6e8fc;color:#1a4c9a;}
+.py{background:#fdf5c0;color:#786500;}.pm{background:#ecd8fc;color:#5a1a96;}
+.sbw{display:inline-flex;align-items:center;gap:5px;}
+.sb{width:46px;height:4px;background:#e8e8e0;border-radius:2px;overflow:hidden;display:inline-block;}
+.sbf{height:100%;border-radius:2px;display:block;}
+
+/* ── MARQUEE ─────────────────────────────────────────────────── */
+.mq-sec{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:#fff;padding:18px 0;margin-top:52px;overflow:hidden;}
+.mq-label{text-align:center;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:14px;}
+.mq-track{display:flex;overflow:hidden;position:relative;}
+.mq-track::before,.mq-track::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none;}
+.mq-track::before{left:0;background:linear-gradient(to right,#fff,transparent);}
+.mq-track::after{right:0;background:linear-gradient(to left,#fff,transparent);}
+.mq-inner{display:flex;animation:mq 30s linear infinite;white-space:nowrap;}
+.mq-inner:hover{animation-play-state:paused;}
+.li{display:inline-flex;align-items:center;gap:9px;padding:0 28px;border-right:1px solid var(--border);font-size:13px;font-weight:700;color:#999;flex-shrink:0;transition:color .2s;background:transparent;border-top:none;border-bottom:none;border-left:none;}
+.li:hover{color:var(--muted);}
+@keyframes mq{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+/* ── SHARED SECTION STYLES ───────────────────────────────────── */
+.sec-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;border:1px solid rgba(42,84,38,.2);background:rgba(42,84,38,.06);padding:5px 12px;border-radius:100px;}
+h2{font-size:clamp(28px,4vw,48px);font-weight:800;letter-spacing:-.03em;line-height:1.08;margin-bottom:12px;}
+.ssub{font-size:16px;color:var(--muted);max-width:480px;line-height:1.65;margin-bottom:52px;}
+
+/* ── 8 LAYERS PIPELINE — BENTO GRID ─────────────────────────── */
+#pipeline{padding:100px 48px;background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+#pipeline .inner{max-width:1160px;margin:0 auto;}
+
+/* Bento: 12-column base, named rows for intentional sizing */
+.pipeline-bento{
+  display:grid;
+  grid-template-columns:repeat(12,1fr);
+  grid-auto-rows:auto;
+  gap:12px;
+  margin-top:56px;
+}
+
+/* Card sizing assignments */
+.lc-burn    {grid-column:span 7;} /* flagship — wide left */
+.lc-spam    {grid-column:span 5;} /* right of flagship */
+.lc-infra   {grid-column:span 4;} /* row 2 left */
+.lc-catchall{grid-column:span 4;} /* row 2 mid */
+.lc-bounce  {grid-column:span 4;} /* row 2 right */
+.lc-domain  {grid-column:span 6;} /* row 3 left */
+.lc-ai      {grid-column:span 6;} /* row 3 right */
+.lc-syntax  {grid-column:span 12;} /* full-width footer row */
+
+.lc{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:26px;transition:box-shadow .22s,transform .22s;position:relative;overflow:hidden;}
+.lc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity .22s;}
+.lc:hover{box-shadow:0 6px 28px rgba(0,0,0,.07);transform:translateY(-2px);}
+.lc:hover::after{opacity:1;}
+
+/* Burn Score card — dark flagship */
+.lc-burn{background:var(--dark);border-color:transparent;}
+.lc-burn::after{background:linear-gradient(90deg,#cce836,#4ade80);}
+.lc-burn .layer-num{color:rgba(255,255,255,.3);}
+.lc-burn .layer-name{color:#fff;}
+.lc-burn .layer-desc{color:rgba(255,255,255,.5);}
+.lc-burn .layer-tag{background:rgba(255,255,255,.08);color:rgba(255,255,255,.55);}
+.lc-burn .layer-icon{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.1);}
+
+/* Syntax card — accent bg */
+.lc-syntax{background:rgba(42,84,38,.04);border-color:rgba(42,84,38,.15);}
+.lc-syntax-inner{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:24px;align-items:center;}
+
+.layer-num{font-size:10px;font-weight:800;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;opacity:.65;}
+.layer-icon{width:38px;height:38px;border-radius:9px;background:rgba(42,84,38,.09);border:1px solid rgba(42,84,38,.14);display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.layer-name{font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px;letter-spacing:-.02em;}
+.layer-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.layer-tag{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--accent);background:rgba(42,84,38,.08);padding:3px 10px;border-radius:100px;letter-spacing:.04em;}
+
+/* Burn flagship inner */
+.flagship-inner{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+.flagship-table{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;}
+.ft-head{background:rgba(255,255,255,.06);padding:7px 12px;font-size:9px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.08em;text-transform:uppercase;display:grid;grid-template-columns:1fr 72px 72px;}
+.ft-row{padding:7px 12px;font-size:11px;display:grid;grid-template-columns:1fr 72px 72px;border-top:1px solid rgba(255,255,255,.04);align-items:center;}
+.ft-hash{font-family:monospace;color:rgba(255,255,255,.38);font-size:10px;}
+.ft-seen{color:rgba(255,255,255,.45);font-size:11px;text-align:right;}
+.ft-tag-cell{text-align:right;}
+.tag-fresh{color:#4ade80;font-size:10px;font-weight:700;}
+.tag-warm{color:#fbbf24;font-size:10px;font-weight:700;}
+.tag-burned{color:#f87171;font-size:10px;font-weight:700;}
+.tag-torched{color:#ef4444;font-size:10px;font-weight:700;}
+
+/* Syntax 4-column stat blocks */
+.syn-stat{text-align:center;padding:16px 12px;background:#fff;border:1px solid var(--border);border-radius:12px;}
+.syn-stat-val{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.03em;}
+.syn-stat-label{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* ── MARKETPLACE ─────────────────────────────────────────────── */
+#marketplace{padding:100px 48px;}
+#marketplace .inner{max-width:1160px;margin:0 auto;}
+.mkt-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;margin-top:56px;}
+.mkt-visual{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.mkt-head{background:#fafaf6;border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;}
+.mkt-htitle{font-size:13px;font-weight:700;}
+.mkt-card{padding:14px 18px;border-bottom:1px solid var(--border);}
+.mkt-card:last-child{border-bottom:none;}
+.mkt-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.mkt-name{font-size:13px;font-weight:700;color:var(--text);}
+.mkt-meta{font-size:11px;color:var(--muted);}
+.mkt-stats{display:flex;gap:16px;margin-top:8px;}
+.mkt-stat{font-size:11px;color:var(--muted);}
+.mkt-stat b{color:var(--text);}
+.mkt-actions{display:flex;gap:8px;margin-top:10px;}
+.mbtn-p{background:var(--accent);color:#fff;border:none;padding:6px 14px;border-radius:6px;font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;}
+.mbtn-g{background:transparent;color:var(--muted);border:1px solid var(--border);padding:6px 14px;border-radius:6px;font-family:var(--font);font-size:11px;cursor:pointer;}
+
+.mkt-copy h3{font-size:clamp(24px,3.5vw,36px);font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-bottom:16px;}
+.mkt-copy p{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px;}
+.mkt-steps{display:flex;flex-direction:column;gap:14px;}
+.mkt-step{display:flex;align-items:flex-start;gap:14px;}
+.mkt-step-num{width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.mkt-step-body{font-size:14px;color:var(--text);line-height:1.5;}
+.mkt-step-body b{color:var(--accent);}
+
+/* ── FRESH ONLY ──────────────────────────────────────────────── */
+#freshonly{padding:100px 48px;background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+#freshonly .inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+.fo-copy h2{margin-bottom:16px;}
+.fo-copy p{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px;}
+.fo-feature{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px;}
+.fo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;}
+.fo-feature-text{font-size:14px;color:var(--text);line-height:1.5;}
+.fo-feature-text span{color:var(--muted);}
+.fo-visual{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:24px;}
+.fo-panel-title{font-size:13px;font-weight:700;margin-bottom:6px;}
+.fo-panel-sub{font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.5;}
+.fo-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #eeeee6;font-size:13px;color:var(--text);}
+.fo-row:last-of-type{border-bottom:none;}
+.tog{width:36px;height:20px;border-radius:100px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.tog.on{background:var(--accent);}.tog.off{background:#d8d8d0;}
+.tog::after{content:'';position:absolute;top:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s;}
+.tog.on::after{left:19px;}.tog.off::after{left:3px;}
+.fo-result{background:rgba(42,84,38,.06);border:1px solid rgba(42,84,38,.15);border-radius:10px;padding:14px;margin-top:16px;}
+.fo-result-num{font-size:24px;font-weight:800;color:var(--accent);letter-spacing:-.03em;}
+.fo-result-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.fo-dl-btn{display:flex;width:100%;margin-top:14px;background:var(--accent);color:#fff;border:none;padding:11px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;justify-content:center;align-items:center;gap:6px;}
+
+/* ── BENTO FEATURES ──────────────────────────────────────────── */
+#features{padding:96px 48px;max-width:1160px;margin:0 auto;}
+.bento{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.bc{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;overflow:hidden;transition:box-shadow .25s,transform .25s;}
+.bc:hover{box-shadow:0 8px 32px rgba(0,0,0,.09);transform:translateY(-2px);}
+.bc.wide{grid-column:1/3;}
+.bt{font-size:19px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:-.02em;}
+.bd{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:18px;}
+.xbtn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:7px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;}
+.xbtn:hover{background:var(--accent2);}
+.tr{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0e8;font-size:13px;color:var(--text);}
+.tr:last-child{border-bottom:none;}
+.tcard{background:#f7f7f2;border:1px solid var(--border);border-radius:9px;padding:11px 14px;margin-bottom:8px;}
+.tcard:last-child{margin-bottom:0;}
+.tt{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;}
+.tname{font-size:13px;font-weight:700;color:var(--text);}
+.tsub{font-size:11px;color:var(--muted);}
+
+/* ── API SECTION ─────────────────────────────────────────────── */
+#api{padding:100px 48px;background:var(--dark);}
+#api .inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;}
+#api h2{color:#fff;}
+#api .ssub{color:rgba(255,255,255,.45);}
+#api .sec-tag{background:rgba(255,255,255,.07);color:rgba(255,255,255,.5);border-color:rgba(255,255,255,.1);}
+.api-features{display:flex;flex-direction:column;gap:14px;margin-top:28px;}
+.api-feat{display:flex;align-items:flex-start;gap:12px;}
+.api-feat-icon{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.api-feat-text h4{font-size:14px;font-weight:700;color:#fff;margin-bottom:3px;}
+.api-feat-text p{font-size:13px;color:rgba(255,255,255,.45);line-height:1.5;}
+.code-block{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;}
+.code-head{background:rgba(255,255,255,.05);padding:12px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.06);}
+.code-dot{width:10px;height:10px;border-radius:50%;}
+.code-lang{font-size:11px;color:rgba(255,255,255,.3);font-family:monospace;margin-left:6px;}
+.code-body{padding:20px 22px;font-family:monospace;font-size:12px;line-height:1.9;color:rgba(255,255,255,.65);}
+.ck{color:#7dd3fc;}.cv{color:#a5f3fc;}.cs{color:#86efac;}.cm{color:rgba(255,255,255,.3);}
+.api-tiers{display:flex;flex-direction:column;gap:8px;margin-top:20px;}
+.api-tier{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:8px;font-size:13px;}
+.api-tier-name{color:rgba(255,255,255,.6);}
+.api-tier-limit{font-size:11px;font-weight:700;color:var(--yellow);}
+
+/* ── INTEGRATIONS ────────────────────────────────────────────── */
+#integrations{background:var(--dark);padding:80px 0;overflow:hidden;border-top:1px solid rgba(255,255,255,.06);}
+.int-ctr{max-width:860px;margin:0 auto;text-align:center;padding:0 48px;}
+#integrations h2{color:#fff;}
+#integrations .ssub{color:rgba(255,255,255,.42);margin:0 auto 36px;}
+#integrations .sec-tag{background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);border-color:rgba(255,255,255,.1);}
+.int-btn{background:none;border:none;font-family:var(--font);font-size:14px;color:rgba(255,255,255,.4);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:color .2s;margin-bottom:44px;}
+.int-btn:hover{color:var(--yellow);}
+.dk-mq{overflow:hidden;position:relative;padding:8px 0;}
+.dk-mq::before,.dk-mq::after{content:'';position:absolute;top:0;bottom:0;width:100px;z-index:2;pointer-events:none;}
+.dk-mq::before{left:0;background:linear-gradient(to right,var(--dark),transparent);}
+.dk-mq::after{right:0;background:linear-gradient(to left,var(--dark),transparent);}
+.dk-inner{display:flex;animation:mq 24s linear infinite;}
+.dk-inner:hover{animation-play-state:paused;}
+.dl{display:inline-flex;align-items:center;gap:10px;padding:10px 28px;margin:0;white-space:nowrap;flex-shrink:0;font-size:13px;font-weight:700;color:rgba(255,255,255,.45);cursor:default;transition:color .2s;background:transparent;border:none;}
+.dl:hover{color:rgba(255,255,255,.85);}
+
+/* ── PRICING ─────────────────────────────────────────────────── */
+#pricing{padding:96px 48px;max-width:1160px;margin:0 auto;}
+.pricing-accordion{max-width:1160px;margin:30px auto 0;background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;}
+.pa-header{padding:24px 32px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;background:#fafaf5;}
+.pa-title{font-size:18px;font-weight:700;color:var(--text);}
+.pa-icon{transition:transform .3s;font-size:20px;color:var(--muted);}
+.pa-content{padding:0 32px;max-height:0;overflow:hidden;transition:max-height .4s ease,padding .4s ease;}
+.pricing-accordion.open .pa-content{max-height:1200px;padding:32px;}
+.pricing-accordion.open .pa-icon{transform:rotate(180deg);}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.pcard{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:28px;position:relative;transition:box-shadow .25s,transform .25s;}
+.pcard:hover{box-shadow:0 8px 32px rgba(0,0,0,.09);transform:translateY(-2px);}
+.pcard.feat{border:2px solid var(--accent);}
+.fbadge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:.07em;padding:4px 12px;border-radius:0 0 8px 8px;text-transform:uppercase;white-space:nowrap;}
+.plan-name{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.09em;text-transform:uppercase;margin-bottom:10px;}
+.plan-price{font-size:40px;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1;margin-bottom:3px;}
+.plan-price sup{font-size:18px;font-weight:700;vertical-align:super;}
+.plan-period{font-size:12px;color:var(--muted);margin-bottom:16px;}
+.plan-credits{font-size:13px;font-weight:700;color:var(--accent2);margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);}
+.pf{font-size:13px;color:var(--muted);padding:5px 0;display:flex;align-items:center;gap:7px;}
+.pf::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--border);flex-shrink:0;}
+.pf.inc{color:var(--text);}.pf.inc::before{background:var(--accent);}
+.plan-btn{display:block;width:100%;margin-top:24px;padding:11px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid var(--border);background:transparent;color:var(--muted);}
+.plan-btn:hover{color:var(--text);border-color:var(--accent);}
+.plan-btn.fb{background:var(--accent);border-color:var(--accent);color:#fff;}
+.plan-btn.fb:hover{background:var(--accent2);}
+
+/* ── QUOTE ───────────────────────────────────────────────────── */
+#quote{padding:96px 48px;text-align:center;}
+.qm{font-size:52px;color:var(--accent);font-family:Georgia,serif;line-height:.5;margin-bottom:16px;}
+.qt{font-size:clamp(20px,3vw,32px);font-weight:700;color:var(--text);max-width:680px;margin:0 auto 28px;line-height:1.3;letter-spacing:-.02em;}
+.qa{display:flex;align-items:center;gap:12px;justify-content:center;}
+.qaimg{width:44px;height:44px;border-radius:50%;overflow:hidden;background:#e0e0d8;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--accent);}
+.qaname{font-size:14px;font-weight:700;color:var(--text);text-align:left;}
+.qarole{font-size:12px;color:var(--muted);}
+
+/* ── STATS ───────────────────────────────────────────────────── */
+#stats{padding:56px 48px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;justify-content:center;gap:80px;flex-wrap:wrap;}
+.si{text-align:center;}
+.sn{font-size:54px;font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1;}
+.sl{font-size:13px;color:var(--muted);margin-top:4px;}
+
+/* ── FOOTER CTA ──────────────────────────────────────────────── */
+#fcta{background:var(--dark);padding:72px 48px;display:flex;align-items:center;justify-content:space-between;gap:40px;flex-wrap:wrap;}
+.fh{color:#fff;font-size:clamp(24px,4vw,44px);font-weight:800;letter-spacing:-.03em;line-height:1.1;max-width:480px;}
+.fh .ul{text-decoration:underline;text-underline-offset:5px;text-decoration-color:var(--yellow);}
+.fbtns{display:flex;gap:12px;flex-shrink:0;}
+.byl{background:var(--yellow);color:var(--dark);border:none;padding:13px 22px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.byl:hover{background:#d6f040;transform:translateY(-1px);}
+.bwo{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.2);padding:13px 22px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all .2s;}
+.bwo:hover{border-color:rgba(255,255,255,.5);}
+
+/* ── FOOTER ──────────────────────────────────────────────────── */
+footer{background:var(--dark2);padding:44px 48px 26px;border-top:1px solid rgba(255,255,255,.08);}
+.fg{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:36px;margin-bottom:40px;}
+.fbrand{font-size:16px;font-weight:800;font-family:var(--font);color:#fff;margin-bottom:9px;}
+.fbrand span{color:#4a8c42;}
+.fdesc{font-size:13px;color:rgba(255,255,255,.36);line-height:1.6;max-width:210px;}
+.fcon{font-size:12px;color:rgba(255,255,255,.32);margin-top:10px;line-height:1.9;}
+.fc2 h5{font-size:11px;font-weight:700;color:rgba(255,255,255,.28);letter-spacing:.09em;text-transform:uppercase;margin-bottom:13px;}
+.fc2 a{display:block;font-size:13px;color:rgba(255,255,255,.48);text-decoration:none;margin-bottom:8px;transition:color .2s;}
+.fc2 a:hover{color:#fff;}
+.fbot{display:flex;justify-content:space-between;align-items:center;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);}
+.fcopy{font-size:12px;color:rgba(255,255,255,.26);}
+.fsoc{display:flex;gap:16px;}
+.fsoc a{font-size:12px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s;}
+.fsoc a:hover{color:#fff;}
+
+/* ── SCROLL REVEAL ───────────────────────────────────────────── */
+.r{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;}
+.r.v{opacity:1;transform:none;}
+.d1{transition-delay:.08s;}.d2{transition-delay:.16s;}.d3{transition-delay:.24s;}.d4{transition-delay:.32s;}
+
+/* ── RESPONSIVE ──────────────────────────────────────────────── */
+
+/* Tablet: 768px – 1024px */
+@media(max-width:1024px){
+  nav{padding:0 24px;}
+  .nlinks{gap:18px;}
+
+  #hero{padding:60px 24px 0;}
+  .fc1,.fc2,.fc3,.fc4{display:none;}
+  .blurry-papers{opacity:.4;}
+
+  .hero-card{margin:0 -24px;border-radius:0;border-left:none;border-right:none;}
+
+  #pipeline,#marketplace,#freshonly,#api{padding:72px 24px;}
+  #pipeline .inner,#marketplace .inner,#api .inner{max-width:100%;}
+
+  .pipeline-bento{grid-template-columns:repeat(6,1fr);}
+  .lc-burn    {grid-column:span 6;}
+  .lc-spam    {grid-column:span 6;}
+  .lc-infra   {grid-column:span 3;}
+  .lc-catchall{grid-column:span 3;}
+  .lc-bounce  {grid-column:span 6;}
+  .lc-domain  {grid-column:span 6;}
+  .lc-ai      {grid-column:span 6;}
+  .lc-syntax  {grid-column:span 6;}
+  .lc-syntax-inner{grid-template-columns:1fr 1fr;gap:16px;}
+
+  .flagship-inner{grid-template-columns:1fr;}
+  .flagship-table{margin-top:16px;}
+
+  .mkt-grid{grid-template-columns:1fr;gap:32px;}
+  #freshonly .inner{grid-template-columns:1fr;gap:40px;}
+  #api .inner{grid-template-columns:1fr;gap:40px;}
+  .api-tiers{margin-top:32px;}
+
+  #features{padding:72px 24px;}
+  .bento{gap:10px;}
+  .bc.wide{grid-column:1/3;}
+
+  #pricing{padding:72px 24px;}
+  .pgrid{grid-template-columns:1fr 1fr;}
+  .pa-header{padding:20px 20px;}
+  .pricing-accordion.open .pa-content{padding:20px;}
+
+  #quote{padding:60px 24px;}
+  #stats{padding:40px 24px;gap:40px;}
+  #fcta{padding:56px 24px;}
+  footer{padding:40px 24px 24px;}
+  .fg{grid-template-columns:1fr 1fr;gap:28px;}
+}
+
+/* Mobile: max 768px */
+@media(max-width:768px){
+  /* Nav */
+  nav{padding:0 16px;height:56px;}
+  .nlinks{display:none;}
+  .nr .bgh{display:none;}
+  .bcta{padding:8px 14px;font-size:13px;}
+
+  /* Hero */
+  #hero{padding:48px 16px 0;min-height:auto;}
+  h1{font-size:clamp(34px,9vw,52px);line-height:1.0;}
+  .hsub{font-size:15px;margin-bottom:24px;}
+  .hbtns{flex-direction:column;align-items:center;gap:10px;margin-bottom:36px;}
+  .hbtns .bp,.hbtns .bo{width:100%;max-width:280px;text-align:center;}
+  .eyebrow{font-size:10px;}
+  .blurry-papers{display:none;}
+
+  /* Hero card — horizontal scroll on mobile */
+  .hero-card{margin:0 -16px;border-radius:0;border-left:none;border-right:none;}
+  .toolbar span:last-child{display:none;}
+
+  /* Marquees */
+  .mq-sec{margin-top:32px;}
+  .li{padding:0 18px;}
+
+  /* Sections */
+  #pipeline,#marketplace,#freshonly,#api,#features,#pricing{padding:56px 16px;}
+  #pipeline .inner,#marketplace .inner,#api .inner{max-width:100%;}
+  h2{font-size:clamp(24px,7vw,36px);}
+  .ssub{font-size:14px;margin-bottom:36px;}
+  .sec-tag{font-size:10px;}
+
+  /* Pipeline bento — single column on mobile */
+  .pipeline-bento{grid-template-columns:1fr;gap:10px;}
+  .lc-burn,.lc-spam,.lc-infra,.lc-catchall,.lc-bounce,
+  .lc-domain,.lc-ai,.lc-syntax{grid-column:span 1;}
+  .flagship-inner{grid-template-columns:1fr;}
+  .flagship-table{margin-top:14px;}
+  .lc-syntax-inner{grid-template-columns:1fr;gap:12px;}
+  .syn-stat{padding:12px;}
+
+  /* Marketplace */
+  .mkt-grid{grid-template-columns:1fr;gap:28px;}
+  .mkt-copy h3{font-size:clamp(22px,7vw,30px);}
+  .mkt-copy p{font-size:14px;}
+  .mkt-stats{flex-wrap:wrap;gap:8px;}
+
+  /* Fresh Only */
+  #freshonly .inner{grid-template-columns:1fr;gap:32px;}
+  .fo-copy h2{font-size:clamp(22px,7vw,32px);}
+  .fo-copy p{font-size:14px;}
+
+  /* Bento features */
+  .bento{grid-template-columns:1fr;}
+  .bc.wide{grid-column:span 1;}
+  .bc.wide > div{grid-template-columns:1fr!important;}
+
+  /* API */
+  #api .inner{grid-template-columns:1fr;gap:32px;}
+  .code-body{font-size:11px;padding:16px;}
+
+  /* Integrations */
+  .int-ctr{padding:0 16px;}
+  #integrations .ssub{max-width:100%;}
+
+  /* Pricing */
+  .pa-header{padding:16px;}
+  .pa-title{font-size:15px;}
+  .pricing-accordion.open .pa-content{padding:16px;}
+  .pgrid{grid-template-columns:1fr;gap:10px;}
+  #pricing .sec-tag{margin-bottom:10px;}
+
+  /* Quote */
+  #quote{padding:56px 16px;}
+  .qt{font-size:clamp(18px,5vw,24px);}
+
+  /* Stats */
+  #stats{padding:40px 16px;gap:28px;}
+  .sn{font-size:40px;}
+
+  /* Footer CTA */
+  #fcta{flex-direction:column;align-items:flex-start;padding:48px 16px;gap:28px;}
+  .fh{font-size:clamp(22px,6vw,32px);}
+  .fbtns{flex-direction:column;width:100%;gap:10px;}
+  .byl,.bwo{width:100%;text-align:center;padding:13px;}
+
+  /* Footer */
+  footer{padding:36px 16px 20px;}
+  .fg{grid-template-columns:1fr;gap:24px;}
+  .fbot{flex-direction:column;gap:10px;align-items:flex-start;}
+  .fsoc{gap:12px;}
+}
+
+/* Small phones: max 380px */
+@media(max-width:380px){
+  #hero{padding:40px 12px 0;}
+  nav{padding:0 12px;}
+  #pipeline,#marketplace,#freshonly,#api,#features,#pricing{padding:44px 12px;}
+  #fcta,#quote,footer{padding-left:12px;padding-right:12px;}
+  .pa-header{padding:14px 12px;}
+  .pricing-accordion.open .pa-content{padding:12px;}
+}
+</style>
+
+<!-- ── NAV ──────────────────────────────────────────────────── -->
+<nav id="main-nav">
+  <a class="logo" href="/">
+    <div class="lmark">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/>
+        <rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/>
+        <rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/>
+        <rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".35"/>
+      </svg>
+    </div>
+    <div class="lname">List<span>Intel</span></div>
+  </a>
+  <div class="nlinks">
+    <a href="#pipeline">Features</a>
+    <a href="#marketplace">Marketplace</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#api">API</a>
+  </div>
+  <div class="nr">
+    <a href="/login" class="bgh">Log In</a>
+    <a href="/signup" class="bcta" id="nav-cta">Start for Free</a>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="blurry-papers">
+    <div class="blurry-paper bp1">
+      <div style="color:#2a5426;font-weight:700;margin-bottom:8px;font-size:11px;">enriched_output.csv</div>
+      email,burn_score,burn_tag,spam_filter,infra<br>
+      ceo@saas.io,8,Fresh,none,GWS<br>
+      vp@corp.co,72,Burned,Mimecast,M365<br>
+      ops@new.ai,3,Fresh,none,SMTP<br>
+      info@firm.co,91,Torched,Proofpoint,M365<br>
+      bd@tech.dev,19,Warm,none,GWS<br>
+      <br>
+      <div style="color:#b31c1c;margin-top:4px;">⚠ 3 Mimecast found</div>
+      <div style="color:#1b6015;">✓ 4,210 fresh emails</div>
+      <div style="color:#964800;">↻ 2.4M checked</div>
+    </div>
+    <div class="blurry-paper bp2">
+      <div style="color:#2a5426;font-weight:700;margin-bottom:8px;font-size:11px;">processing_report.txt</div>
+      [INFO] Job queued<br>
+      [INFO] CSV parsed: 12,400 rows<br>
+      [INFO] Email col detected<br>
+      [INFO] Analysis complete<br>
+      [INFO] Spam filter match:<br>
+      &nbsp;&nbsp;Mimecast → 847 emails<br>
+      &nbsp;&nbsp;Proofpoint → 312 emails<br>
+      &nbsp;&nbsp;Barracuda → 198 emails<br>
+      [INFO] Infra tags applied<br>
+      [INFO] Credits deducted: 12,400<br>
+      [INFO] Job complete: 3.8s total<br>
+      <br>
+      <div style="color:#1b6015;">✓ output ready for download</div>
+    </div>
+    <div class="blurry-paper bp3">
+      <div style="color:#2a5426;font-weight:700;margin-bottom:8px;font-size:11px;">burn_score_breakdown</div>
+      <br>
+      <div style="color:#1b6015;font-weight:700;">0–20: Fresh</div>
+      <div style="color:#6a796a;">Low exposure, safe to send</div>
+      <br>
+      <div style="color:#964800;font-weight:700;">21–50: Warm</div>
+      <div style="color:#6a796a;">Moderate exposure, use caution</div>
+      <br>
+      <div style="color:#b31c1c;font-weight:700;">51–80: Burned</div>
+      <div style="color:#6a796a;">High exposure, likely to bounce</div>
+      <br>
+      <div style="color:#b31c1c;font-weight:700;">81–100: Torched</div>
+      <div style="color:#6a796a;">Heavily burned, avoid sending</div>
+    </div>
+  </div>
+
+  <div class="floaters">
+    <div class="fc fc1">
+      <div class="favatar"><img src="https://i.pravatar.cc/150?img=11" alt="" onerror="this.parentElement.style.background='#2a5426'"/></div>
+      <div class="finfo">
+        <div class="fname-fc">Marcus O.</div>
+        <div class="frole">Agency Founder</div>
+        <div class="ftag" style="background:rgba(42,84,38,.1);color:var(--accent);"><div class="fdot" style="background:var(--accent2)"></div>Sends 500k/mo</div>
+      </div>
+    </div>
+    <div class="fc fc2">
+      <div class="favatar"><img src="https://i.pravatar.cc/150?img=47" alt="" onerror="this.parentElement.style.background='#1a4c9a'"/></div>
+      <div class="finfo">
+        <div class="fname-fc">Priya S.</div>
+        <div class="frole">Solo Operator</div>
+        <div class="ftag" style="background:rgba(26,76,154,.1);color:#1a4c9a;"><div class="fdot" style="background:#1a4c9a"></div>B2B SaaS leads</div>
+      </div>
+    </div>
+    <div class="fc fc3">
+      <div class="favatar"><img src="https://i.pravatar.cc/150?img=33" alt="" onerror="this.parentElement.style.background='#964800'"/></div>
+      <div class="finfo">
+        <div class="fname-fc">James K.</div>
+        <div class="frole">Lead List Trader</div>
+        <div class="ftag" style="background:rgba(150,72,0,.1);color:#964800;"><div class="fdot" style="background:#f59e0b"></div>100k+ lists/mo</div>
+      </div>
+    </div>
+    <div class="fc fc4">
+      <div class="favatar"><img src="https://i.pravatar.cc/150?img=25" alt="" onerror="this.parentElement.style.background='#5a1a96'"/></div>
+      <div class="finfo">
+        <div class="fname-fc">Tolu A.</div>
+        <div class="frole">Growth Marketer</div>
+        <div class="ftag" style="background:rgba(90,26,150,.1);color:#5a1a96;"><div class="fdot" style="background:#7c3aed"></div>Ecom outreach</div>
+      </div>
+    </div>
+    <div class="arrow ar1">➜</div>
+    <div class="arrow ar2">➜</div>
+  </div>
+
+  <div class="hcontent">
+    <div class="eyebrow ha ha1"><div class="edot"></div>The cold email command center</div>
+    <h1 class="ha ha2">Should you send this<br><span class="uw">right now?</span></h1>
+    <p class="hsub ha ha3">Don't guess. Upload your list to your pre-send command center. We'll run 8 parallel intelligence layers — from burn scores to spam gateways — and give you a definitive Send Readiness Score before you click send.</p>
+    <div class="hbtns ha ha4">
+      <a href="/signup" id="hero-cta"><button class="bp">Start for Free</button></a>
+      <a href="#pipeline"><button class="bo">See how it works →</button></a>
+    </div>
+  </div>
+
+  <!-- EXCEL HERO TABLE -->
+  <div class="hero-card ha" style="animation-delay:.5s">
+    <div class="tbar">
+      <div class="wdot" style="background:#ff5f57"></div>
+      <div class="wdot" style="background:#febc2e"></div>
+      <div class="wdot" style="background:#28c840"></div>
+      <span class="fname2">listintel_<b>enriched_output.csv</b> — 12,400 rows</span>
+    </div>
+    <div class="toolbar">
+      <span class="tbtn">File</span><span class="tbtn">Edit</span><span class="tbtn">View</span><span class="tbtn">Filter ▾</span>
+      <span style="margin-left:auto;font-size:10px;">Rows 1–12 of 12,400 &nbsp;·&nbsp; <b style="color:#1b6015">8,210 fresh</b> &nbsp;·&nbsp; <b style="color:#b31c1c">3,105 burned</b> &nbsp;·&nbsp; <b style="color:#964800">1,085 flagged</b></span>
+    </div>
+    <div class="exc-scroll">
+      <table class="xl">
+        <thead><tr>
+          <th class="rn">#</th><th class="hi">email</th><th>first_name</th><th>company</th>
+          <th>syntax</th><th>mx</th><th>spam_filter</th><th>infra</th>
+          <th>domain_age</th><th>domain_risk</th><th class="hi">burn_score</th><th>burn_tag</th><th>bounce</th><th>catchall</th>
+        </tr></thead>
+        <tbody>
+          <tr class="sel"><td class="rn">1</td><td class="em hi2">john@techcorp.io</td><td>John</td><td>TechCorp</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">847</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:8%;background:#1b6015"></div></div><b style="color:#1b6015">8</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">2</td><td class="em hi2">vp@enterprise.co</td><td>Sarah</td><td>Enterprise Co</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td><span class="p pr">Mimecast</span></td><td><span class="p pb">M365</span></td><td class="num">2,104</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:72%;background:#b31c1c"></div></div><b style="color:#b31c1c">72</b></div></td><td><span class="p pr">Burned</span></td><td class="num">3</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">3</td><td class="em hi2">cto@newco.ai</td><td>Marcus</td><td>NewCo AI</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pm">SMTP</span></td><td class="num">14</td><td><span class="p pr">VeryHigh</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:3%;background:#1b6015"></div></div><b style="color:#1b6015">3</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">4</td><td class="em hi2">info@bigcorp.com</td><td>—</td><td>BigCorp Inc</td><td><span class="p po">role</span></td><td><span class="p pg">✓</span></td><td><span class="p po">Proofpoint</span></td><td><span class="p pb">M365</span></td><td class="num">3,841</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:91%;background:#b31c1c"></div></div><b style="color:#b31c1c">91</b></div></td><td><span class="p pr">Torched</span></td><td class="num">8</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">5</td><td class="em hi2">ops@saas.dev</td><td>Mike</td><td>SaaS Dev</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">620</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:19%;background:#964800"></div></div><b style="color:#964800">19</b></div></td><td><span class="p py">Warm</span></td><td class="num">1</td><td><span class="p po">Yes</span></td></tr>
+          <tr><td class="rn">6</td><td class="em hi2">ceo@growth.agency</td><td>Priya</td><td>Growth Agency</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td><span class="p pr">Barracuda</span></td><td><span class="p pb">M365</span></td><td class="num">1,204</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:55%;background:#964800"></div></div><b style="color:#964800">55</b></div></td><td><span class="p po">Warm</span></td><td class="num">2</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">7</td><td class="em hi2">hello@dispose.ml</td><td>—</td><td>—</td><td><span class="p pr">disposable</span></td><td><span class="p pr">✗</span></td><td>—</td><td>—</td><td class="num" style="color:#ccc">—</td><td>—</td><td class="hi2" style="color:#ccc">—</td><td>—</td><td class="num" style="color:#ccc">—</td><td>—</td></tr>
+          <tr><td class="rn">8</td><td class="em hi2">founder@techstars.io</td><td>James</td><td>Techstars</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">2,910</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:6%;background:#1b6015"></div></div><b style="color:#1b6015">6</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">9</td><td class="em hi2">mkt@cloudco.io</td><td>Anna</td><td>CloudCo</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td><span class="p pr">Mimecast</span></td><td><span class="p pb">M365</span></td><td class="num">788</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:82%;background:#b31c1c"></div></div><b style="color:#b31c1c">82</b></div></td><td><span class="p pr">Torched</span></td><td class="num">6</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">10</td><td class="em hi2">bd@fintech.co</td><td>Lena</td><td>FinTech Co</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">1,566</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:11%;background:#1b6015"></div></div><b style="color:#1b6015">11</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">11</td><td class="em hi2">alex@ventures.vc</td><td>Alex</td><td>Ventures VC</td><td><span class="p pg">valid</span></td><td><span class="p pg">✓</span></td><td>—</td><td><span class="p pb">GWS</span></td><td class="num">4,102</td><td><span class="p pg">Safe</span></td><td class="hi2"><div class="sbw"><div class="sb"><div class="sbf" style="width:2%;background:#1b6015"></div></div><b style="color:#1b6015">2</b></div></td><td><span class="p pg">Fresh</span></td><td class="num">0</td><td><span class="p pg">No</span></td></tr>
+          <tr><td class="rn">12</td><td class="em hi2">noreply@spam.net</td><td>—</td><td>—</td><td><span class="p pr">role</span></td><td><span class="p pr">✗</span></td><td>—</td><td>—</td><td class="num" style="color:#ccc">—</td><td>—</td><td class="hi2" style="color:#ccc">—</td><td>—</td><td class="num" style="color:#ccc">—</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MARQUEE STRIP - real brand wordmarks -->
+  <div class="mq-sec">
+    <div class="mq-label">Used alongside</div>
+    <div class="mq-track"><div class="mq-inner">
+      <!-- Instantly -->
+      <div class="li"><svg height="22" viewBox="0 0 110 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 4L2 14h5l-1.5 10 9-12H9.5L12 4H8z" fill="#0081FF"/><text x="18" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Instantly</text></svg></div>
+      <!-- Smartlead -->
+      <div class="li"><svg height="22" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#6366F1"/><path d="M11 8c-1.7 0-3 1.3-3 3s1.3 3 3 3h.5c1.4 0 2.5 1.1 2.5 2.5s-1.1 2.5-2.5 2.5H8" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/><text x="27" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Smartlead</text></svg></div>
+      <!-- OmniVerifier -->
+      <div class="li"><svg height="22" viewBox="0 0 148 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="14" r="10" stroke="#0EA5E9" stroke-width="2"/><path d="M6 14l4 4 7-8" stroke="#0EA5E9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">OmniVerifier</text></svg></div>
+      <!-- Apollo -->
+      <div class="li"><svg height="22" viewBox="0 0 90 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="14" r="10" fill="#1A1A2E"/><path d="M11 5c0 0 5 2.5 5 8.5-1.8.6-3 .6-5 0-2 .6-3.2.6-5 0C6 7.5 11 5 11 5z" fill="#7C3AED"/><circle cx="11" cy="14.5" r="2.5" fill="white"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Apollo</text></svg></div>
+      <!-- Clay -->
+      <div class="li"><svg height="22" viewBox="0 0 72 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#F59E0B"/><path d="M11 7l5 4-5 9-5-9z" fill="white" opacity=".95"/><line x1="6" y1="11" x2="16" y2="11" stroke="white" stroke-width="1.4"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Clay</text></svg></div>
+      <!-- Lemlist -->
+      <div class="li"><svg height="22" viewBox="0 0 90 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#EF4444"/><rect x="4" y="9" width="14" height="10" rx="1.5" stroke="white" stroke-width="1.5" fill="none"/><path d="M4 10.5l7 5 7-5" stroke="white" stroke-width="1.4" stroke-linecap="round" fill="none"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Lemlist</text></svg></div>
+      <!-- n8n -->
+      <div class="li"><svg height="22" viewBox="0 0 58 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="14" r="4" fill="#EA4B71"/><circle cx="17" cy="8" r="4" fill="#EA4B71"/><circle cx="17" cy="20" r="4" fill="#EA4B71"/><line x1="9" y1="14" x2="13" y2="14" stroke="#EA4B71" stroke-width="1.5"/><line x1="13" y1="14" x2="13" y2="8" stroke="#EA4B71" stroke-width="1.5"/><line x1="13" y1="14" x2="13" y2="20" stroke="#EA4B71" stroke-width="1.5"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="800" font-size="15" fill="#141414">n8n</text></svg></div>
+      <!-- Zapier -->
+      <div class="li"><svg height="22" viewBox="0 0 82 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#FF4A00"/><path d="M6 8h10L8 14h10M6 20h10" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Zapier</text></svg></div>
+      <!-- Make -->
+      <div class="li"><svg height="22" viewBox="0 0 80 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#6D00CC"/><path d="M6 18L14 8M6 8h8v8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Make</text></svg></div>
+      <!-- HubSpot -->
+      <div class="li"><svg height="22" viewBox="0 0 100 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="14" r="10" fill="#FF7A59"/><circle cx="11" cy="14" r="3" fill="white"/><line x1="11" y1="5" x2="11" y2="8" stroke="white" stroke-width="1.8" stroke-linecap="round"/><line x1="11" y1="20" x2="11" y2="23" stroke="white" stroke-width="1.8" stroke-linecap="round"/><line x1="5" y1="11" x2="2" y2="11" stroke="white" stroke-width="1.8" stroke-linecap="round"/><line x1="20" y1="11" x2="17" y2="11" stroke="white" stroke-width="1.8" stroke-linecap="round"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">HubSpot</text></svg></div>
+      <!-- duplicate set for seamless loop -->
+      <div class="li"><svg height="22" viewBox="0 0 110 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 4L2 14h5l-1.5 10 9-12H9.5L12 4H8z" fill="#0081FF"/><text x="18" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Instantly</text></svg></div>
+      <div class="li"><svg height="22" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#6366F1"/><path d="M11 8c-1.7 0-3 1.3-3 3s1.3 3 3 3h.5c1.4 0 2.5 1.1 2.5 2.5s-1.1 2.5-2.5 2.5H8" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/><text x="27" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Smartlead</text></svg></div>
+      <div class="li"><svg height="22" viewBox="0 0 148 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="14" r="10" stroke="#0EA5E9" stroke-width="2"/><path d="M6 14l4 4 7-8" stroke="#0EA5E9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">OmniVerifier</text></svg></div>
+      <div class="li"><svg height="22" viewBox="0 0 90 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="14" r="10" fill="#1A1A2E"/><path d="M11 5c0 0 5 2.5 5 8.5-1.8.6-3 .6-5 0-2 .6-3.2.6-5 0C6 7.5 11 5 11 5z" fill="#7C3AED"/><circle cx="11" cy="14.5" r="2.5" fill="white"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Apollo</text></svg></div>
+      <div class="li"><svg height="22" viewBox="0 0 72 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#F59E0B"/><path d="M11 7l5 4-5 9-5-9z" fill="white" opacity=".95"/><line x1="6" y1="11" x2="16" y2="11" stroke="white" stroke-width="1.4"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Clay</text></svg></div>
+      <div class="li"><svg height="22" viewBox="0 0 90 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#EF4444"/><rect x="4" y="9" width="14" height="10" rx="1.5" stroke="white" stroke-width="1.5" fill="none"/><path d="M4 10.5l7 5 7-5" stroke="white" stroke-width="1.4" stroke-linecap="round" fill="none"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Lemlist</text></svg></div>
+      <div class="li"><svg height="22" viewBox="0 0 58 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="5" cy="14" r="4" fill="#EA4B71"/><circle cx="17" cy="8" r="4" fill="#EA4B71"/><circle cx="17" cy="20" r="4" fill="#EA4B71"/><line x1="9" y1="14" x2="13" y2="14" stroke="#EA4B71" stroke-width="1.5"/><line x1="13" y1="14" x2="13" y2="8" stroke="#EA4B71" stroke-width="1.5"/><line x1="13" y1="14" x2="13" y2="20" stroke="#EA4B71" stroke-width="1.5"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="800" font-size="15" fill="#141414">n8n</text></svg></div>
+      <div class="li"><svg height="22" viewBox="0 0 82 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#FF4A00"/><path d="M6 8h10L8 14h10M6 20h10" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Zapier</text></svg></div>
+      <div class="li"><svg height="22" viewBox="0 0 80 28" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="4" width="20" height="20" rx="5" fill="#6D00CC"/><path d="M6 18L14 8M6 8h8v8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">Make</text></svg></div>
+      <div class="li"><svg height="22" viewBox="0 0 100 28" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="14" r="10" fill="#FF7A59"/><circle cx="11" cy="14" r="3" fill="white"/><line x1="11" y1="5" x2="11" y2="8" stroke="white" stroke-width="1.8" stroke-linecap="round"/><line x1="11" y1="20" x2="11" y2="23" stroke="white" stroke-width="1.8" stroke-linecap="round"/><line x1="5" y1="11" x2="2" y2="11" stroke="white" stroke-width="1.8" stroke-linecap="round"/><line x1="20" y1="11" x2="17" y2="11" stroke="white" stroke-width="1.8" stroke-linecap="round"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="#141414">HubSpot</text></svg></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ── 8 LAYER PIPELINE — BENTO ──────────────────────────────── -->
+<section id="pipeline">
+  <div class="inner">
+    <div class="sec-tag r">⬡ Intelligence Pipeline</div>
+    <h2 class="r d1">Deep intelligence.<br>All parallel.</h2>
+    <p class="ssub r d2">Standard verifiers answer one question: valid or invalid. We answer many more — in the time it takes to run one.</p>
+
+    <div class="pipeline-bento">
+
+      <!-- L1: Burn Score — wide dark card -->
+      <div class="lc lc-burn r">
+        <div class="flagship-inner">
+          <div>
+            <div class="layer-num">01 · Flagship</div>
+            <div class="layer-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2c0 0 5 3 5 9-2 .7-3.4.7-5 0-1.6.7-3 .7-5 0C7 5 12 2 12 2z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="2.5" stroke="white" stroke-width="1.5"/><path d="M9 17l-2 4M15 17l2 4" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg>
+            </div>
+            <div class="layer-name">Burn Score Network</div>
+            <div class="layer-desc">Every email is hashed and cross-checked against our shared upload pool. Score 0–100 = how many distinct senders have already blasted it. Privacy safe — zero plaintext storage.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;">
+              <div class="layer-tag">Fresh 0–20</div>
+              <div class="layer-tag">Warm 21–50</div>
+              <div class="layer-tag">Burned 51–80</div>
+              <div class="layer-tag" style="background:rgba(239,68,68,.18);color:#fca5a5;">Torched 81–100</div>
+            </div>
+          </div>
+          <div>
+            <div class="flagship-table">
+              <div class="ft-head"><span>SHA-256 hash</span><span style="text-align:right">seen by</span><span style="text-align:right">tag</span></div>
+              <div class="ft-row"><span class="ft-hash">a3f8...c91e</span><span class="ft-seen">1 user</span><span class="ft-tag-cell tag-fresh">Fresh</span></div>
+              <div class="ft-row"><span class="ft-hash">b72d...44ab</span><span class="ft-seen">12 users</span><span class="ft-tag-cell tag-warm">Warm</span></div>
+              <div class="ft-row"><span class="ft-hash">cc1e...f033</span><span class="ft-seen">47 users</span><span class="ft-tag-cell tag-burned">Burned</span></div>
+              <div class="ft-row"><span class="ft-hash">d904...7bbf</span><span class="ft-seen">91 users</span><span class="ft-tag-cell tag-torched">Torched</span></div>
+              <div class="ft-row"><span class="ft-hash">e12a...8cc2</span><span class="ft-seen">3 users</span><span class="ft-tag-cell tag-fresh">Fresh</span></div>
+            </div>
+            <div style="margin-top:9px;font-size:11px;color:rgba(255,255,255,.28);text-align:center;line-height:1.5;">Network effect moat. Grows with every upload.<br>Competitors start from zero.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- L2: Spam Filter — tall right card -->
+      <div class="lc lc-spam r d1">
+        <div class="layer-num">02</div>
+        <div class="layer-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#2a5426" stroke-width="1.8" stroke-linejoin="round"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="#2a5426" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="layer-name">Spam Filter & Gateway Detection</div>
+        <div class="layer-desc">Detects Mimecast, Proofpoint, Barracuda, Ironscales, and Sophos from MX record patterns. Know before you send — not after you bounce.</div>
+        <div style="margin-top:14px;display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0e8;font-size:12px;"><span>Mimecast</span><span class="p pr">847 found</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0e8;font-size:12px;"><span>Proofpoint</span><span class="p po">312 found</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0e8;font-size:12px;"><span>Barracuda</span><span class="p po">198 found</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:12px;"><span>No gateway</span><span class="p pg">9,043 ✓</span></div>
+        </div>
+        <div class="layer-tag" style="margin-top:14px;">Included free</div>
+      </div>
+
+      <!-- L3: Infrastructure — narrow -->
+      <div class="lc lc-infra r">
+        <div class="layer-num">03</div>
+        <div class="layer-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1" stroke="#2a5426" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1" stroke="#2a5426" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1" stroke="#2a5426" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1" stroke="#2a5426" stroke-width="1.8"/></svg>
+        </div>
+        <div class="layer-name">Infrastructure Detection</div>
+        <div class="layer-desc">GWS, M365, Exchange, or SMTP — each behaves differently. Segment by infra for better deliverability.</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;">
+          <span class="p pb">GWS</span><span class="p pb">M365</span><span class="p pm">SMTP</span><span class="p" style="background:#e8f8e0;color:#1b6015;">Exchange</span>
+        </div>
+        <div class="layer-tag" style="margin-top:12px;">Included free</div>
+      </div>
+
+      <!-- L4: Catch-All — narrow -->
+      <div class="lc lc-catchall r d1">
+        <div class="layer-num">04</div>
+        <div class="layer-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#2a5426" stroke-width="1.8"/><path d="M8 12h8M12 8v8" stroke="#2a5426" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="layer-name">Catch-All Detection</div>
+        <div class="layer-desc">Domains that accept any prefix pass standard checks but bounce silently. We probe them with SMTP and heuristics.</div>
+        <div style="margin-top:12px;background:#fdf5c0;border-radius:8px;padding:9px 12px;font-size:11px;color:#786500;line-height:1.5;">
+          Verifier says "valid." You send 10k emails. 6k bounce. Catch-all.
+        </div>
+        <div class="layer-tag" style="margin-top:12px;">Advanced detection</div>
+      </div>
+
+      <!-- L5: Bounce History — narrow -->
+      <div class="lc lc-bounce r d2">
+        <div class="layer-num">05</div>
+        <div class="layer-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 12h18M3 6h18M3 18h12" stroke="#2a5426" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="layer-name">Bounce History</div>
+        <div class="layer-desc">Cross-checks every email against 90 days of hard and soft bounces from the platform pool.</div>
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <div style="flex:1;background:#fdf5c0;border-radius:8px;padding:9px;text-align:center;">
+            <div style="font-size:16px;font-weight:800;color:#786500;">90d</div>
+            <div style="font-size:9px;color:#786500;margin-top:2px;">window</div>
+          </div>
+          <div style="flex:1;background:#fcd8d8;border-radius:8px;padding:9px;text-align:center;">
+            <div style="font-size:16px;font-weight:800;color:#b31c1c;">hard</div>
+            <div style="font-size:9px;color:#b31c1c;margin-top:2px;">+ soft</div>
+          </div>
+        </div>
+        <div class="layer-tag" style="margin-top:12px;">Community data</div>
+      </div>
+
+      <!-- L6: Domain Age — half width -->
+      <div class="lc lc-domain r">
+        <div class="layer-num">06</div>
+        <div class="layer-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="#2a5426" stroke-width="1.8"/><path d="M16 2v4M8 2v4M3 10h18" stroke="#2a5426" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="layer-name">Domain Age & Risk Analysis</div>
+        <div class="layer-desc">Checks the registration age of every unique domain. Under 60 days = prime spam trap territory. Results are cached for performance.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#d4eecf;border-radius:7px;font-size:11px;"><span style="color:#1b6015;">365+ days</span><span class="p pg" style="font-size:9px;">Safe</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#fdf5c0;border-radius:7px;font-size:11px;"><span style="color:#786500;">180–365d</span><span class="p py" style="font-size:9px;">Medium</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#fde3c0;border-radius:7px;font-size:11px;"><span style="color:#964800;">60–180d</span><span class="p po" style="font-size:9px;">High</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:#fcd8d8;border-radius:7px;font-size:11px;"><span style="color:#b31c1c;">&lt;60 days</span><span class="p pr" style="font-size:9px;">VeryHigh</span></div>
+        </div>
+        <div class="layer-tag" style="margin-top:14px;">Domain intelligence</div>
+      </div>
+
+      <!-- L7: AI Spam Trap — half width -->
+      <div class="lc lc-ai r d1">
+        <div class="layer-num">07</div>
+        <div class="layer-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2a4 4 0 014 4v1h1a3 3 0 010 6h-1v1a4 4 0 01-8 0v-1H7a3 3 0 010-6h1V6a4 4 0 014-4z" stroke="#2a5426" stroke-width="1.7"/><path d="M9 10h.01M15 10h.01M9 14h6" stroke="#2a5426" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </div>
+        <div class="layer-name">AI Spam Trap Detection</div>
+        <div class="layer-desc">AI analyses email and domain naming conventions for honeypot and spam trap patterns that static rules alone can't catch.</div>
+        <div style="margin-top:14px;background:#f5f5f0;border:1px solid var(--border);border-radius:9px;padding:12px;font-family:monospace;font-size:11px;line-height:1.7;color:#666;">
+          <span style="color:#2a5426;font-weight:700;">→</span> spamtrap-test@newdomain.ai<br>
+          <span style="color:#2a5426;font-weight:700;">→</span> pattern: honeypot naming<br>
+          <span style="color:#b31c1c;font-weight:700;">⚠</span> spam trap · confidence <b style="color:#b31c1c;">94%</b>
+        </div>
+        <div class="layer-tag" style="margin-top:14px;">AI-powered</div>
+      </div>
+
+      <!-- L8: Syntax — full-width footer card -->
+      <div class="lc lc-syntax r d2">
+        <div class="lc-syntax-inner">
+          <div>
+            <div class="layer-num">08 · Foundation</div>
+            <div class="layer-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#2a5426" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="layer-name">Syntax & MX Validation</div>
+            <div class="layer-desc">Syntax checking, disposable domain detection, role address flagging, and active MX record verification. Highly concurrent for speed.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;">
+              <span class="p pg">valid</span><span class="p pr">disposable</span><span class="p po">role</span><span class="p pr">no MX</span>
+            </div>
+          </div>
+          <div class="syn-stat"><div class="syn-stat-val" style="color:#1b6015;">99.2%</div><div class="syn-stat-label">syntax accuracy</div></div>
+          <div class="syn-stat"><div class="syn-stat-val">500</div><div class="syn-stat-label">concurrent DNS queries</div></div>
+          <div class="syn-stat"><div class="syn-stat-val" style="color:var(--accent);">$0</div><div class="syn-stat-label">cost per check</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── BURNED LIST MARKETPLACE ───────────────────────────────── -->
+<section id="marketplace">
+  <div class="inner">
+    <div class="sec-tag r">⬡ Marketplace</div>
+    <div class="mkt-grid">
+      <div class="mkt-copy">
+        <h3 class="r">Turn burned lists<br>into fresh ones.<br><span style="color:var(--accent);">Anonymously.</span></h3>
+        <p class="r d1">When your list comes back 70%+ burned, don't throw it away. Trade it for a fresher one in the same niche. Server-matched. Fully anonymous. Zero waste.</p>
+        <div class="mkt-steps r d2">
+          <div class="mkt-step"><div class="mkt-step-num">1</div><div class="mkt-step-body">Submit your burned list with a <b>niche tag</b> (SaaS, Ecom, Finance, Healthcare…)</div></div>
+          <div class="mkt-step"><div class="mkt-step-num">2</div><div class="mkt-step-body">Algorithm matches you with a <b>similar-sized list</b> in the same niche (±50% size)</div></div>
+          <div class="mkt-step"><div class="mkt-step-num">3</div><div class="mkt-step-body">Both parties confirm. Lists swap anonymously. <b>No identities exchanged.</b></div></div>
+          <div class="mkt-step"><div class="mkt-step-num">4</div><div class="mkt-step-body">You receive a freshly enriched list. Fee: <b>10% of list size in credits.</b></div></div>
+        </div>
+      </div>
+      <div class="r d1">
+        <div class="mkt-visual">
+          <div class="mkt-head">
+            <span class="mkt-htitle">Active trades</span>
+            <span class="p pg">Matching runs every 15 min</span>
+          </div>
+          <div class="mkt-card">
+            <div class="mkt-top">
+              <div>
+                <div class="mkt-name">SaaS list · 8,400 leads</div>
+                <div class="mkt-meta">Submitted 2h ago · Niche: B2B SaaS</div>
+              </div>
+              <span class="p pg">Matched</span>
+            </div>
+            <div class="mkt-stats">
+              <div class="mkt-stat">Avg burn: <b>74</b></div>
+              <div class="mkt-stat">Fresh rate: <b>26%</b></div>
+              <div class="mkt-stat">Size: <b>8,400</b></div>
+            </div>
+            <div class="mkt-actions">
+              <button class="mbtn-p">Confirm trade →</button>
+              <button class="mbtn-g">Decline</button>
+            </div>
+          </div>
+          <div class="mkt-card">
+            <div class="mkt-top">
+              <div>
+                <div class="mkt-name">Ecom list · 22,000 leads</div>
+                <div class="mkt-meta">Submitted 40min ago · Niche: Ecommerce</div>
+              </div>
+              <span class="p py">Searching</span>
+            </div>
+            <div class="mkt-stats">
+              <div class="mkt-stat">Avg burn: <b>61</b></div>
+              <div class="mkt-stat">Fresh rate: <b>39%</b></div>
+              <div class="mkt-stat">Size: <b>22,000</b></div>
+            </div>
+          </div>
+          <div class="mkt-card">
+            <div class="mkt-top">
+              <div>
+                <div class="mkt-name">Finance list · 5,100 leads</div>
+                <div class="mkt-meta">Completed Mar 20 · Trade #184</div>
+              </div>
+              <span class="p" style="background:#e8f0fe;color:#1a4c9a;">Complete</span>
+            </div>
+            <div class="mkt-stats">
+              <div class="mkt-stat">Was: <b style="color:#b31c1c;">88 burn</b></div>
+              <div class="mkt-stat">Got: <b style="color:#1b6015;">22 burn</b></div>
+              <div class="mkt-stat">Fee: <b>510 credits</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FRESH ONLY EXPORT ──────────────────────────────────────── -->
+<section id="freshonly">
+  <div class="inner">
+    <div class="fo-copy">
+      <div class="sec-tag r">⬡ Smart Export</div>
+      <h2 class="r d1">Fresh Only Export.<br>Send less. Hit more.</h2>
+      <p class="r d2">Configure global filter presets. Every download automatically strips the emails you shouldn't be sending to — before they hit your sending platform.</p>
+      <div class="fo-feature r d3">
+        <div class="fo-dot"></div>
+        <div class="fo-feature-text">Remove Mimecast & Barracuda addresses <span>— the ones silently killing your bounce rate</span></div>
+      </div>
+      <div class="fo-feature r d3">
+        <div class="fo-dot"></div>
+        <div class="fo-feature-text">Exclude burn score &gt; 50 <span>— every other sender already has these</span></div>
+      </div>
+      <div class="fo-feature r d3">
+        <div class="fo-dot"></div>
+        <div class="fo-feature-text">Filter domains under 180 days old <span>— fresh domains = spam traps</span></div>
+      </div>
+      <div class="fo-feature r d3">
+        <div class="fo-dot"></div>
+        <div class="fo-feature-text">Strip role & disposable emails <span>— info@, noreply@, mailinator.com</span></div>
+      </div>
+      <div class="fo-feature r d3">
+        <div class="fo-dot"></div>
+        <div class="fo-feature-text">Save presets per account <span>— configure once, applied automatically forever</span></div>
+      </div>
+    </div>
+    <div class="r d2">
+      <div class="fo-visual">
+        <div class="fo-panel-title">Fresh Only preset</div>
+        <div class="fo-panel-sub">Applied automatically on every download.</div>
+        <div class="fo-row"><span>Remove Mimecast</span><div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+        <div class="fo-row"><span>Remove Barracuda</span><div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+        <div class="fo-row"><span>Remove Proofpoint</span><div class="tog off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+        <div class="fo-row"><span>Burn score &gt; 50</span><div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+        <div class="fo-row"><span>Domain age &lt; 180d</span><div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+        <div class="fo-row"><span>Disposable &amp; role</span><div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+        <div class="fo-result">
+          <div class="fo-result-num">7,420 emails</div>
+          <div class="fo-result-sub">ready to send · removed 4,980 (40.2%)</div>
+        </div>
+        <button class="fo-dl-btn">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 14h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Download fresh only (7,420)
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── BENTO FEATURES OVERVIEW ───────────────────────────────── -->
+<section id="features">
+  <div class="sec-tag r">⬡ Features</div>
+  <h2 class="r d1">Everything else that ships<br>on day one.</h2>
+  <p class="ssub r d2">Every feature in the pipeline. No waitlists. No setup fees.</p>
+  <div class="bento">
+    <div class="bc r">
+      <div class="bt">Burn Score Network</div>
+      <div class="bd">SHA-256 hashed pool. GDPR safe. Grows with every upload across the entire platform. The more users, the more accurate it gets.</div>
+      <button class="xbtn">Explore →</button>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:18px;">
+        <thead><tr style="background:#f5f5f0;"><th style="padding:6px 10px;text-align:left;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);">hash (sha-256)</th><th style="padding:6px 10px;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);text-align:right;">seen by</th><th style="padding:6px 10px;font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;border-bottom:1px solid var(--border);">tag</th></tr></thead>
+        <tbody>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;font-family:monospace;font-size:10px;color:#999;">a3f8...c91e</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;text-align:right;font-size:12px;">1 user</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;"><span class="p pg">Fresh</span></td></tr>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;font-family:monospace;font-size:10px;color:#999;">b72d...44ab</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;text-align:right;font-size:12px;">47 users</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;"><span class="p pr">Burned</span></td></tr>
+          <tr><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;font-family:monospace;font-size:10px;color:#999;">cc1e...f033</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;text-align:right;font-size:12px;">91 users</td><td style="padding:7px 10px;border-bottom:1px solid #f0f0e8;"><span class="p pr">Torched</span></td></tr>
+          <tr><td style="padding:7px 10px;font-family:monospace;font-size:10px;color:#999;">d904...7bbf</td><td style="padding:7px 10px;text-align:right;font-size:12px;">12 users</td><td style="padding:7px 10px;"><span class="p py">Warm</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="bc r d1">
+      <div class="bt">Spam Filter Detector</div>
+      <div class="bd">Tag every email with which security gateway guards it — before your campaign hits it. Currently silently inflating bounce rates across thousands of campaigns.</div>
+      <div class="tr"><span>Flag Mimecast addresses</span><div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+      <div class="tr"><span>Flag Proofpoint addresses</span><div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+      <div class="tr"><span>Flag Barracuda addresses</span><div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+      <div class="tr"><span>Flag Ironscales addresses</span><div class="tog off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+      <div class="tr"><span>Auto-exclude in Fresh Only</span><div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+    </div>
+    <div class="bc wide r d2">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:start;">
+        <div>
+          <div class="bt">Burned List Marketplace</div>
+          <div class="bd">Trade your burned list for a fresher one in the same niche. Automated, server-matched every 15 minutes, fully anonymous. Turn dead leads into live ones.</div>
+          <button class="xbtn" onclick="document.getElementById('marketplace').scrollIntoView({behavior:'smooth'})">Learn more →</button>
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;">Active trades</div>
+          <div class="tcard"><div class="tt"><span class="tname">SaaS list · 8,400 leads</span><span class="p pg">Matched</span></div><span class="tsub">Avg burn: 74 · Awaiting confirmation</span></div>
+          <div class="tcard"><div class="tt"><span class="tname">Ecom · 22,000 leads</span><span class="p py">Pending</span></div><span class="tsub">Avg burn: 61 · Searching...</span></div>
+          <div class="tcard"><div class="tt"><span class="tname">Finance · 5,100 leads</span><span class="p pg">Matched</span></div><span class="tsub">Avg burn: 88 · Ready to confirm</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── API SECTION ───────────────────────────────────────────── -->
+<section id="api">
+  <div class="inner">
+    <div>
+      <div class="sec-tag r">⬡ REST API</div>
+      <h2 class="r d1">Built for automation.<br>Drop it into your stack.</h2>
+      <p class="ssub r d2" style="margin-bottom:0;">Pro and Agency users get full API access with key management and rate limiting per plan.</p>
+      <div class="api-features">
+        <div class="api-feat r d1">
+          <div class="api-feat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M8 2l6 6-6 6" stroke="rgba(255,255,255,.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="api-feat-text">
+            <h4>Single email check</h4>
+            <p>POST /api/v1/check — synchronous, full 8-layer result in one call</p>
+          </div>
+        </div>
+        <div class="api-feat r d2">
+          <div class="api-feat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/><path d="M5 8h6M8 5v6" stroke="rgba(255,255,255,.6)" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <div class="api-feat-text">
+            <h4>Bulk async upload</h4>
+            <p>POST /api/v1/bulk — upload CSV, get job_id, poll for results</p>
+          </div>
+        </div>
+        <div class="api-feat r d3">
+          <div class="api-feat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5" stroke="rgba(255,255,255,.6)" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="rgba(255,255,255,.6)" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <div class="api-feat-text">
+            <h4>Burn score only endpoint</h4>
+            <p>GET /api/v1/score — ultra-low latency, single hash lookup</p>
+          </div>
+        </div>
+        <div class="api-feat r d4">
+          <div class="api-feat-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3 3 7-7" stroke="rgba(255,255,255,.6)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="api-feat-text">
+            <h4>Bounce data submission</h4>
+            <p>POST /api/v1/bounces — contribute to the pool, improve scores for everyone</p>
+          </div>
+        </div>
+      </div>
+      <div class="api-tiers r" style="margin-top:28px;">
+        <div class="api-tier"><span class="api-tier-name">Pro plan</span><span class="api-tier-limit">300 req/min · 50k/day</span></div>
+        <div class="api-tier"><span class="api-tier-name">Agency plan</span><span class="api-tier-limit">1,000 req/min · Unlimited/day</span></div>
+        <div class="api-tier"><span class="api-tier-name">API Starter ($49/mo)</span><span class="api-tier-limit">120 req/min · 10k/day</span></div>
+      </div>
+    </div>
+    <div class="r d1">
+      <div class="code-block">
+        <div class="code-head">
+          <div class="code-dot" style="background:#ff5f57"></div>
+          <div class="code-dot" style="background:#febc2e"></div>
+          <div class="code-dot" style="background:#28c840"></div>
+          <span class="code-lang">python · list intel api</span>
+        </div>
+        <div class="code-body">
+<span class="cm">import</span> <span class="ck">requests</span>
+<br><br>
+<span class="ck">resp</span> = <span class="ck">requests</span>.<span class="cv">post</span>(
+&nbsp;&nbsp;<span class="cs">"https://listintel.io/api/v1/check"</span>,
+&nbsp;&nbsp;<span class="cm">headers</span>={<span class="cs">"X-API-Key"</span>: <span class="cs">"li_live_xxxx"</span>},
+&nbsp;&nbsp;<span class="cm">json</span>={<span class="cs">"email"</span>: <span class="cs">"ceo@acme.co"</span>}
+)
+<br><br>
+<span class="ck">result</span> = <span class="ck">resp</span>.<span class="cv">json</span>()[<span class="cs">"data"</span>]
+<br><br>
+<span class="cm">print</span>(<span class="ck">result</span>[<span class="cs">"burn_score"</span>])    <span class="cm"># 72</span>
+<span class="cm">print</span>(<span class="ck">result</span>[<span class="cs">"burn_tag"</span>])     <span class="cm"># "Burned"</span>
+<span class="cm">print</span>(<span class="ck">result</span>[<span class="cs">"spam_filter"</span>])  <span class="cm"># "Mimecast"</span>
+<span class="cm">print</span>(<span class="ck">result</span>[<span class="cs">"email_infra"</span>])  <span class="cm"># "M365"</span>
+<span class="cm">print</span>(<span class="ck">result</span>[<span class="cs">"domain_risk"</span>])  <span class="cm"># "Safe"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── INTEGRATIONS MARQUEE ──────────────────────────────────── -->
+<section id="integrations">
+  <div class="int-ctr">
+    <div class="sec-tag r" style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);border-color:rgba(255,255,255,.1);">⬡ Integrations</div>
+    <h2 class="r d1">Don't replace. Integrate.</h2>
+    <p class="ssub r d2">Works with the tools already in your stack. REST API on Pro and Agency plans.</p>
+    <button class="int-btn r d3">All integrations →</button>
+  </div>
+  <div class="dk-mq"><div class="dk-inner">
+    <div class="dl"><svg height="22" viewBox="0 0 110 28" fill="none"><path d="M8 4L2 14h5l-1.5 10 9-12H9.5L12 4H8z" fill="#5aabff"/><text x="18" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Instantly</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 120 28" fill="none"><rect x="1" y="4" width="20" height="20" rx="5" fill="#6366F1"/><path d="M11 8c-1.7 0-3 1.3-3 3s1.3 3 3 3h.5c1.4 0 2.5 1.1 2.5 2.5s-1.1 2.5-2.5 2.5H8" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/><text x="27" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Smartlead</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 155 28" fill="none"><circle cx="11" cy="14" r="10" stroke="#5aabff" stroke-width="2"/><path d="M6 14l4 4 7-8" stroke="#5aabff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">OmniVerifier</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 90 28" fill="none"><path d="M11 4c0 0 5.5 3 5.5 9-2 .7-3.3.7-5.5 0-2.2.7-3.5.7-5.5 0C5.5 7 11 4 11 4z" fill="#a78bfa"/><circle cx="11" cy="15" r="2.5" fill="white"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Apollo</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 72 28" fill="none"><rect x="1" y="4" width="20" height="20" rx="5" fill="#d97706"/><path d="M11 7l5 4-5 9-5-9z" fill="white" opacity=".95"/><line x1="6" y1="11" x2="16" y2="11" stroke="white" stroke-width="1.4"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Clay</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 90 28" fill="none"><rect x="1" y="6" width="16" height="12" rx="2" stroke="rgba(255,255,255,.7)" stroke-width="1.5" fill="none"/><path d="M1 8.5l8 5.5 8-5.5" stroke="rgba(255,255,255,.7)" stroke-width="1.4" stroke-linecap="round" fill="none"/><text x="22" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Lemlist</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 60 28" fill="none"><circle cx="5" cy="14" r="3.5" fill="#f472b6"/><circle cx="16" cy="8" r="3.5" fill="#f472b6"/><circle cx="16" cy="20" r="3.5" fill="#f472b6"/><line x1="8.5" y1="14" x2="12.5" y2="14" stroke="#f472b6" stroke-width="1.5"/><line x1="12.5" y1="14" x2="12.5" y2="8" stroke="#f472b6" stroke-width="1.5"/><line x1="12.5" y1="14" x2="12.5" y2="20" stroke="#f472b6" stroke-width="1.5"/><text x="24" y="20" font-family="Arial,sans-serif" font-weight="800" font-size="15" fill="white">n8n</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 82 28" fill="none"><path d="M3 8h12L8 14h10M3 20h12" stroke="#ff8c5a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Zapier</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 80 28" fill="none"><path d="M4 18L12 8M4 8h8v8" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="22" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Make</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 100 28" fill="none"><circle cx="10" cy="14" r="3" fill="white"/><line x1="10" y1="5" x2="10" y2="8" stroke="#ff9478" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="20" x2="10" y2="23" stroke="#ff9478" stroke-width="2" stroke-linecap="round"/><line x1="2" y1="11" x2="5" y2="11" stroke="#ff9478" stroke-width="2" stroke-linecap="round"/><line x1="15" y1="11" x2="18" y2="11" stroke="#ff9478" stroke-width="2" stroke-linecap="round"/><text x="24" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">HubSpot</text></svg></div>
+    <!-- duplicate for seamless loop -->
+    <div class="dl"><svg height="22" viewBox="0 0 110 28" fill="none"><path d="M8 4L2 14h5l-1.5 10 9-12H9.5L12 4H8z" fill="#5aabff"/><text x="18" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Instantly</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 120 28" fill="none"><rect x="1" y="4" width="20" height="20" rx="5" fill="#6366F1"/><path d="M11 8c-1.7 0-3 1.3-3 3s1.3 3 3 3h.5c1.4 0 2.5 1.1 2.5 2.5s-1.1 2.5-2.5 2.5H8" stroke="white" stroke-width="1.8" stroke-linecap="round" fill="none"/><text x="27" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Smartlead</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 155 28" fill="none"><circle cx="11" cy="14" r="10" stroke="#5aabff" stroke-width="2"/><path d="M6 14l4 4 7-8" stroke="#5aabff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">OmniVerifier</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 90 28" fill="none"><path d="M11 4c0 0 5.5 3 5.5 9-2 .7-3.3.7-5.5 0-2.2.7-3.5.7-5.5 0C5.5 7 11 4 11 4z" fill="#a78bfa"/><circle cx="11" cy="15" r="2.5" fill="white"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Apollo</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 72 28" fill="none"><rect x="1" y="4" width="20" height="20" rx="5" fill="#d97706"/><path d="M11 7l5 4-5 9-5-9z" fill="white" opacity=".95"/><line x1="6" y1="11" x2="16" y2="11" stroke="white" stroke-width="1.4"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Clay</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 90 28" fill="none"><rect x="1" y="6" width="16" height="12" rx="2" stroke="rgba(255,255,255,.7)" stroke-width="1.5" fill="none"/><path d="M1 8.5l8 5.5 8-5.5" stroke="rgba(255,255,255,.7)" stroke-width="1.4" stroke-linecap="round" fill="none"/><text x="22" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Lemlist</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 60 28" fill="none"><circle cx="5" cy="14" r="3.5" fill="#f472b6"/><circle cx="16" cy="8" r="3.5" fill="#f472b6"/><circle cx="16" cy="20" r="3.5" fill="#f472b6"/><line x1="8.5" y1="14" x2="12.5" y2="14" stroke="#f472b6" stroke-width="1.5"/><line x1="12.5" y1="14" x2="12.5" y2="8" stroke="#f472b6" stroke-width="1.5"/><line x1="12.5" y1="14" x2="12.5" y2="20" stroke="#f472b6" stroke-width="1.5"/><text x="24" y="20" font-family="Arial,sans-serif" font-weight="800" font-size="15" fill="white">n8n</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 82 28" fill="none"><path d="M3 8h12L8 14h10M3 20h12" stroke="#ff8c5a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="26" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Zapier</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 80 28" fill="none"><path d="M4 18L12 8M4 8h8v8" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><text x="22" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">Make</text></svg></div>
+    <div class="dl"><svg height="22" viewBox="0 0 100 28" fill="none"><circle cx="10" cy="14" r="3" fill="white"/><line x1="10" y1="5" x2="10" y2="8" stroke="#ff9478" stroke-width="2" stroke-linecap="round"/><line x1="10" y1="20" x2="10" y2="23" stroke="#ff9478" stroke-width="2" stroke-linecap="round"/><line x1="2" y1="11" x2="5" y2="11" stroke="#ff9478" stroke-width="2" stroke-linecap="round"/><line x1="15" y1="11" x2="18" y2="11" stroke="#ff9478" stroke-width="2" stroke-linecap="round"/><text x="24" y="20" font-family="Arial,sans-serif" font-weight="700" font-size="15" fill="white">HubSpot</text></svg></div>
+  </div></div>
+</section>
+
+<!-- ── PRICING ACCORDION ─────────────────────────────────────── -->
+<section id="pricing">
+  <div class="sec-tag r">⬡ Pricing</div>
+  <h2 class="r d1">Start free.<br>Scale when ready.</h2>
+  <p class="ssub r d2">Full SaaS from day one. Paystack billing — USD globally, NGN locally.</p>
+
+  <div class="pricing-accordion r d3" id="pricing-accordion">
+    <div class="pa-header" onclick="togglePricing()">
+      <div class="pa-title">View all plans & pricing ↓</div>
+      <div class="pa-icon" id="pa-icon">▼</div>
+    </div>
+    <div class="pa-content" id="pa-content">
+      <div class="pgrid">
+        <div class="pcard">
+          <div class="plan-name">Free</div>
+          <div class="plan-price">$0</div>
+          <div class="plan-period">forever</div>
+          <div class="plan-credits">500 credits / month</div>
+          <div class="pf inc">Syntax validation</div>
+          <div class="pf inc">MX / domain check</div>
+          <div class="pf inc">Spam filter detector</div>
+          <div class="pf inc">Infra detector</div>
+          <div class="pf">Burn score</div>
+          <div class="pf">Fresh Only export</div>
+          <div class="pf">Marketplace</div>
+          <a href="/signup"><button class="plan-btn">Get started</button></a>
+        </div>
+        <div class="pcard">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price"><sup>$</sup>10</div>
+          <div class="plan-period">per month</div>
+          <div class="plan-credits">25,000 credits / month</div>
+          <div class="pf inc">Everything in Free</div>
+          <div class="pf inc">Burn score</div>
+          <div class="pf inc">Fresh Only export</div>
+          <div class="pf inc">Bounce data submission</div>
+          <div class="pf">Marketplace</div>
+          <div class="pf">API access</div>
+          <a href="/signup"><button class="plan-btn">Get started</button></a>
+        </div>
+        <div class="pcard feat">
+          <div class="fbadge">Most popular</div>
+          <div class="plan-name">Growth</div>
+          <div class="plan-price"><sup>$</sup>49</div>
+          <div class="plan-period">per month</div>
+          <div class="plan-credits">100,000 credits / month</div>
+          <div class="pf inc">Everything in Starter</div>
+          <div class="pf inc">Marketplace access</div>
+          <div class="pf inc">Bounce history score</div>
+          <div class="pf inc">3 team seats</div>
+          <div class="pf">API access</div>
+          <a href="/signup"><button class="plan-btn fb">Get started</button></a>
+        </div>
+        <div class="pcard">
+          <div class="plan-name">Pro</div>
+          <div class="plan-price"><sup>$</sup>99</div>
+          <div class="plan-period">per month</div>
+          <div class="plan-credits">500,000 credits / month</div>
+          <div class="pf inc">Everything in Growth</div>
+          <div class="pf inc">REST API access</div>
+          <div class="pf inc">API key management</div>
+          <div class="pf inc">10 team seats</div>
+          <div class="pf inc">Priority processing</div>
+          <a href="/signup"><button class="plan-btn">Get started</button></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIAL ───────────────────────────────────────────── -->
+<section id="quote">
+  <div class="qm r">"</div>
+  <p class="qt r d1">List Intel helped our agency cut bounce rates in half and stop wasting sends on Mimecast-guarded inboxes we never even knew about."</p>
+  <div class="qa r d2">
+    <div class="qaimg">DN</div>
+    <div><div class="qaname">David N.</div><div class="qarole">Head of Growth · B2B Agency</div></div>
+  </div>
+</section>
+
+<!-- ── STATS ─────────────────────────────────────────────────── -->
+<div id="stats">
+  <div class="si r"><div class="sn">8</div><div class="sl">Intelligence layers per email</div></div>
+  <div class="si r d1"><div class="sn">95%</div><div class="sl">Gross margin from day one</div></div>
+  <div class="si r d2"><div class="sn">$10</div><div class="sl">Starting price per month</div></div>
+</div>
+
+<!-- ── TRY IT FREE — BURN SCORE WIDGET ─────────────────────── -->
+<section style="padding:80px 48px;background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="inner" style="max-width:640px;margin:0 auto;text-align:center;">
+    <div class="sec-tag r">⚡ Live Burn Score Check</div>
+    <h2 class="r d1" style="font-size:clamp(28px,4vw,42px);font-weight:800;letter-spacing:-.02em;margin-bottom:12px;">Check any email.<br><span class="ul">Free.</span></h2>
+    <p class="ssub r d2" style="margin-bottom:32px;">See if an email has been torched by other cold emailers — before you blast it yourself.</p>
+
+    <div id="try-widget" class="r d3" style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:left;">
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+        <input type="email" id="try-email" placeholder="Enter an email address..." style="flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;outline:none;transition:border .2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <button onclick="tryBurnScore()" id="try-btn" style="background:var(--accent);color:#fff;border:none;padding:12px 24px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;">Check score</button>
+      </div>
+      <div id="try-result" style="display:none;background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;">Burn Score</div>
+            <div style="display:flex;align-items:flex-end;gap:8px;margin-top:4px;">
+              <span id="try-score" style="font-size:36px;font-weight:800;line-height:1;"></span>
+              <span id="try-tag" style="font-size:13px;font-weight:700;padding:3px 10px;border-radius:6px;margin-bottom:4px;"></span>
+            </div>
+          </div>
+          <div id="try-email-display" style="font-size:12px;color:var(--muted);font-family:monospace;"></div>
+        </div>
+        <div style="width:100%;height:6px;background:#eee;border-radius:3px;overflow:hidden;">
+          <div id="try-bar" style="height:100%;border-radius:3px;transition:width .6s ease;"></div>
+        </div>
+        <div style="margin-top:14px;font-size:12px;color:var(--muted);line-height:1.5;" id="try-desc"></div>
+      </div>
+      <div id="try-error" style="display:none;text-align:center;padding:12px;font-size:13px;color:#b31c1c;"></div>
+    </div>
+    <div style="margin-top:16px;font-size:11px;color:var(--muted);">No account required · Rate limited to 60 checks/min · Privacy safe (SHA-256 hashed)</div>
+  </div>
+</section>
+
+<script>
+async function tryBurnScore() {
+  const email = document.getElementById('try-email').value.trim();
+  if (!email || !email.includes('@')) { alert("Please enter a valid email."); return; }
+  const btn = document.getElementById('try-btn');
+  btn.disabled = true; btn.innerText = 'Checking...';
+  document.getElementById('try-result').style.display = 'none';
+  document.getElementById('try-error').style.display = 'none';
+  try {
+    const res = await fetch(`/api/v1/public/score?email=${encodeURIComponent(email)}`);
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      document.getElementById('try-error').style.display = 'block';
+      document.getElementById('try-error').innerText = data.message || 'Rate limit exceeded. Try again shortly.';
+      return;
+    }
+    const score = data.data.burn_score, tag = data.data.burn_tag;
+    let color='#1b6015',bgColor='#d4eecf',desc='This email appears fresh. Low risk of deliverability problems.';
+    if(score>80){color='#b31c1c';bgColor='#fcd8d8';desc='This email is torched. Remove it from your list immediately.';}
+    else if(score>50){color='#964800';bgColor='#fde3c0';desc='Multiple cold emailers have already sent to this address. Proceed with caution.';}
+    else if(score>20){color='#786500';bgColor='#fdf5c0';desc='Warming up — this email has been seen a few times. Monitor it.';}
+    document.getElementById('try-score').innerText=score;document.getElementById('try-score').style.color=color;
+    document.getElementById('try-tag').innerText=tag;document.getElementById('try-tag').style.background=bgColor;document.getElementById('try-tag').style.color=color;
+    document.getElementById('try-bar').style.width=score+'%';document.getElementById('try-bar').style.background=color;
+    document.getElementById('try-email-display').innerText=email;document.getElementById('try-desc').innerText=desc;
+    document.getElementById('try-result').style.display='block';
+  }catch(e){document.getElementById('try-error').style.display='block';document.getElementById('try-error').innerText='Network error.';}
+  finally{btn.disabled=false;btn.innerText='Check score';}
+}
+document.getElementById('try-email').addEventListener('keypress',(e)=>{if(e.key==='Enter')tryBurnScore();});
+</script>
+
+<!-- ── FOOTER CTA ────────────────────────────────────────────── -->
+<section id="fcta">
+  <h2 class="fh r">Discover the full power of<br><span class="ul">List Intel</span> capabilities</h2>
+  <div class="fbtns r d1">
+    <a href="/login"><button class="bwo">Get a Demo</button></a>
+    <a href="/signup"><button class="byl">Start for Free</button></a>
+  </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────────── -->
+<footer>
+  <div class="fg">
+    <div>
+      <div class="fbrand">List<span>Intel</span></div>
+      <p class="fdesc">Email list intelligence for cold email teams. Verify, enrich, and score before every send.</p>
+      <div class="fcon">✉ hello@listintel.io<br>Built in Nigeria · Serving the world</div>
+    </div>
+    <div class="fc2"><h5>Solution</h5><a href="#pipeline">8-Layer Pipeline</a><a href="#marketplace">Marketplace</a><a href="#freshonly">Fresh Only</a><a href="#api">REST API</a><a href="#pricing">Pricing</a></div>
+    <div class="fc2"><h5>Customers</h5><a href="#">Agencies</a><a href="#">Solo operators</a><a href="#">Developers</a><a href="#">Enterprise</a></div>
+    <div class="fc2"><h5>Resources</h5><a href="#">API Docs</a><a href="#">Changelog</a><a href="#">Blog</a><a href="/login">Log In</a></div>
+  </div>
+  <div class="fbot">
+    <div class="fcopy">© 2026 List Intel. All rights reserved.</div>
+    <div class="fsoc"><a href="#">Twitter</a><a href="#">LinkedIn</a><a href="#">GitHub</a></div>
+  </div>
+</footer>
+
+<script>
+/* Scroll reveal */
+const obs = new IntersectionObserver(es => es.forEach(e => {
+  if(e.isIntersecting){e.target.classList.add('v');obs.unobserve(e.target);}
+}),{threshold:.08});
+document.querySelectorAll('.r').forEach(el => obs.observe(el));
+
+/* Toggle clicks */
+document.querySelectorAll('.tog').forEach(t => t.addEventListener('click',()=>{
+  t.classList.toggle('on');t.classList.toggle('off');
+}));
+
+/* Nav transparency */
+const nav = document.getElementById('main-nav');
+window.addEventListener('scroll',()=>{
+  if(window.scrollY>10){
+    nav.style.background='rgba(242,241,236,.88)';
+    nav.style.boxShadow='0 2px 20px rgba(0,0,0,.06)';
+  }else{
+    nav.style.background='rgba(242,241,236,.95)';
+    nav.style.boxShadow='none';
+  }
+});
+
+/* Pricing accordion - closed by default */
+function togglePricing(){
+  const acc = document.getElementById('pricing-accordion');
+  acc.classList.toggle('open');
+}
+
+/* Smooth scroll for anchor links */
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if(el){e.preventDefault();el.scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+});
+
+/* Session aware CTA */
+if (localStorage.getItem('access_token')) {
+  const navCta = document.getElementById('nav-cta');
+  if (navCta) { navCta.innerText = 'Go to Dashboard'; navCta.href = '/dashboard'; }
+  const heroCta = document.getElementById('hero-cta');
+  if (heroCta) {
+    heroCta.href = '/dashboard';
+    const heroBtn = heroCta.querySelector('button');
+    if (heroBtn) heroBtn.innerText = 'Go to Dashboard';
+  }
+}
+</script>
+{% endblock %}

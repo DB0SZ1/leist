@@ -1,0 +1,25 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Job History | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+  <div><div class="page-title">Job History</div><div class="page-sub">All your enrichment jobs</div></div>
+  <a href="/dashboard" class="btn-primary" style="padding:8px 16px;text-decoration:none;">New upload</a>
+</div>
+<div class="table-card">
+  <table class="tbl">
+    <thead><tr><th>File</th><th>Emails</th><th>Status</th><th>Date</th><th></th></tr></thead>
+    <tbody>
+      {% for job in jobs %}
+      <tr>
+        <td><b>{{ job.input_file_path.split('_', 1)[1] if '_' in job.input_file_path else job.input_file_path }}</b></td>
+        <td>{{ "{:,}".format(job.total_emails) }}</td>
+        <td><span class="status-pill sp-{{ job.status|lower }}">{{ job.status|title }}</span></td>
+        <td>{{ job.created_at.strftime('%b %d, %Y') }}</td>
+        <td><a href="/jobs/{{ job.id }}" class="icon-btn">&rarr;</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

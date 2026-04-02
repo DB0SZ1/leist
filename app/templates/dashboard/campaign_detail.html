@@ -1,0 +1,113 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Campaign Status | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div style="margin-bottom:24px;">
+    <a href="/outreach" style="font-size:13px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;margin-bottom:12px;">
+        &larr; Back to Outreach
+    </a>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+            <h1 style="font-size:24px;font-weight:800;margin:0 0 4px 0;">{{ campaign.name or "Untitled Campaign" }}</h1>
+            <div style="font-size:14px;color:var(--muted);text-transform:capitalize;">
+                Status: <strong>{{ campaign.status }}</strong>
+            </div>
+        </div>
+        <div style="display:flex;gap:12px;">
+            <button class="btn-ghost" onclick="alert('Pause logic not implemented in demo')">Pause</button>
+            <button class="btn-primary" onclick="alert('Settings view coming soon!')">Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics Pipeline -->
+<div style="display:grid;grid-template-columns:repeat(5, 1fr);gap:16px;margin-bottom:32px;">
+    <div class="card" style="margin:0;padding:20px;text-align:center;">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Sent</div>
+        <div style="font-size:24px;font-weight:800;">{{ analytics.sent }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">emails dispatched</div>
+    </div>
+    
+    <div class="card" style="margin:0;padding:20px;text-align:center;">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Opened</div>
+        <div style="font-size:24px;font-weight:800;color:var(--accent);">{{ analytics.opened }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+            {% if analytics.sent > 0 %}{{ ((analytics.opened / analytics.sent) * 100)|round(1) }}%{% else %}0%{% endif %} rate
+        </div>
+    </div>
+
+    <div class="card" style="margin:0;padding:20px;text-align:center;">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Clicked</div>
+        <div style="font-size:24px;font-weight:800;color:#00a4ef;">{{ analytics.clicked }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+            {% if analytics.sent > 0 %}{{ ((analytics.clicked / analytics.sent) * 100)|round(1) }}%{% else %}0%{% endif %} rate
+        </div>
+    </div>
+
+    <div class="card" style="margin:0;padding:20px;text-align:center;">
+        <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Replied</div>
+        <div style="font-size:24px;font-weight:800;color:#118d57;">{{ analytics.replied }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;">
+            {% if analytics.sent > 0 %}{{ ((analytics.replied / analytics.sent) * 100)|round(1) }}%{% else %}0%{% endif %} rate
+        </div>
+    </div>
+    
+    <div class="card" style="margin:0;padding:20px;text-align:center;background:#fff4eb;border-color:#ffdec2;">
+        <div style="font-size:11px;font-weight:800;color:#d95d39;text-transform:uppercase;margin-bottom:8px;">Bounced</div>
+        <div style="font-size:24px;font-weight:800;color:#b71d18;">{{ analytics.bounced }}</div>
+        <div style="font-size:11px;color:#d95d39;margin-top:4px;">
+            {% if analytics.sent > 0 %}{{ ((analytics.bounced / analytics.sent) * 100)|round(1) }}%{% else %}0%{% endif %} rate
+        </div>
+    </div>
+</div>
+
+<!-- Recipients Table -->
+<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:14px;font-weight:600;">Recipient Status</div>
+        <input type="text" placeholder="Search recipients..." style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;width:200px;">
+    </div>
+    
+    {% if not recipients %}
+    <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px;">No recipients in this campaign yet.</div>
+    {% else %}
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <tr style="border-bottom:1px solid var(--border);background:#fbfbfc;">
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Email</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Company</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Step</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Status</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Next Action</th>
+        </tr>
+        {% for r in recipients %}
+        <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:16px 20px;font-weight:600;">
+                {{ r.email }}
+                {% if r.merge_data.first_name %}
+                <div style="font-size:11px;color:var(--muted);font-weight:400;">{{ r.merge_data.first_name }} {{ r.merge_data.last_name }}</div>
+                {% endif %}
+            </td>
+            <td style="padding:16px 20px;">{{ r.merge_data.company or '-' }}</td>
+            <td style="padding:16px 20px;">{{ r.current_step_number }}</td>
+            <td style="padding:16px 20px;">
+                {% if r.status == 'replied' %}
+                <span class="pill pg">Replied</span>
+                {% elif r.status == 'bounced' %}
+                <span class="pill pr">Bounced</span>
+                {% else %}
+                <span class="pill py" style="text-transform:capitalize;">{{ r.status }}</span>
+                {% endif %}
+            </td>
+            <td style="padding:16px 20px;color:var(--muted);">
+                {% if r.next_action_at %}
+                {{ r.next_action_at.strftime("%b %d, %H:%M") }}
+                {% else %}
+                -
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</div>
+{% endblock %}

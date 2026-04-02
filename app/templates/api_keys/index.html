@@ -1,0 +1,114 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}API Keys | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+  <div><div class="page-title">API Keys</div><div class="page-sub">Integrate List Intel into your tools and automations</div></div>
+  {% if user.plan in ['pro', 'agency'] %}
+  <button class="btn-primary" onclick="$store.modal.open('newKeyModal')">Create new key</button>
+  {% else %}
+  <a href="/billing" class="btn-primary" style="text-decoration:none;">Upgrade to Pro</a>
+  {% endif %}
+</div>
+
+{% if user.plan not in ['pro', 'agency'] %}
+<div class="card" style="margin-bottom:20px;">
+  <div class="empty">
+    <div class="empty-icon" style="background:rgba(245,158,11,.1);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" stroke="#964800" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+    <div class="empty-title">Pro plan required</div>
+    <div class="empty-sub">API access is available on Pro and above. Upgrade to integrate and automate.</div>
+    <a href="/billing" class="btn-sm-p" style="background:#f59e0b;text-decoration:none;">Upgrade to Pro &rarr;</a>
+  </div>
+</div>
+{% endif %}
+
+<div class="table-card" {% if user.plan not in ['pro', 'agency'] %}style="opacity:0.5;pointer-events:none;"{% endif %}>
+  <div class="table-header"><div class="th-title">Your API keys</div></div>
+  {% if keys %}
+  <div style="padding:20px 18px;">
+    {% for key in keys %}
+    <div class="key-row">
+      <div style="flex:1;"><div style="font-size:13px;font-weight:700;">{{ key.label }}</div><div class="key-meta">Created {{ key.created_at.strftime('%b %d') }} &middot; Last used {% if key.last_used_at %}{{ key.last_used_at.strftime('%b %d, %Y') }}{% else %}never{% endif %}</div></div>
+      <div class="key-code">li_live_••••••••••••••••••••••</div>
+      <button class="btn-ghost" style="font-size:11px;padding:6px 12px;" onclick="revokeKey('{{ key.id }}')">Revoke</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="es-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 7a4 4 0 11-8 0 4 4 0 018 0zM21 21l-5-5" stroke="#2a5426" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+    <div class="es-title">No API keys yet</div>
+    <div class="es-sub">Create an API key to integrate List Intel into your tools, scripts, and automations.</div>
+    <button class="btn-primary" onclick="$store.modal.open('newKeyModal')">Create first key &rarr;</button>
+  </div>
+  {% endif %}
+</div>
+
+<div style="margin-top:16px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;">
+  <div style="font-size:13px;font-weight:700;margin-bottom:12px;">API endpoints</div>
+  <div style="font-family:monospace;font-size:12px;background:#f5f5f0;border-radius:8px;padding:14px;color:#444;line-height:2;">
+    POST /api/v1/check &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &mdash; Single email check (sync)<br>
+    POST /api/v1/bulk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &mdash; Upload CSV (async)<br>
+    GET &nbsp;/api/v1/jobs/{id} &nbsp;&nbsp; &mdash; Job status + results<br>
+    POST /api/v1/bounces &nbsp;&nbsp;&nbsp;&nbsp; &mdash; Submit bounce data<br>
+    GET &nbsp;/api/v1/score &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &mdash; Burn score only
+  </div>
+  <div style="margin-top:12px;font-size:12px;color:var(--muted);">Use header: <b>x-api-key: li_live_...</b></div>
+</div>
+
+<div x-data="{ label: '' }" id="newKeyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:100%;max-width:400px;">
+        <h3 style="font-weight:800;margin-bottom:16px;">Create API Key</h3>
+        <label style="font-size:12px;font-weight:700;display:block;margin-bottom:6px;">Key Label</label>
+        <input type="text" x-model="label" class="form-input" placeholder="e.g. Zapier Integration" style="width:100%;margin-bottom:16px;padding:8px;border:1px solid var(--border);border-radius:6px;">
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button class="btn-ghost" onclick="document.getElementById('newKeyModal').style.display='none'">Cancel</button>
+            <button class="btn-primary" @click="createKey(label)">Create Key</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.store('modal', {
+        open(id) { document.getElementById(id).style.display = 'flex'; },
+        close(id) { document.getElementById(id).style.display = 'none'; }
+    });
+});
+
+async function createKey(label) {
+    if(!label) return;
+    try {
+        const res = await apiFetch('/api/v1/keys', {
+            method: 'POST',
+            body: JSON.stringify({ label: label })
+        });
+        if(res.data && res.data.raw_key) {
+            prompt("Here is your new API Key. Save it now, you will never see it again:", res.data.raw_key);
+            location.reload();
+        }
+    } catch(err) {
+        $toast.show('error', 'Failed to create key');
+    }
+}
+
+async function revokeKey(id) {
+    sysConfirm(
+        'Revoke API Key',
+        'Are you sure you want to revoke this key? Automations using this key will immediately stop working.',
+        'Revoke key',
+        true,
+        async () => {
+            try {
+                await apiFetch('/api/v1/keys/' + id, { method: 'DELETE' });
+                location.reload();
+            } catch(err) {
+                $toast.show('error', 'Failed to revoke key');
+            }
+        }
+    );
+}
+</script>
+{% endblock %}

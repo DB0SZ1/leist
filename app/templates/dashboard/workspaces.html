@@ -1,0 +1,244 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Agency Workspaces | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Agency Workspaces</div>
+    <div class="page-sub">Manage team access, shared credit pools, and fast context switching.</div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;" x-data="workspaceApp">
+  <!-- Left Side: Workspace Context -->
+  <div style="display:flex;flex-direction:column;gap:20px;">
+    
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:16px;">Active Context</div>
+      
+      <div style="padding:16px;border-radius:8px;border:1px dashed var(--border);background:var(--bg);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:2px;">Currently viewing as</div>
+          <div style="font-weight:800;color:var(--primary);font-size:16px;">{{ current_workspace_name }}</div>
+        </div>
+        {% if user.active_workspace_id %}
+        <button class="btn-ghost" @click="switchWorkspace(null)" style="font-size:12px;">Switch to Personal</button>
+        {% endif %}
+      </div>
+      
+      <div style="font-size:13px;font-weight:800;margin-bottom:12px;margin-top:24px;">Your Workspaces</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        {% for ws in my_workspaces %}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border:1px solid var(--border);border-radius:8px;">
+          <div>
+            <div style="font-weight:700;font-size:14px;">{{ ws.name }}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px;">Role: {{ ws.role | title }} &bull; Pool: {{ ws.credits }} credits</div>
+          </div>
+          {% if user.active_workspace_id | string != ws.id %}
+          <button class="btn-ghost" @click="switchWorkspace('{{ ws.id }}')">Switch Context</button>
+          {% else %}
+          <span style="font-size:12px;font-weight:700;color:#1b6015;">Active</span>
+          {% endif %}
+        </div>
+        {% else %}
+        <div style="font-size:12px;color:var(--muted);font-style:italic;">You are not a member of any agency workspaces.</div>
+        {% endfor %}
+      </div>
+
+    </div>
+
+    {% if user.active_workspace_id %}
+    <!-- Branding Settings -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:8px;">Report Branding</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:16px;">Customize the styling of PDF reports generated for clients in this workspace.</div>
+      
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <label class="form-label" style="font-size:11px;">Company Name</label>
+          <input type="text" class="form-input" x-model="brandCompany" placeholder="e.g. Acme Marketing">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <label class="form-label" style="font-size:11px;">Primary Color Code</label>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <input type="color" x-model="brandColor" style="width:32px;height:32px;padding:0;border:none;border-radius:4px;cursor:pointer;">
+              <input type="text" class="form-input" x-model="brandColor" style="flex:1;">
+            </div>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:11px;">Logo URL</label>
+            <input type="url" class="form-input" x-model="brandLogo" placeholder="https://...">
+          </div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+          <button class="btn-primary" style="padding:8px 16px;font-size:12px;" @click="updateBranding" :disabled="loading">Save Branding</button>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Create Workspace -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:8px;">Create New Agency Workspace</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:16px;">Agency and Growth plans can establish shared spaces to invite analysts and manage multiple clients.</div>
+      
+      <div style="display:flex;gap:12px;">
+        <input type="text" class="form-input" style="flex:1;" x-model="newWsName" placeholder="e.g. Acme Agency">
+        <button class="btn-primary" @click="createWorkspace" :disabled="loading || !newWsName">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Member Management -->
+  <div>
+    {% if user.active_workspace_id %}
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+        Team Members
+        <span class="status-pill sp-complete" style="font-size:11px;">Shared Credit Pool</span>
+      </div>
+      
+      <!-- Invite -->
+      <div style="background:var(--bg);padding:16px;border-radius:8px;border:1px solid var(--border);margin-bottom:20px;">
+        <div style="font-weight:700;font-size:12px;margin-bottom:12px;">Invite to {{ current_workspace_name }}</div>
+        <div style="display:grid;grid-template-columns:1fr 120px 80px;gap:8px;">
+          <input type="email" x-model="inviteEmail" class="form-input" style="font-size:12px;padding:6px 10px;" placeholder="colleague@domain.com">
+          <select x-model="inviteRole" class="form-input" style="font-size:12px;padding:6px 10px;">
+            <option value="analyst">Analyst</option>
+            <option value="admin">Admin</option>
+            <option value="viewer">Viewer</option>
+          </select>
+          <button class="btn-primary" style="padding:4px;" @click="inviteMember" :disabled="loading || !inviteEmail">Add</button>
+        </div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:6px;">User must have already registered a List Intel account.</div>
+      </div>
+
+      <!-- Roster -->
+      <table class="tbl">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for member in active_members %}
+          <tr>
+            <td>
+              <div style="font-weight:700;">{{ member.email }}</div>
+            </td>
+            <td>
+              <span class="status-pill {% if member.role == 'owner' %}sp-failed{% elif member.role == 'admin' %}sp-processing{% else %}sp-complete{% endif %}">{{ member.role | title }}</span>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+    {% else %}
+    <div style="background:#f9fafb;border:1px dashed var(--border);border-radius:12px;padding:40px;text-align:center;color:var(--muted);">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:16px;opacity:0.5;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;">No Active Context</div>
+      <div style="font-size:13px;line-height:1.5;max-width:260px;margin:0 auto;">Switch to an agency workspace to manage team members and view the shared roster.</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('workspaceApp', () => ({
+        newWsName: '',
+        inviteEmail: '',
+        inviteRole: 'analyst',
+        brandCompany: '{{ active_ws.brand_company_name if active_ws and active_ws.brand_company_name else "" }}',
+        brandColor: '{{ active_ws.brand_color if active_ws and active_ws.brand_color else "#1b6015" }}',
+        brandLogo: '{{ active_ws.brand_logo_url if active_ws and active_ws.brand_logo_url else "" }}',
+        loading: false,
+
+        async createWorkspace() {
+            this.loading = true;
+            try {
+                const res = await apiFetch('/api/v1/workspaces', {
+                    method: 'POST',
+                    body: JSON.stringify({ name: this.newWsName })
+                });
+                if (res.success) {
+                    window.location.reload();
+                } else {
+                    window.toastStore && toastStore.show('error', 'Error', res.error);
+                }
+            } catch(e) {
+                window.toastStore && toastStore.show('error', 'Error', 'Something went wrong');
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async updateBranding() {
+            this.loading = true;
+            try {
+                const res = await apiFetch('/api/v1/workspaces/brand', {
+                    method: 'PATCH',
+                    body: JSON.stringify({ 
+                        brand_company_name: this.brandCompany,
+                        brand_color: this.brandColor,
+                        brand_logo_url: this.brandLogo
+                    })
+                });
+                if (res.success) {
+                    window.toastStore && toastStore.show('success', 'Saved', res.message);
+                } else {
+                    window.toastStore && toastStore.show('error', 'Error', res.error);
+                }
+            } catch(e) {
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async switchWorkspace(id) {
+            this.loading = true;
+            try {
+                const res = await apiFetch('/api/v1/workspaces/switch', {
+                    method: 'POST',
+                    body: JSON.stringify({ workspace_id: id })
+                });
+                if (res.success) {
+                    window.location.reload();
+                } else {
+                    window.toastStore && toastStore.show('error', 'Error', res.error);
+                }
+            } catch(e) {
+            } finally {
+                this.loading = false;
+            }
+        },
+
+        async inviteMember() {
+            this.loading = true;
+            try {
+                const res = await apiFetch('/api/v1/workspaces/invite', {
+                    method: 'POST',
+                    body: JSON.stringify({ email: this.inviteEmail, role: this.inviteRole })
+                });
+                if (res.success) {
+                    window.toastStore && toastStore.show('success', 'Invited', res.message);
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    window.toastStore && toastStore.show('error', 'Error', res.error);
+                }
+            } catch(e) {
+            } finally {
+                this.loading = false;
+            }
+        }
+    }));
+});
+</script>
+{% endblock %}

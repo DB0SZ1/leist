@@ -1,0 +1,977 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f2f1ec;--white:#fff;--dark:#172617;--dark2:#1c2e1c;
+  --accent:#2a5426;--accent2:#3d7a36;--yellow:#cce836;
+  --text:#172617;--muted:#6a796a;--border:#d8d8cf;--surface:#fafaf6;
+  --font:'Bricolage Grotesque',Georgia,sans-serif;
+}
+body{font-family:var(--font);background:#e8e7e2;color:var(--text);}
+
+/* NAV TABS */
+.nav-tabs{display:flex;gap:4px;padding:16px 20px 0;background:#e8e7e2;border-bottom:1px solid var(--border);overflow-x:auto;}
+.tab{padding:8px 16px;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;cursor:pointer;border:1px solid transparent;border-bottom:none;white-space:nowrap;color:var(--muted);background:transparent;font-family:var(--font);}
+.tab.active{background:var(--bg);color:var(--accent);border-color:var(--border);}
+.tab:hover:not(.active){color:var(--text);}
+
+/* SCREEN CONTAINER */
+.screen{display:none;background:var(--bg);min-height:600px;}
+.screen.active{display:block;}
+
+/* ── SHARED COMPONENTS ── */
+.topbar{height:56px;background:rgba(242,241,236,.96);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:10;}
+.logo-sm{display:flex;align-items:center;gap:8px;}
+.lmark-sm{width:24px;height:24px;border-radius:5px;background:var(--accent);display:flex;align-items:center;justify-content:center;}
+.lname-sm{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-.3px;}
+.lname-sm span{color:var(--accent);}
+.user-chip{display:flex;align-items:center;gap:8px;padding:5px 10px 5px 6px;border:1px solid var(--border);border-radius:100px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;background:#fff;}
+.uavatar{width:24px;height:24px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;}
+.plan-badge{font-size:10px;font-weight:700;background:rgba(42,84,38,.1);color:var(--accent);padding:2px 7px;border-radius:100px;}
+
+/* SIDEBAR */
+.app-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(600px - 56px);}
+.sidebar{background:#fff;border-right:1px solid var(--border);padding:20px 0;}
+.nav-section{padding:0 12px;margin-bottom:4px;}
+.nav-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;padding:0 8px;margin-bottom:6px;margin-top:16px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all .15s;}
+.nav-item:hover{background:var(--surface);color:var(--text);}
+.nav-item.active{background:rgba(42,84,38,.08);color:var(--accent);font-weight:700;}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;}
+.nav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* CREDITS WIDGET */
+.credits-widget{margin:16px 12px 0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;}
+.cw-label{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;}
+.cw-num{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-.02em;line-height:1;}
+.cw-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.cw-bar{height:4px;background:#e8e8e0;border-radius:2px;margin-top:8px;overflow:hidden;}
+.cw-fill{height:100%;border-radius:2px;background:var(--accent);}
+.cw-upgrade{display:block;text-align:center;margin-top:10px;padding:7px;background:var(--accent);color:#fff;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;}
+
+/* MAIN CONTENT */
+.main-content{padding:28px;overflow:auto;}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.02em;}
+.page-sub{font-size:13px;color:var(--muted);margin-top:3px;}
+
+/* STAT CARDS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;}
+.sc-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;}
+.sc-val{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.03em;line-height:1;}
+.sc-delta{font-size:11px;font-weight:600;margin-top:4px;}
+.delta-up{color:#1b6015;}
+.delta-dn{color:#b31c1c;}
+
+/* UPLOAD ZONE */
+.upload-card{background:#fff;border:1.5px dashed var(--border);border-radius:14px;padding:36px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:20px;}
+.upload-card:hover{border-color:var(--accent);background:rgba(42,84,38,.02);}
+.upload-icon{width:48px;height:48px;border-radius:12px;background:rgba(42,84,38,.08);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;}
+.upload-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.upload-sub{font-size:13px;color:var(--muted);}
+.upload-badge{display:inline-block;margin-top:12px;padding:4px 12px;background:rgba(42,84,38,.08);color:var(--accent);border-radius:100px;font-size:11px;font-weight:700;}
+
+/* JOB PROGRESS */
+.job-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px;}
+.jc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.jc-name{font-size:13px;font-weight:700;color:var(--text);}
+.jc-meta{font-size:11px;color:var(--muted);margin-top:1px;}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;}
+.sp-processing{background:#e8f0fe;color:#1a4c9a;}
+.sp-complete{background:#d4eecf;color:#1b6015;}
+.sp-queued{background:#fdf5c0;color:#786500;}
+.sp-failed{background:#fcd8d8;color:#b31c1c;}
+.prog-track{height:5px;background:#eee;border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;background:var(--accent);transition:width 1s;}
+.prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:5px;}
+
+/* TABLE */
+.table-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.table-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.th-title{font-size:13px;font-weight:700;}
+.th-actions{display:flex;gap:8px;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;background:#fafaf6;border-bottom:1px solid var(--border);}
+.tbl td{padding:10px 14px;border-bottom:1px solid #f0f0e8;font-size:12px;color:#444;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:#fafaf6;}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;}
+.pg{background:#d4eecf;color:#1b6015;}.pr{background:#fcd8d8;color:#b31c1c;}
+.po{background:#fde3c0;color:#964800;}.pb{background:#d6e8fc;color:#1a4c9a;}
+.py{background:#fdf5c0;color:#786500;}
+.sbw{display:inline-flex;align-items:center;gap:5px;}
+.sb{width:40px;height:4px;background:#eee;border-radius:2px;overflow:hidden;display:inline-block;}
+.sbf{height:100%;border-radius:2px;display:block;}
+.icon-btn{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);}
+.icon-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* BUTTONS */
+.btn-primary{background:var(--accent);color:#fff;border:none;padding:9px 18px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary:hover{background:var(--accent2);}
+.btn-ghost{background:none;border:1px solid var(--border);padding:8px 16px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;color:var(--muted);transition:all .15s;}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger{background:#fcd8d8;color:#b31c1c;border:none;padding:8px 16px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;}
+
+/* FORM */
+.form-group{margin-bottom:16px;}
+.form-label{display:block;font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.form-input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text);background:#fff;transition:border .15s;}
+.form-input:focus{outline:none;border-color:var(--accent);}
+.form-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* AUTH SCREENS */
+.auth-wrap{min-height:600px;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;}
+.auth-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:36px;width:100%;max-width:380px;}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-title{font-size:22px;font-weight:800;text-align:center;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px;}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:11px;color:var(--muted);}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* JOB DETAIL */
+.detail-grid{display:grid;grid-template-columns:1fr 280px;gap:16px;}
+.result-summary{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;}
+.rs-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;}
+.rs-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5f5f0;font-size:13px;}
+.rs-row:last-child{border:none;}
+.filter-panel{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;}
+.fp-title{font-size:13px;font-weight:700;margin-bottom:14px;}
+.fp-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f0;font-size:12px;color:var(--text);}
+.fp-row:last-of-type{border:none;}
+.toggle{width:32px;height:18px;border-radius:100px;position:relative;cursor:pointer;transition:background .15s;flex-shrink:0;}
+.toggle.on{background:var(--accent);}.toggle.off{background:#d0d0c8;}
+.toggle::after{content:'';position:absolute;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .12s;}
+.toggle.on::after{left:16px;}.toggle.off::after{left:2px;}
+
+/* BILLING */
+.plan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.plan-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;}
+.plan-card.current{border:2px solid var(--accent);}
+.current-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:9px;font-weight:700;padding:3px 10px;border-radius:0 0 7px 7px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;}
+.plan-name{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+.plan-price{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-.03em;line-height:1;margin-bottom:2px;}
+.plan-price sup{font-size:14px;vertical-align:super;}
+.plan-period{font-size:11px;color:var(--muted);margin-bottom:12px;}
+.plan-credits{font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.pf{font-size:11px;color:var(--muted);padding:4px 0;display:flex;align-items:center;gap:6px;}
+.pf::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--border);flex-shrink:0;}
+.pf.inc{color:var(--text);}.pf.inc::before{background:var(--accent);}
+.plan-btn{display:block;width:100%;margin-top:16px;padding:8px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);text-align:center;}
+.plan-btn.active-btn{background:var(--accent);border-color:var(--accent);color:#fff;}
+.plan-btn.current-btn{background:rgba(42,84,38,.08);border-color:rgba(42,84,38,.2);color:var(--accent);}
+
+/* MARKETPLACE */
+.trade-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;}
+.tc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.tc-title{font-size:13px;font-weight:700;color:var(--text);}
+.tc-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.tc-stats{display:flex;gap:12px;margin-top:10px;}
+.tc-stat{font-size:11px;color:var(--muted);}
+.tc-stat b{color:var(--text);font-weight:700;}
+
+/* API KEYS */
+.key-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border);}
+.key-row:last-child{border:none;}
+.key-code{font-family:monospace;font-size:12px;background:#f5f5f0;padding:4px 10px;border-radius:6px;color:var(--text);flex:1;}
+.key-meta{font-size:11px;color:var(--muted);}
+
+/* TOAST demo */
+.toast-demo{display:flex;flex-direction:column;gap:8px;padding:16px;}
+.toast{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:10px;border:1px solid;max-width:320px;}
+.toast-success{background:#f0f8ee;border-color:#c4e0bf;}
+.toast-error{background:#fff0f0;border-color:#fcd8d8;}
+.toast-warning{background:#fffbee;border-color:#fde3c0;}
+.toast-info{background:#eff5fe;border-color:#d6e8fc;}
+.toast-icon{font-size:14px;margin-top:1px;flex-shrink:0;}
+.toast-title{font-size:12px;font-weight:700;color:var(--text);}
+.toast-msg{font-size:11px;color:var(--muted);margin-top:1px;}
+.toast-close{margin-left:auto;font-size:12px;color:var(--muted);cursor:pointer;flex-shrink:0;}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 20px;}
+.es-icon{width:48px;height:48px;border-radius:12px;background:rgba(42,84,38,.08);margin:0 auto 14px;display:flex;align-items:center;justify-content:center;}
+.es-title{font-size:15px;font-weight:700;margin-bottom:6px;}
+.es-sub{font-size:13px;color:var(--muted);max-width:280px;margin:0 auto 20px;line-height:1.5;}
+</style>
+
+<!-- TAB NAV -->
+<div class="nav-tabs">
+  <button class="tab active" onclick="show('login')">Login</button>
+  <button class="tab" onclick="show('signup')">Sign Up</button>
+  <button class="tab" onclick="show('verify')">Verify Email</button>
+  <button class="tab" onclick="show('dashboard')">Dashboard</button>
+  <button class="tab" onclick="show('job-detail')">Job Detail</button>
+  <button class="tab" onclick="show('jobs')">Job History</button>
+  <button class="tab" onclick="show('marketplace')">Marketplace</button>
+  <button class="tab" onclick="show('billing')">Billing</button>
+  <button class="tab" onclick="show('api-keys')">API Keys</button>
+  <button class="tab" onclick="show('settings')">Settings</button>
+  <button class="tab" onclick="show('toasts')">Toast & Modals</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- LOGIN -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;">
+          <div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div>
+          <span class="lname-sm">List<span>Intel</span></span>
+        </div>
+      </div>
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-sub">Log in to your account</div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" placeholder="you@company.com" value="marcus@agency.co"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" placeholder="••••••••" value="••••••••••"/>
+      </div>
+      <div style="text-align:right;margin:-8px 0 16px;"><a style="font-size:11px;color:var(--accent);font-weight:700;">Forgot password?</a></div>
+      <button class="btn-primary" style="width:100%;justify-content:center;padding:11px;" onclick="show('dashboard')">Log in</button>
+      <div class="auth-divider">or</div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);">Don't have an account? <span style="color:var(--accent);font-weight:700;cursor:pointer;" onclick="show('signup')">Sign up free</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SIGNUP -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-signup" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:20px;">
+          <div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div>
+          <span class="lname-sm">List<span>Intel</span></span>
+        </div>
+      </div>
+      <div class="auth-title">Create your account</div>
+      <div class="auth-sub">Free to start · 500 credits included</div>
+      <div class="form-group">
+        <label class="form-label">Full name</label>
+        <input class="form-input" type="text" placeholder="Marcus Okafor"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" placeholder="you@company.com"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" type="password" placeholder="Min 8 characters"/>
+        <div class="form-hint">At least 8 characters</div>
+      </div>
+      <button class="btn-primary" style="width:100%;justify-content:center;padding:11px;margin-top:4px;" onclick="show('verify')">Create account</button>
+      <div style="margin-top:14px;padding:10px;background:rgba(42,84,38,.06);border-radius:8px;font-size:11px;color:var(--muted);text-align:center;">
+        By signing up you agree to our <span style="color:var(--accent);font-weight:700;">Terms</span> and <span style="color:var(--accent);font-weight:700;">Privacy Policy</span>
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px;">Already have an account? <span style="color:var(--accent);font-weight:700;cursor:pointer;" onclick="show('login')">Log in</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- VERIFY EMAIL -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-verify" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-card" style="text-align:center;">
+      <div style="width:56px;height:56px;border-radius:14px;background:rgba(42,84,38,.1);margin:0 auto 20px;display:flex;align-items:center;justify-content:center;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="#2a5426" stroke-width="2"/><path d="M3 7l9 7 9-7" stroke="#2a5426" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div class="auth-title">Check your email</div>
+      <div style="font-size:13px;color:var(--muted);margin:8px 0 24px;line-height:1.6;">We sent a verification link to<br><b style="color:var(--text);">marcus@agency.co</b></div>
+      <button class="btn-primary" style="width:100%;justify-content:center;padding:11px;" onclick="show('dashboard')">I've verified my email</button>
+      <div style="margin-top:16px;font-size:12px;color:var(--muted);">Didn't get it? <span style="color:var(--accent);font-weight:700;cursor:pointer;">Resend email</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- DASHBOARD (main) -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+  <div class="topbar">
+    <div class="logo-sm">
+      <div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div>
+      <span class="lname-sm">List<span>Intel</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="plan-badge">Free</span>
+      <div class="user-chip">
+        <div class="uavatar">MO</div>
+        Marcus O.
+        <svg width="10" height="10" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="#6a796a" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-item active">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/><rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/></svg>
+          Dashboard
+        </div>
+        <div class="nav-label">Analysis</div>
+        <div class="nav-item" onclick="show('jobs')">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Job History
+        </div>
+        <div class="nav-item" onclick="show('marketplace')">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M2 5l2-2h8l2 2v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" stroke="currentColor" stroke-width="1.4"/><path d="M6 13V8h4v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Marketplace
+        </div>
+        <div class="nav-label">Account</div>
+        <div class="nav-item" onclick="show('api-keys')">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M7 9a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.3"/><path d="M9.5 6.5l4 4-1.5 1.5L10.5 10 9 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          API Keys
+        </div>
+        <div class="nav-item" onclick="show('billing')">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 7h12" stroke="currentColor" stroke-width="1.3"/></svg>
+          Billing
+        </div>
+        <div class="nav-item" onclick="show('settings')">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Settings
+        </div>
+      </div>
+      <div class="credits-widget">
+        <div class="cw-label">Credits</div>
+        <div class="cw-num">342</div>
+        <div class="cw-sub">of 500 remaining</div>
+        <div class="cw-bar"><div class="cw-fill" style="width:68%"></div></div>
+        <div class="cw-upgrade" onclick="show('billing')">Upgrade plan →</div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">Upload a list to get started</div>
+        </div>
+        <button class="btn-primary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 6l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Upload list
+        </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="sc-label">Total uploaded</div>
+          <div class="sc-val">48,200</div>
+          <div class="sc-delta delta-up">↑ 12,400 this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-label">Fresh rate</div>
+          <div class="sc-val">66%</div>
+          <div class="sc-delta delta-dn">↓ 4% vs last upload</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-label">Mimecast found</div>
+          <div class="sc-val">2,847</div>
+          <div class="sc-delta" style="color:var(--muted);">Across all jobs</div>
+        </div>
+        <div class="stat-card">
+          <div class="sc-label">Jobs run</div>
+          <div class="sc-val">14</div>
+          <div class="sc-delta" style="color:var(--muted);">Last 30 days</div>
+        </div>
+      </div>
+
+      <!-- Upload zone -->
+      <div class="upload-card">
+        <div class="upload-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4v12M6 8l6-6 6 6" stroke="#2a5426" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18h16" stroke="#2a5426" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="upload-title">Drop your CSV here to analyse</div>
+        <div class="upload-sub">We auto-detect the email column. Max 50MB. Supports .csv and .xlsx</div>
+        <div class="upload-badge">8 intelligence layers · runs in seconds</div>
+      </div>
+
+      <!-- Recent jobs -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="th-title">Recent jobs</div>
+          <span class="btn-ghost" style="font-size:12px;padding:6px 12px;cursor:pointer;" onclick="show('jobs')">View all →</span>
+        </div>
+        <table class="tbl">
+          <thead><tr><th>File</th><th>Emails</th><th>Fresh</th><th>Burned</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><b style="font-size:13px;">uk_leads_q1.csv</b></td>
+              <td>12,400</td>
+              <td><span class="pill pg">8,210</span></td>
+              <td><span class="pill pr">3,105</span></td>
+              <td><span class="status-pill sp-complete">Complete</span></td>
+              <td>Today</td>
+              <td><span class="icon-btn" onclick="show('job-detail')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+            </tr>
+            <tr>
+              <td><b style="font-size:13px;">saas_prospects.csv</b></td>
+              <td>8,900</td>
+              <td><span class="pill pg">5,440</span></td>
+              <td><span class="pill pr">2,890</span></td>
+              <td><span class="status-pill sp-complete">Complete</span></td>
+              <td>Yesterday</td>
+              <td><span class="icon-btn" onclick="show('job-detail')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+            </tr>
+            <tr>
+              <td><b style="font-size:13px;">ecom_march.csv</b></td>
+              <td>22,000</td>
+              <td>—</td>
+              <td>—</td>
+              <td><span class="status-pill sp-processing">Processing</span></td>
+              <td>Today</td>
+              <td><span class="icon-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td>
+            </tr>
+          </tbody>
+        </table>
+        <!-- Processing job progress -->
+        <div style="padding:14px 18px;border-top:1px solid var(--border);background:#fafaf6;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:12px;font-weight:700;">ecom_march.csv — processing</span>
+            <span class="status-pill sp-processing">Enriching</span>
+          </div>
+          <div class="prog-track"><div class="prog-fill" id="prog" style="width:62%"></div></div>
+          <div class="prog-label"><span>Spam filter + burn score running</span><span>62%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- JOB DETAIL -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-job-detail" class="screen">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span style="font-size:12px;color:var(--muted);cursor:pointer;" onclick="show('dashboard')">← Dashboard</span>
+      <span style="color:var(--border);">/</span>
+      <span style="font-size:13px;font-weight:700;">uk_leads_q1.csv</span>
+      <span class="status-pill sp-complete">Complete</span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn-ghost" style="font-size:12px;padding:7px 14px;">Share</button>
+      <button class="btn-primary" style="font-size:12px;padding:7px 14px;">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 14h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Download CSV
+      </button>
+    </div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-item" onclick="show('dashboard')">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/><rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/></svg>
+          Dashboard
+        </div>
+        <div class="nav-item active">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+          Job detail
+        </div>
+      </div>
+      <div class="credits-widget">
+        <div class="cw-label">Credits used</div>
+        <div class="cw-num" style="color:var(--accent);">12,400</div>
+        <div class="cw-sub">for this job</div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);">342 remaining</div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="detail-grid">
+        <div>
+          <!-- Summary cards -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+            <div class="stat-card"><div class="sc-label">Total</div><div class="sc-val">12,400</div></div>
+            <div class="stat-card"><div class="sc-label">Fresh</div><div class="sc-val" style="color:#1b6015;">8,210</div><div class="sc-delta delta-up">66.2%</div></div>
+            <div class="stat-card"><div class="sc-label">Burned / Torched</div><div class="sc-val" style="color:#b31c1c;">3,105</div><div class="sc-delta delta-dn">25.0%</div></div>
+          </div>
+          <!-- Breakdown -->
+          <div class="result-summary">
+            <div class="rs-title">Intelligence breakdown</div>
+            <div class="rs-row"><span style="font-size:12px;">Mimecast detected</span><span class="pill pr">847</span></div>
+            <div class="rs-row"><span style="font-size:12px;">Proofpoint detected</span><span class="pill po">312</span></div>
+            <div class="rs-row"><span style="font-size:12px;">Google Workspace</span><span class="pill pg">5,840</span></div>
+            <div class="rs-row"><span style="font-size:12px;">Microsoft 365</span><span class="pill pb">4,200</span></div>
+            <div class="rs-row"><span style="font-size:12px;">Domain &lt;180d (High Risk)</span><span class="pill pr">614</span></div>
+            <div class="rs-row"><span style="font-size:12px;">Catchall detected</span><span class="pill py">388</span></div>
+            <div class="rs-row"><span style="font-size:12px;">Disposable / role email</span><span class="pill pr">201</span></div>
+          </div>
+          <!-- Enriched table -->
+          <div class="table-card">
+            <div class="table-header">
+              <div class="th-title">Enriched results — first 5 rows</div>
+              <span style="font-size:11px;color:var(--muted);">12,400 total rows in download</span>
+            </div>
+            <div style="overflow-x:auto;">
+              <table class="tbl" style="min-width:700px;">
+                <thead><tr><th>Email</th><th>Syntax</th><th>MX</th><th>Spam filter</th><th>Infra</th><th>Domain risk</th><th>Burn</th><th>Tag</th></tr></thead>
+                <tbody>
+                  <tr><td style="font-weight:600;font-size:12px;">john@techcorp.io</td><td><span class="pill pg">valid</span></td><td><span class="pill pg">✓</span></td><td>—</td><td><span class="pill pb">GWS</span></td><td><span class="pill pg">Safe</span></td><td><div class="sbw"><div class="sb"><div class="sbf" style="width:8%;background:#1b6015"></div></div><b style="color:#1b6015;font-size:11px;">8</b></div></td><td><span class="pill pg">Fresh</span></td></tr>
+                  <tr><td style="font-weight:600;font-size:12px;">vp@enterprise.co</td><td><span class="pill pg">valid</span></td><td><span class="pill pg">✓</span></td><td><span class="pill pr">Mimecast</span></td><td><span class="pill pb">M365</span></td><td><span class="pill pg">Safe</span></td><td><div class="sbw"><div class="sb"><div class="sbf" style="width:72%;background:#b31c1c"></div></div><b style="color:#b31c1c;font-size:11px;">72</b></div></td><td><span class="pill pr">Burned</span></td></tr>
+                  <tr><td style="font-weight:600;font-size:12px;">cto@newco.ai</td><td><span class="pill pg">valid</span></td><td><span class="pill pg">✓</span></td><td>—</td><td><span class="pill" style="background:#ecd8fc;color:#5a1a96;">SMTP</span></td><td><span class="pill pr">VeryHigh</span></td><td><div class="sbw"><div class="sb"><div class="sbf" style="width:3%;background:#1b6015"></div></div><b style="color:#1b6015;font-size:11px;">3</b></div></td><td><span class="pill pg">Fresh</span></td></tr>
+                  <tr><td style="font-weight:600;font-size:12px;">info@bigcorp.com</td><td><span class="pill po">role</span></td><td><span class="pill pg">✓</span></td><td><span class="pill po">Proofpoint</span></td><td><span class="pill pb">M365</span></td><td><span class="pill pg">Safe</span></td><td><div class="sbw"><div class="sb"><div class="sbf" style="width:91%;background:#b31c1c"></div></div><b style="color:#b31c1c;font-size:11px;">91</b></div></td><td><span class="pill pr">Torched</span></td></tr>
+                  <tr><td style="font-weight:600;font-size:12px;">ops@saas.dev</td><td><span class="pill pg">valid</span></td><td><span class="pill pg">✓</span></td><td>—</td><td><span class="pill pb">GWS</span></td><td><span class="pill pg">Safe</span></td><td><div class="sbw"><div class="sb"><div class="sbf" style="width:19%;background:#964800"></div></div><b style="color:#964800;font-size:11px;">19</b></div></td><td><span class="pill py">Warm</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- Fresh Only panel -->
+        <div>
+          <div class="filter-panel">
+            <div class="fp-title">Fresh Only Export</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;line-height:1.5;">Strip risky emails before sending. Configure thresholds below.</div>
+            <div class="fp-row"><span>Remove Mimecast</span><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <div class="fp-row"><span>Remove Barracuda</span><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <div class="fp-row"><span>Remove Proofpoint</span><div class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <div class="fp-row"><span>Domain age &lt; 180d</span><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <div class="fp-row"><span>Burn score &gt; 50</span><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <div class="fp-row"><span>Bounce score &gt; 5</span><div class="toggle off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <div style="margin-top:14px;padding:10px;background:rgba(42,84,38,.06);border-radius:8px;">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">After filtering</div>
+              <div style="font-size:18px;font-weight:800;color:#1b6015;">7,420 emails</div>
+              <div style="font-size:11px;color:var(--muted);">removed 4,980 (40.2%)</div>
+            </div>
+            <button class="btn-primary" style="width:100%;justify-content:center;margin-top:12px;padding:10px;font-size:12px;">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 10l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M2 14h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              Download fresh only
+            </button>
+            <button class="btn-ghost" style="width:100%;margin-top:8px;font-size:12px;padding:9px;">Download full list</button>
+          </div>
+          <!-- Trade prompt -->
+          <div style="margin-top:12px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;">This list is 74% burned</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Trade it for a fresher list in the same niche. Anonymous, server-matched.</div>
+            <button class="btn-ghost" style="width:100%;font-size:12px;padding:9px;color:var(--accent);border-color:rgba(42,84,38,.3);" onclick="show('marketplace')">Trade on marketplace →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- JOB HISTORY -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-jobs" class="screen">
+  <div class="topbar">
+    <div class="logo-sm"><div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div><span class="lname-sm">List<span>Intel</span></span></div>
+    <div class="user-chip"><div class="uavatar">MO</div>Marcus O.</div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-item" onclick="show('dashboard')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/><rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/></svg>Dashboard</div>
+        <div class="nav-item active"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Job History</div>
+        <div class="nav-item" onclick="show('marketplace')"><svg viewBox="0 0 16 16" fill="none"><path d="M2 5l2-2h8l2 2v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" stroke="currentColor" stroke-width="1.4"/><path d="M6 13V8h4v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Marketplace</div>
+        <div class="nav-item" onclick="show('billing')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 7h12" stroke="currentColor" stroke-width="1.3"/></svg>Billing</div>
+        <div class="nav-item" onclick="show('settings')"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Settings</div>
+      </div>
+      <div class="credits-widget"><div class="cw-label">Credits</div><div class="cw-num">342</div><div class="cw-sub">of 500 remaining</div><div class="cw-bar"><div class="cw-fill" style="width:68%"></div></div><div class="cw-upgrade" onclick="show('billing')">Upgrade →</div></div>
+    </div>
+    <div class="main-content">
+      <div class="page-header">
+        <div><div class="page-title">Job History</div><div class="page-sub">All your enrichment jobs</div></div>
+        <button class="btn-primary" onclick="show('dashboard')">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 6l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          New upload
+        </button>
+      </div>
+      <div class="table-card">
+        <table class="tbl">
+          <thead><tr><th>File</th><th>Emails</th><th>Fresh</th><th>Burned</th><th>Mimecast</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><b>uk_leads_q1.csv</b></td><td>12,400</td><td><span class="pill pg">8,210</span></td><td><span class="pill pr">3,105</span></td><td><span class="pill pr">847</span></td><td><span class="status-pill sp-complete">Complete</span></td><td>Mar 21</td><td><span class="icon-btn" onclick="show('job-detail')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+            <tr><td><b>saas_prospects.csv</b></td><td>8,900</td><td><span class="pill pg">5,440</span></td><td><span class="pill pr">2,890</span></td><td><span class="pill pr">420</span></td><td><span class="status-pill sp-complete">Complete</span></td><td>Mar 20</td><td><span class="icon-btn" onclick="show('job-detail')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+            <tr><td><b>ecom_march.csv</b></td><td>22,000</td><td>—</td><td>—</td><td>—</td><td><span class="status-pill sp-processing">Processing</span></td><td>Mar 21</td><td><span class="icon-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+            <tr><td><b>dental_usa.csv</b></td><td>5,100</td><td><span class="pill pg">3,890</span></td><td><span class="pill pr">840</span></td><td><span class="pill pr">210</span></td><td><span class="status-pill sp-complete">Complete</span></td><td>Mar 18</td><td><span class="icon-btn" onclick="show('job-detail')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+            <tr><td><b>finance_leads.csv</b></td><td>3,200</td><td><span class="pill pr">890</span></td><td><span class="pill pr">2,100</span></td><td><span class="pill pr">640</span></td><td><span class="status-pill sp-complete">Complete</span></td><td>Mar 15</td><td><span class="icon-btn" onclick="show('job-detail')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+            <tr><td><b>healthcare_eu.csv</b></td><td>0</td><td>—</td><td>—</td><td>—</td><td><span class="status-pill sp-failed">Failed</span></td><td>Mar 14</td><td><span class="icon-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- MARKETPLACE -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-marketplace" class="screen">
+  <div class="topbar">
+    <div class="logo-sm"><div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div><span class="lname-sm">List<span>Intel</span></span></div>
+    <div class="user-chip"><div class="uavatar">MO</div>Marcus O.</div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-item" onclick="show('dashboard')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/><rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/></svg>Dashboard</div>
+        <div class="nav-item" onclick="show('jobs')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Job History</div>
+        <div class="nav-item active"><svg viewBox="0 0 16 16" fill="none"><path d="M2 5l2-2h8l2 2v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" stroke="currentColor" stroke-width="1.4"/><path d="M6 13V8h4v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Marketplace</div>
+        <div class="nav-item" onclick="show('billing')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 7h12" stroke="currentColor" stroke-width="1.3"/></svg>Billing</div>
+        <div class="nav-item" onclick="show('settings')"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Settings</div>
+      </div>
+      <div class="credits-widget"><div class="cw-label">Credits</div><div class="cw-num">342</div><div class="cw-sub">of 500 remaining</div><div class="cw-bar"><div class="cw-fill" style="width:68%"></div></div><div class="cw-upgrade" onclick="show('billing')">Upgrade →</div></div>
+    </div>
+    <div class="main-content">
+      <div class="page-header">
+        <div><div class="page-title">Burned List Marketplace</div><div class="page-sub">Trade burned lists for fresher ones. Anonymous. Server-matched.</div></div>
+        <button class="btn-primary">Submit list for trade</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;">Your active listings</div>
+          <div class="trade-card">
+            <div class="tc-top">
+              <div>
+                <div class="tc-title">SaaS list · 8,400 leads</div>
+                <div class="tc-meta">Submitted Mar 20 · Niche: B2B SaaS</div>
+              </div>
+              <span class="status-pill sp-complete">Matched</span>
+            </div>
+            <div class="tc-stats">
+              <div class="tc-stat">Avg burn: <b>74</b></div>
+              <div class="tc-stat">Fresh rate: <b>26%</b></div>
+            </div>
+            <div style="margin-top:12px;display:flex;gap:8px;">
+              <button class="btn-primary" style="font-size:11px;padding:7px 14px;">Confirm trade</button>
+              <button class="btn-ghost" style="font-size:11px;padding:7px 14px;">Decline</button>
+            </div>
+          </div>
+          <div class="trade-card">
+            <div class="tc-top">
+              <div>
+                <div class="tc-title">Ecom list · 22,000 leads</div>
+                <div class="tc-meta">Submitted Mar 21 · Niche: Ecommerce</div>
+              </div>
+              <span class="status-pill sp-queued">Searching</span>
+            </div>
+            <div class="tc-stats">
+              <div class="tc-stat">Avg burn: <b>61</b></div>
+              <div class="tc-stat">Fresh rate: <b>39%</b></div>
+            </div>
+            <div style="margin-top:10px;font-size:11px;color:var(--muted);">Matching algorithm runs every 15 minutes...</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;">Completed trades</div>
+          <div class="trade-card">
+            <div class="tc-top">
+              <div>
+                <div class="tc-title">Healthcare · 5,100 leads</div>
+                <div class="tc-meta">Traded Mar 15 · Received fresher list</div>
+              </div>
+              <span class="status-pill sp-complete">Complete</span>
+            </div>
+            <div class="tc-stats">
+              <div class="tc-stat">Was: <b style="color:#b31c1c;">88 burn</b></div>
+              <div class="tc-stat">Got: <b style="color:#1b6015;">24 burn</b></div>
+              <div class="tc-stat">Fee: <b>510 credits</b></div>
+            </div>
+            <button class="btn-ghost" style="font-size:11px;padding:6px 12px;margin-top:10px;">Download received list</button>
+          </div>
+          <div style="margin-top:14px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;">
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px;">How it works</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+              1. Submit your burned list with a niche tag<br>
+              2. Server matches you with similar-sized lists<br>
+              3. Both parties confirm the trade<br>
+              4. Lists are swapped anonymously<br>
+              5. Freshness fee: 10% of list size in credits
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- BILLING -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-billing" class="screen">
+  <div class="topbar">
+    <div class="logo-sm"><div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div><span class="lname-sm">List<span>Intel</span></span></div>
+    <div class="user-chip"><div class="uavatar">MO</div>Marcus O.</div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-item" onclick="show('dashboard')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/></svg>Dashboard</div>
+        <div class="nav-item" onclick="show('jobs')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/></svg>Job History</div>
+        <div class="nav-item" onclick="show('marketplace')"><svg viewBox="0 0 16 16" fill="none"><path d="M2 5l2-2h8l2 2v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" stroke="currentColor" stroke-width="1.4"/></svg>Marketplace</div>
+        <div class="nav-item active"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 7h12" stroke="currentColor" stroke-width="1.3"/></svg>Billing</div>
+        <div class="nav-item" onclick="show('settings')"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/></svg>Settings</div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="page-header">
+        <div><div class="page-title">Billing</div><div class="page-sub">Manage your plan and credits · Paystack · USD</div></div>
+      </div>
+      <!-- Current status -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div class="stat-card"><div class="sc-label">Current plan</div><div class="sc-val">Free</div><div class="sc-delta" style="color:var(--muted);">500 credits/mo</div></div>
+        <div class="stat-card"><div class="sc-label">Credits remaining</div><div class="sc-val">342</div><div class="sc-delta delta-up">Resets Apr 1</div></div>
+        <div class="stat-card"><div class="sc-label">Total spent</div><div class="sc-val">$0</div><div class="sc-delta" style="color:var(--muted);">Free period active</div></div>
+      </div>
+      <!-- Plan grid -->
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px;">Upgrade your plan</div>
+      <div class="plan-grid">
+        <div class="plan-card current">
+          <div class="current-badge">Current</div>
+          <div class="plan-name">Free</div>
+          <div class="plan-price">$0</div>
+          <div class="plan-period">forever</div>
+          <div class="plan-credits">500 credits/mo</div>
+          <div class="pf inc">Syntax + MX check</div>
+          <div class="pf inc">Spam filter detect</div>
+          <div class="pf inc">Infra detector</div>
+          <div class="pf">Burn score</div>
+          <div class="pf">Marketplace</div>
+          <div class="plan-btn current-btn">Current plan</div>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Starter</div>
+          <div class="plan-price"><sup>$</sup>10</div>
+          <div class="plan-period">per month</div>
+          <div class="plan-credits">25,000 credits/mo</div>
+          <div class="pf inc">Everything in Free</div>
+          <div class="pf inc">Burn score</div>
+          <div class="pf inc">Fresh Only export</div>
+          <div class="pf">Marketplace</div>
+          <div class="plan-btn active-btn">Upgrade →</div>
+        </div>
+        <div class="plan-card" style="border:2px solid var(--accent);">
+          <div style="position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:9px;font-weight:700;padding:3px 10px;border-radius:0 0 7px 7px;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;">Most popular</div>
+          <div class="plan-name">Growth</div>
+          <div class="plan-price"><sup>$</sup>49</div>
+          <div class="plan-period">per month</div>
+          <div class="plan-credits">100,000 credits/mo</div>
+          <div class="pf inc">Everything in Starter</div>
+          <div class="pf inc">Marketplace</div>
+          <div class="pf inc">Bounce history</div>
+          <div class="pf inc">3 team seats</div>
+          <div class="plan-btn active-btn">Upgrade →</div>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name">Pro</div>
+          <div class="plan-price"><sup>$</sup>99</div>
+          <div class="plan-period">per month</div>
+          <div class="plan-credits">500,000 credits/mo</div>
+          <div class="pf inc">Everything in Growth</div>
+          <div class="pf inc">REST API access</div>
+          <div class="pf inc">10 team seats</div>
+          <div class="pf inc">Priority processing</div>
+          <div class="plan-btn active-btn">Upgrade →</div>
+        </div>
+      </div>
+      <!-- Credit packs -->
+      <div style="font-size:13px;font-weight:700;margin-bottom:12px;margin-top:4px;">Buy credit packs</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#2a5426'" onmouseout="this.style.borderColor='#d8d8cf'">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);">10,000</div>
+          <div style="font-size:18px;font-weight:800;color:var(--text);">$9</div>
+          <div style="font-size:10px;color:var(--muted);">$0.0009/email</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#2a5426'" onmouseout="this.style.borderColor='#d8d8cf'">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);">50,000</div>
+          <div style="font-size:18px;font-weight:800;color:var(--text);">$35</div>
+          <div style="font-size:10px;color:var(--muted);">$0.0007/email</div>
+        </div>
+        <div style="background:#fff;border:2px solid var(--accent);border-radius:10px;padding:14px 18px;cursor:pointer;position:relative;">
+          <div style="position:absolute;top:-9px;left:10px;background:var(--yellow);color:var(--dark);font-size:9px;font-weight:800;padding:2px 8px;border-radius:100px;">BEST VALUE</div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);">250,000</div>
+          <div style="font-size:18px;font-weight:800;color:var(--text);">$129</div>
+          <div style="font-size:10px;color:var(--muted);">$0.00052/email</div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 18px;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='#2a5426'" onmouseout="this.style.borderColor='#d8d8cf'">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);">1,000,000</div>
+          <div style="font-size:18px;font-weight:800;color:var(--text);">$389</div>
+          <div style="font-size:10px;color:var(--muted);">$0.00039/email</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- API KEYS -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-api-keys" class="screen">
+  <div class="topbar">
+    <div class="logo-sm"><div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div><span class="lname-sm">List<span>Intel</span></span></div>
+    <div class="user-chip"><div class="uavatar">MO</div>Marcus O.</div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-item" onclick="show('dashboard')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/></svg>Dashboard</div>
+        <div class="nav-item" onclick="show('jobs')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/></svg>Job History</div>
+        <div class="nav-item" onclick="show('marketplace')"><svg viewBox="0 0 16 16" fill="none"><path d="M2 5l2-2h8l2 2v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" stroke="currentColor" stroke-width="1.4"/></svg>Marketplace</div>
+        <div class="nav-item active"><svg viewBox="0 0 16 16" fill="none"><path d="M7 9a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.3"/><path d="M9.5 6.5l4 4-1.5 1.5L10.5 10 9 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>API Keys</div>
+        <div class="nav-item" onclick="show('billing')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/></svg>Billing</div>
+      </div>
+      <div style="margin:16px 12px;padding:12px;background:rgba(42,84,38,.06);border-radius:10px;border:1px solid rgba(42,84,38,.15);">
+        <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:4px;">API available on Pro+</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px;">Your current plan doesn't include API access.</div>
+        <div class="cw-upgrade" onclick="show('billing')" style="font-size:11px;padding:6px;">Upgrade to Pro →</div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="page-header">
+        <div><div class="page-title">API Keys</div><div class="page-sub">Integrate List Intel into your tools and automations</div></div>
+        <button class="btn-primary">Create new key</button>
+      </div>
+      <!-- Locked state for free user -->
+      <div class="table-card" style="opacity:.5;pointer-events:none;">
+        <div class="table-header"><div class="th-title">Your API keys</div></div>
+        <div style="padding:20px 18px;">
+          <div class="key-row">
+            <div style="flex:1;"><div style="font-size:13px;font-weight:700;">Production key</div><div class="key-meta">Created Mar 1 · Last used never</div></div>
+            <div class="key-code">li_live_••••••••••••••••••••••</div>
+            <button class="btn-ghost" style="font-size:11px;padding:6px 12px;">Revoke</button>
+          </div>
+        </div>
+      </div>
+      <!-- API docs preview -->
+      <div style="margin-top:16px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;">API endpoints</div>
+        <div style="font-family:monospace;font-size:12px;background:#f5f5f0;border-radius:8px;padding:14px;color:#444;line-height:2;">
+          POST /api/v1/check &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; — Single email check (sync)<br>
+          POST /api/v1/bulk &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; — Upload CSV (async)<br>
+          GET &nbsp;/api/v1/jobs/{id} &nbsp;&nbsp; — Job status + results<br>
+          POST /api/v1/bounces &nbsp;&nbsp;&nbsp;&nbsp; — Submit bounce data<br>
+          GET &nbsp;/api/v1/score &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; — Burn score only
+        </div>
+        <div style="margin-top:12px;font-size:12px;color:var(--muted);">Full docs available at <span style="color:var(--accent);font-weight:700;">/docs</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- SETTINGS -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-settings" class="screen">
+  <div class="topbar">
+    <div class="logo-sm"><div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div><span class="lname-sm">List<span>Intel</span></span></div>
+    <div class="user-chip"><div class="uavatar">MO</div>Marcus O.</div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-section">
+        <div class="nav-item" onclick="show('dashboard')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/></svg>Dashboard</div>
+        <div class="nav-item" onclick="show('jobs')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/></svg>Job History</div>
+        <div class="nav-item" onclick="show('billing')"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/></svg>Billing</div>
+        <div class="nav-item active"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Settings</div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="page-header"><div><div class="page-title">Settings</div><div class="page-sub">Account and preferences</div></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <!-- Profile -->
+        <div class="table-card">
+          <div class="table-header"><div class="th-title">Profile</div></div>
+          <div style="padding:16px 18px;">
+            <div class="form-group"><label class="form-label">Full name</label><input class="form-input" value="Marcus Okafor"/></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" value="marcus@agency.co" disabled style="opacity:.6;"/><div class="form-hint">Contact support to change your email</div></div>
+            <button class="btn-primary" style="font-size:12px;padding:8px 16px;">Save changes</button>
+          </div>
+        </div>
+        <!-- Password -->
+        <div class="table-card">
+          <div class="table-header"><div class="th-title">Change password</div></div>
+          <div style="padding:16px 18px;">
+            <div class="form-group"><label class="form-label">Current password</label><input class="form-input" type="password" placeholder="••••••••"/></div>
+            <div class="form-group"><label class="form-label">New password</label><input class="form-input" type="password" placeholder="Min 8 characters"/></div>
+            <div class="form-group"><label class="form-label">Confirm new password</label><input class="form-input" type="password" placeholder="••••••••"/></div>
+            <button class="btn-primary" style="font-size:12px;padding:8px 16px;">Update password</button>
+          </div>
+        </div>
+        <!-- Export presets -->
+        <div class="table-card">
+          <div class="table-header"><div class="th-title">Default Fresh Only preset</div></div>
+          <div style="padding:16px 18px;">
+            <div class="fp-row"><span style="font-size:12px;">Remove Mimecast</span><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <div class="fp-row"><span style="font-size:12px;">Remove Barracuda</span><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <div class="fp-row"><span style="font-size:12px;">Domain age &lt; 180d</span><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <div class="fp-row"><span style="font-size:12px;">Burn score &gt; 50</span><div class="toggle on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+            <button class="btn-primary" style="font-size:12px;padding:8px 16px;margin-top:12px;">Save preset</button>
+          </div>
+        </div>
+        <!-- Danger zone -->
+        <div class="table-card" style="border-color:#fcd8d8;">
+          <div class="table-header" style="border-color:#fcd8d8;"><div class="th-title" style="color:#b31c1c;">Danger zone</div></div>
+          <div style="padding:16px 18px;">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px;">Log out all devices</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Revokes all active sessions including this one.</div>
+            <button class="btn-danger" style="font-size:12px;padding:8px 16px;">Log out everywhere</button>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid #fcd8d8;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:4px;color:#b31c1c;">Delete account</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Permanently deletes your account and all data. Cannot be undone.</div>
+              <button class="btn-danger" style="font-size:12px;padding:8px 16px;">Delete my account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<!-- TOAST & MODALS -->
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<div id="screen-toasts" class="screen">
+  <div style="padding:28px;background:var(--bg);min-height:600px;">
+    <div style="font-size:18px;font-weight:800;margin-bottom:20px;">Toast notifications</div>
+    <div style="display:flex;flex-direction:column;gap:10px;max-width:340px;margin-bottom:32px;">
+      <div class="toast toast-success"><div class="toast-icon">✓</div><div><div class="toast-title">Upload complete</div><div class="toast-msg">12,400 emails processed · 8,210 fresh</div></div><div class="toast-close">✕</div></div>
+      <div class="toast toast-error"><div class="toast-icon">✕</div><div><div class="toast-title">Upload failed</div><div class="toast-msg">Invalid CSV format. Please check your file.</div></div><div class="toast-close">✕</div></div>
+      <div class="toast toast-warning"><div class="toast-icon">!</div><div><div class="toast-title">Credits running low</div><div class="toast-msg">You have 50 credits remaining this month.</div></div><div class="toast-close">✕</div></div>
+      <div class="toast toast-info"><div class="toast-icon">i</div><div><div class="toast-title">Trade matched</div><div class="toast-msg">Your SaaS list has been matched. Confirm to proceed.</div></div><div class="toast-close">✕</div></div>
+    </div>
+    <div style="font-size:18px;font-weight:800;margin-bottom:20px;">Confirm modal</div>
+    <div style="background:rgba(0,0,0,.3);border-radius:16px;padding:40px;display:flex;align-items:center;justify-content:center;max-width:500px;">
+      <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:360px;">
+        <div style="font-size:15px;font-weight:800;margin-bottom:6px;">Confirm trade</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;">You're trading your SaaS list (8,400 leads, burn 74) for a fresher list in the same niche. Fee: <b style="color:var(--text);">840 credits</b>. This cannot be undone.</div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button class="btn-ghost" style="font-size:13px;">Cancel</button>
+          <button class="btn-primary" style="font-size:13px;">Confirm trade</button>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:24px;font-size:18px;font-weight:800;margin-bottom:20px;">Danger modal</div>
+    <div style="background:rgba(0,0,0,.3);border-radius:16px;padding:40px;display:flex;align-items:center;justify-content:center;max-width:500px;">
+      <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:360px;">
+        <div style="font-size:15px;font-weight:800;margin-bottom:6px;color:#b31c1c;">Delete account</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;">This will permanently delete your account, all jobs, and all data. This action <b>cannot be undone</b>.</div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button class="btn-ghost" style="font-size:13px;">Cancel</button>
+          <button class="btn-danger" style="font-size:13px;padding:9px 16px;">Delete forever</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  const tabs = document.querySelectorAll('.tab');
+  const map = {login:0,signup:1,verify:2,dashboard:3,'job-detail':4,jobs:5,marketplace:6,billing:7,'api-keys':8,settings:9,toasts:10};
+  if(map[id] !== undefined) tabs[map[id]].classList.add('active');
+}
+</script>

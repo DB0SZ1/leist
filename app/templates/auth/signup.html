@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Sign Up - List Intel{% endblock %}
+{% block content %}
+<div class="auth-wrap" x-data="signupForm">
+  <div class="auth-card">
+    <div class="logo-row">
+      <div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95" />
+          <rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65" />
+          <rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65" />
+          <rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3" />
+        </svg></div>
+      <span class="lname">List<span>Intel</span></span>
+    </div>
+    <div class="auth-title">Create your account</div>
+    <div class="auth-sub">Free to start · 500 credits included · No card required</div>
+
+    <form @submit.prevent="submit">
+      <div class="fg">
+        <label class="fl">Full name</label>
+        <input class="fi" type="text" placeholder="Marcus Okafor" x-model="name" required />
+      </div>
+      <div class="fg">
+        <label class="fl">Email address</label>
+        <input class="fi" type="email" placeholder="you@company.com" x-model="email" required />
+      </div>
+      <div class="fg">
+        <label class="fl">Password</label>
+        <input class="fi" type="password" placeholder="Min 8 characters" id="pw-input" x-model="password"
+          @input="window.checkPw && window.checkPw($event.target.value); window.checkMatch && window.checkMatch(confirm_password)"
+          required />
+        <div class="pw-strength">
+          <div class="pw-bars">
+            <div class="pw-bar" id="b1"></div>
+            <div class="pw-bar" id="b2"></div>
+            <div class="pw-bar" id="b3"></div>
+            <div class="pw-bar" id="b4"></div>
+          </div>
+          <span class="pw-label" id="pw-lbl"></span>
+        </div>
+        <div class="pw-rules" id="pw-rules">
+          <div class="rule" id="rule-len">
+            <div class="rule-dot"></div>At least 8 characters
+          </div>
+          <div class="rule" id="rule-up">
+            <div class="rule-dot"></div>One uppercase letter
+          </div>
+          <div class="rule" id="rule-num">
+            <div class="rule-dot"></div>One number
+          </div>
+          <div class="rule" id="rule-sym">
+            <div class="rule-dot"></div>One special character
+          </div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Confirm password</label>
+        <input class="fi" type="password" placeholder="Repeat password" id="pw2-input" x-model="confirm_password"
+          @input="window.checkMatch && window.checkMatch($event.target.value)" required />
+        <div class="fh" id="match-msg"></div>
+      </div>
+
+      <button class="btn-p" type="submit" :disabled="submitting || !isValid">
+        <span x-show="!submitting">Create account</span>
+        <span x-show="submitting">Creating...</span>
+      </button>
+    </form>
+    <div
+      style="margin-top:12px;padding:9px;background:rgba(42,84,38,.05);border-radius:8px;font-size:11px;color:var(--muted);text-align:center;">
+      By signing up you agree to our <span style="color:var(--accent);font-weight:700;cursor:pointer;">Terms</span> and
+      <span style="color:var(--accent);font-weight:700;cursor:pointer;">Privacy Policy</span></div>
+    <div class="link-row">Already have an account? <a href="/login"
+        style="color:var(--accent);font-weight:700;text-decoration:none;">Log in</a></div>
+  </div>
+</div>
+
+<script src="/static/js/password.js"></script>
+<script>
+  document.addEventListener('alpine:init', () => {
+    Alpine.data('signupForm', () => ({
+      name: '',
+      email: '',
+      password: '',
+      confirm_password: '',
+      submitting: false,
+      score: 0,
+
+      init() {
+        window.addEventListener('password-checked', (e) => {
+          this.score = e.detail.score;
+        });
+      },
+
+      get isValid() {
+        return this.score >= 3 && this.password === this.confirm_password && this.password.length > 0;
+      },
+
+      async submit() {
+        if (!this.isValid) return;
+        this.submitting = true;
+        try {
+          const res = await apiFetch('/api/v1/auth/register', {
+            method: 'POST',
+            body: JSON.stringify({
+              full_name: this.name,
+              email: this.email,
+              password: this.password
+            })
+          });
+          if (res && res.id) {
+            window.location.href = '/verify-email?email=' + encodeURIComponent(this.email);
+          }
+        } catch (err) {
+          // Error handled by apiFetch and toast wrapper
+        } finally {
+          this.submitting = false;
+        }
+      }
+    }));
+  });
+</script>
+{% endblock %}

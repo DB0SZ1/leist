@@ -1,0 +1,27 @@
+{% extends "emails/layout.html" %}
+
+{% block body %}
+<h2>Suspicious login attempt prevented</h2>
+
+<p>
+    We noticed an unusual login attempt to your List Intel account. Based on the location and device, we have temporarily blocked this access to protect your data.
+</p>
+
+<div style="background-color:#f8fafc; border-radius:12px; padding:16px; margin:24px 0;">
+    <p style="margin:0 0 8px 0; font-size:14px; color:#475467;"><strong>Time:</strong> {{ time|default("Oct 24, 2026, 14:02 UTC") }}</p>
+    <p style="margin:0 0 8px 0; font-size:14px; color:#475467;"><strong>Device:</strong> {{ device|default("Unknown Windows Device") }}</p>
+    <p style="margin:0; font-size:14px; color:#475467;"><strong>Location:</strong> {{ location|default("Jakarta, Indonesia (IP: 192.168.0.1)") }}</p>
+</div>
+
+<p>
+    If this was you, you can safely ignore this email and try logging in again. We may ask you to verify your identity.
+</p>
+
+<div class="btn-wrap">
+    <a href="{{ action_url|default('#') }}" class="btn" style="background-color:#e24b4a;">Secure My Account</a>
+</div>
+
+<p style="font-size:13px; color:#8899a6; margin-top:24px;">
+    If you don't recognize this activity, please change your password immediately.
+</p>
+{% endblock %}

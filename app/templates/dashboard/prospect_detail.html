@@ -1,0 +1,137 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Prospects Detail | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<!-- Back link & Header -->
+<div style="margin-bottom:24px;">
+    <a href="/prospects" style="font-size:13px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;margin-bottom:12px;">
+        &larr; Back to Prospects
+    </a>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;">
+        <div>
+            <h1 style="font-size:24px;font-weight:800;margin:0 0 4px 0;">{{ job.name or "Untitled Prospecting Job" }}</h1>
+            <div style="font-size:14px;color:var(--muted);">
+                Sourced {{ job.found_count }} contacts · {{ job.enriched_count }} successfully enriched
+            </div>
+        </div>
+        <div style="display:flex;gap:12px;">
+            <button class="btn-ghost">Export to CSV</button>
+            <button class="btn-primary" onclick="alert('Outreach campaigns coming in Phase H!')">Launch Campaign &rarr;</button>
+        </div>
+    </div>
+</div>
+
+{% if job.status != 'complete' and job.status != 'failed' %}
+<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:40px;text-align:center;margin-bottom:32px;">
+    <div class="spinner" style="margin:0 auto 16px;"></div>
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:8px;">Job is currently: {{ job.status }}</h3>
+    <p style="font-size:13px;color:var(--muted);">We are sourcing and enriching leads. This takes about 2-3 minutes for 500 leads.</p>
+    <script>setTimeout(() => window.location.reload(), 5000);</script>
+</div>
+{% elif job.status == 'failed' %}
+<div style="background:#fff4eb;border:1px solid #ffdec2;border-radius:12px;padding:32px;color:#d95d39;margin-bottom:32px;">
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:8px;">Job Failed</h3>
+    <p style="font-size:13px;">{{ job.error_detail }}</p>
+</div>
+{% endif %}
+
+<!-- Results Table -->
+<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:60px;">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:14px;font-weight:600;">Results ({{ prospects|length }})</div>
+        <input type="text" placeholder="Search leads..." style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:12px;width:200px;">
+    </div>
+    
+    <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap;">
+            <tr style="border-bottom:1px solid var(--border);background:#fbfbfc;">
+                <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);width:30px;"><input type="checkbox"></th>
+                <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Name</th>
+                <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Company</th>
+                <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Title</th>
+                <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Email</th>
+                <th style="padding:12px 20px;text-align:center;font-weight:600;color:var(--muted);">Score</th>
+                <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Burn Profile</th>
+                <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Spam Filter</th>
+            </tr>
+            
+            {% for p in prospects %}
+            <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:16px 20px;"><input type="checkbox"></td>
+                <td style="padding:16px 20px;">
+                    <div style="font-weight:600;color:var(--text);">{{ p.full_name or 'N/A' }}</div>
+                    {% if p.linkedin_url %}
+                    <a href="{{ p.linkedin_url }}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;">LinkedIn &nearr;</a>
+                    {% endif %}
+                </td>
+                <td style="padding:16px 20px;">
+                    <div style="font-weight:600;color:var(--text);">{{ p.company or 'N/A' }}</div>
+                    <div style="font-size:11px;color:var(--muted);">{{ p.industry or '' }}</div>
+                </td>
+                <td style="padding:16px 20px;">{{ p.title or 'N/A' }}</td>
+                <td style="padding:16px 20px;">
+                    <span style="font-family:var(--font-mono);font-size:12px;display:block;">{{ p.email or 'N/A' }}</span>
+                    {% if p.email_confidence %}
+                    <span style="font-size:10px;color:var(--muted);">{{ p.email_confidence }}% match</span>
+                    {% endif %}
+                </td>
+                
+                <td style="padding:16px 20px;text-align:center;">
+                    {% if p.prospect_score != None %}
+                        {% if p.prospect_score >= 80 %}
+                        <div style="display:inline-block;width:32px;height:32px;line-height:32px;border-radius:8px;background:#eefdf4;color:#118d57;font-weight:800;">{{ p.prospect_score }}</div>
+                        {% elif p.prospect_score >= 50 %}
+                        <div style="display:inline-block;width:32px;height:32px;line-height:32px;border-radius:8px;background:#fff8e1;color:#b76e00;font-weight:800;">{{ p.prospect_score }}</div>
+                        {% else %}
+                        <div style="display:inline-block;width:32px;height:32px;line-height:32px;border-radius:8px;background:#ffebee;color:#b71d18;font-weight:800;">{{ p.prospect_score }}</div>
+                        {% endif %}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                
+                <td style="padding:16px 20px;">
+                    {% if p.burn_score != None %}
+                        {% if p.burn_score < 20 %}
+                        <span class="pill pg">Fresh ({{ p.burn_score }})</span>
+                        {% elif p.burn_score < 60 %}
+                        <span class="pill py">Warm ({{ p.burn_score }})</span>
+                        {% else %}
+                        <span class="pill pr">Burned ({{ p.burn_score }})</span>
+                        {% endif %}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                
+                <td style="padding:16px 20px;">
+                    {% if p.spam_filter %}
+                        <span class="pill" style="background:#f4f4f5;color:var(--muted);">{{ p.spam_filter }}</span>
+                    {% else %}
+                        <span style="color:var(--muted);font-size:12px;">None</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            
+            {% if not prospects and job.status == 'complete' %}
+            <tr>
+                <td colspan="8" style="padding:40px 20px;text-align:center;color:var(--muted);">No viable prospects found. They were either burnt, protected by aggressive filters, or invalid.</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+</div>
+
+<style>
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+{% endblock %}

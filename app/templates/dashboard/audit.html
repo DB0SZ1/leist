@@ -1,0 +1,66 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Audit Logs | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+  <div>
+    <div class="page-title">Security & Audit Logs</div>
+    <div class="page-sub">Immutable ledger of all actions performed in your current context.</div>
+  </div>
+  <div>
+    <a href="/api/v1/audit/export" class="btn-primary" style="text-decoration:none;padding:8px 16px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;vertical-align:middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </a>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-header">
+    <div class="th-title">Recent Activity</div>
+  </div>
+  
+  <div style="padding:16px;">
+    {% if events|length > 0 %}
+    <table class="tbl" style="width:100%;">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>Action</th>
+          <th>Resource ID</th>
+          <th>Details</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for evt in events %}
+        <tr>
+          <td style="color:var(--muted);white-space:nowrap;font-size:12px;">{{ evt.created_at.strftime('%Y-%m-%d %H:%M:%S UTC') }}</td>
+          <td>
+            <span class="status-pill sp-preprocessing" style="font-family:monospace;font-size:11px;">{{ evt.event_type }}</span>
+          </td>
+          <td style="font-family:monospace;font-size:11px;color:var(--muted);">
+            {{ evt.resource_id or 'N/A' }}
+          </td>
+          <td style="font-size:11px;color:var(--text);max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+            {% if evt.metadata_json %}
+            {{ evt.metadata_json | tojson }}
+            {% else %}
+            <span style="color:var(--muted);">No metadata</span>
+            {% endif %}
+          </td>
+          <td style="font-size:11px;color:var(--muted);">{{ evt.ip_address or 'Unknown' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:40px;color:var(--muted);">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;opacity:0.5;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <div style="font-weight:700;font-size:14px;color:var(--text);margin-bottom:4px;">No Audit Events Found</div>
+      <div style="font-size:13px;line-height:1.5;">Activity logs for yourself or your agency workspace will appear here.</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

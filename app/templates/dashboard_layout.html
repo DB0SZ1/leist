@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="topbar">
+  <div class="logo-sm">
+    <div class="lmark-sm"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div>
+    <span class="lname-sm">List<span>Intel</span></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span class="plan-badge">{{ user.plan_id|default('free')|title }}</span>
+    <div style="position:relative;cursor:pointer;margin:0 8px;" onclick="window.location.href='/notifications'">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="user-wrap" x-data="{ open: false }" @click.away="open = false" style="position:relative;">
+      <div class="user-chip" @click="open = !open">
+        <div class="uavatar">{{ user.full_name[:2].upper() if user.full_name else user.email[:2].upper() }}</div>
+        <span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ user.full_name or user.email }}</span>
+        <svg width="10" height="10" viewBox="0 0 10 6" fill="none" :style="open ? 'transform:rotate(180deg)' : ''" style="transition:transform 0.2s;"><path d="M1 1l4 4 4-4" stroke="#6a796a" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="user-dropdown" x-show="open" x-transition style="display:none;position:absolute;top:calc(100% + 8px);right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.1);min-width:160px;z-index:100;overflow:hidden;">
+        <a href="/settings" class="ud-item" style="display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:13px;color:var(--text);text-decoration:none;transition:background 0.2s;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Account Settings
+        </a>
+        <div style="height:1px;background:var(--border);"></div>
+        <a href="javascript:void(0)" class="ud-item" style="display:flex;align-items:center;gap:8px;padding:12px 16px;font-size:13px;color:#e24b4a;text-decoration:none;transition:background 0.2s;" onclick="sysConfirm('Log out', 'Are you sure?', 'Log out', false, () => { fetch('/api/v1/auth/logout', {method:'POST'}).then(() => window.location.href='/login') })">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Log out
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if user.plan_id == 'trial' and user.trial_expires_at %}
+<div class="trial-banner" id="trial-banner">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+    <span id="trial-text">Your Pro trial is active</span>
+  </div>
+  <a href="/billing" class="trial-upgrade-btn">Upgrade now &rarr;</a>
+</div>
+<script>
+(function(){
+  const expires = new Date("{{ user.trial_expires_at.isoformat() }}");
+  function updateTrialBanner(){
+    const now = new Date();
+    const diff = expires - now;
+    if(diff <= 0){
+      document.getElementById('trial-text').textContent = 'Your Pro trial has expired';
+      return;
+    }
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    if(days > 0){
+      document.getElementById('trial-text').textContent = days + ' day' + (days !== 1 ? 's' : '') + ' left on your Pro trial';
+    } else {
+      document.getElementById('trial-text').textContent = hours + ' hour' + (hours !== 1 ? 's' : '') + ' left on your Pro trial';
+    }
+  }
+  updateTrialBanner();
+  setInterval(updateTrialBanner, 60000);
+})();
+</script>
+{% endif %}
+
+<div class="app-layout">
+  <div class="sidebar">
+    <div class="nav-section">
+      <a href="/dashboard" class="nav-item {% if request.url.path == '/dashboard' %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".8"/><rect x="9" y="2" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="2" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="9" y="9" width="5" height="5" rx="1" fill="currentColor" opacity=".3"/></svg>
+        Dashboard
+      </a>
+      <a href="/notifications" class="nav-item {% if request.url.path == '/notifications' %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 00-5 5v1l-1 2h12l-1-2V7a5 5 0 00-5-5zM6.5 13a1.5 1.5 0 003 0" stroke="currentColor" stroke-width="1.3"/></svg>
+        Notifications
+      </a>
+      <div class="nav-label">Analysis</div>
+      <a href="/jobs" class="nav-item {% if request.url.path.startswith('/jobs') and not request.url.path.startswith('/jobs/compare') %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 7h6M5 10h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Job History
+      </a>
+      <a href="/domains" class="nav-item {% if request.url.path.startswith('/domains') %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 8h11M8 2.5v11" stroke="currentColor" stroke-width="1.3" opacity=".5"/></svg>
+        Domain Health
+      </a>
+      
+      {% set plan = (user.plan_id or 'free')|lower %}
+      {% set is_starter = plan in ['starter', 'pro', 'trial'] %}
+      {% set is_pro = plan in ['pro', 'trial'] %}
+      
+      {% if is_starter %}
+      <a href="/marketplace" class="nav-item {% if request.url.path == '/marketplace' %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 5l2-2h8l2 2v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" stroke="currentColor" stroke-width="1.4"/><path d="M6 13V8h4v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Marketplace
+      </a>
+      {% else %}
+      <a href="/billing" class="nav-item" style="opacity: 0.6;" title="Upgrade to Starter">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 5l2-2h8l2 2v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" stroke="currentColor" stroke-width="1.4"/><path d="M6 13V8h4v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        Marketplace
+        <span style="margin-left:auto;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V4a3 3 0 016 0v3"/></svg></span>
+      </a>
+      {% endif %}
+
+      {% if is_pro %}
+      <a href="/sourcing" class="nav-item {% if request.url.path == '/sourcing' %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="7" cy="7" r="4"/><path d="M10 10l3 3"/></svg>
+        Lead Sourcing
+      </a>
+      {% else %}
+      <a href="/billing" class="nav-item" style="opacity: 0.6;" title="Upgrade to Pro">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="7" cy="7" r="4"/><path d="M10 10l3 3"/></svg>
+        Lead Sourcing
+        <span style="margin-left:auto;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V4a3 3 0 016 0v3"/></svg></span>
+      </a>
+      {% endif %}
+
+      <div x-data="{ open: localStorage.getItem('workflowsOpen') !== 'false' }">
+        <div class="nav-label" @click="open = !open; localStorage.setItem('workflowsOpen', open)" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select:none;">
+          <span>Workflows</span>
+          <svg :style="open ? '' : 'transform: rotate(-90deg);'" style="transition: transform 0.2s;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </div>
+        <div x-show="open" x-collapse>
+          <!-- Diff Engine -->
+          {% if is_starter %}
+          <a href="/jobs/compare" class="nav-item {% if request.url.path == '/jobs/compare' %}active{% endif %}">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h5v8H2zM9 4h5v8H9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Diff Engine
+          </a>
+          {% else %}
+          <a href="/billing" class="nav-item" style="opacity:0.6;">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h5v8H2zM9 4h5v8H9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 8h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            Diff Engine <span style="margin-left:auto;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V4a3 3 0 016 0v3"/></svg></span>
+          </a>
+          {% endif %}
+          
+          <!-- Inbox Simulator -->
+          <a href="/simulator" class="nav-item {% if request.url.path.startswith('/simulator') %}active{% endif %}">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M2 5l6 4 6-4v8H2V5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M2 5l6 4 6-4" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
+            Inbox Simulator
+          </a>
+        </div>
+      </div>
+      
+      <!-- Core Outreach / Sourcing -->
+      <div x-data="{ open: true }">
+        <div class="nav-group" @click="open = !open" style="cursor:pointer; display:flex; justify-content:space-between; align-items:center; user-select:none; padding: 8px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">
+          Growth & Outreach
+          <svg :style="open ? 'transform:rotate(180deg)' : ''" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M4 6l4 4 4-4"/></svg>
+        </div>
+        <div x-show="open" x-collapse>
+                {% if user.plan_id in ['pro', 'starter'] %}
+                <a href="/prospects" class="nav-item {% if request.url.path.startswith('/prospects') %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="nav-icon"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    Lead Sourcing
+                </a>
+                <a href="/outreach" class="nav-item {% if request.url.path.startswith('/outreach') %}active{% endif %}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="nav-icon"><path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Outreach Engine
+                </a>
+                {% else %}
+                <a href="/prospects" class="nav-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="nav-icon"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    Lead Sourcing
+                </a>
+                <a href="/outreach" class="nav-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="nav-icon"><path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Outreach Engine
+                </a>
+                {% endif %}
+          {% if is_starter %}
+          <a href="/timing" class="nav-item {% if request.url.path == '/timing' %}active{% endif %}">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 2v12M11 2v12M2 6h12M2 10h12"/></svg>
+            Campaign Timing
+          </a>
+          {% else %}
+          <a href="/billing" class="nav-item" style="opacity:0.6;">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 2v12M11 2v12M2 6h12M2 10h12"/></svg>
+            Campaign Timing <span style="margin-left:auto;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V4a3 3 0 016 0v3"/></svg></span>
+          </a>
+          {% endif %}
+
+          <!-- Outreach Senders -->
+          {% if is_starter %}
+          <a href="/sending/outreach" class="nav-item {% if request.url.path.startswith('/sending/outreach') %}active{% endif %}">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M2 3h12a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><polyline points="1.5,4 8,9 14.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Outreach Senders
+          </a>
+          {% else %}
+          <a href="/billing" class="nav-item" style="opacity:0.6;">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M2 3h12a1 1 0 011 1v8a1 1 0 01-1 1H2a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><polyline points="1.5,4 8,9 14.5,4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Outreach Senders <span style="margin-left:auto;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V4a3 3 0 016 0v3"/></svg></span>
+          </a>
+          {% endif %}
+
+          <!-- Simulator -->
+          {% if is_starter %}
+          <a href="/simulator" class="nav-item {% if request.url.path == '/simulator' %}active{% endif %}">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6"/><path d="M8 2v6l4 2"/></svg>
+            Simulator
+          </a>
+          {% else %}
+          <a href="/billing" class="nav-item" style="opacity:0.6;">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6"/><path d="M8 2v6l4 2"/></svg>
+            Simulator <span style="margin-left:auto;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V4a3 3 0 016 0v3"/></svg></span>
+          </a>
+          {% endif %}
+
+          <!-- Integrations -->
+          {% if is_pro %}
+          <a href="/integrations" class="nav-item {% if request.url.path == '/integrations' %}active{% endif %}">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Integrations
+          </a>
+          {% else %}
+          <a href="/billing" class="nav-item" style="opacity:0.6;">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Integrations <span style="margin-left:auto;"><svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V4a3 3 0 016 0v3"/></svg></span>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="nav-label">Account</div>
+      <a href="/profile" class="nav-item {% if request.url.path == '/profile' %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3.5" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 15c1.5-3 3.5-4 5.5-4s4 1 5.5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Profile
+      </a>
+      <a href="/api-keys" class="nav-item {% if request.url.path == '/api-keys' %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M7 9a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" stroke-width="1.3"/><path d="M9.5 6.5l4 4-1.5 1.5L10.5 10 9 11.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        API Keys
+      </a>
+      <a href="/billing" class="nav-item {% if request.url.path == '/billing' %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 7h12" stroke="currentColor" stroke-width="1.3"/></svg>
+        Billing
+      </a>
+      <a href="/settings" class="nav-item {% if request.url.path == '/settings' %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Settings
+      </a>
+      <a href="/settings/suppression" class="nav-item {% if request.url.path == '/settings/suppression' %}active{% endif %}" style="padding-left:36px;font-size:12px;opacity:0.8;margin-top:-4px;">
+        ↳ Suppression List
+      </a>
+      
+      {% if user.is_superuser %}
+      <div class="nav-label">Admin</div>
+      <a href="/admin/reports" class="nav-item {% if request.url.path.startswith('/admin/reports') %}active{% endif %}">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M8 2a6 6 0 100 12A6 6 0 108 2zM8 6v3M8 11.5h.01"/></svg>
+        Spam Reports Queue
+      </a>
+      {% endif %}
+      
+      <a href="javascript:void(0)" class="nav-item" onclick="sysConfirm('Log out', 'Are you sure you want to log out?', 'Log out', false, () => { fetch('/api/v1/auth/logout', {method:'POST'}).then(() => window.location.href='/login') })">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3H3a1 1 0 00-1 1v8a1 1 0 001 1h7M12 5l3 3-3 3M15 8H6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Log out
+      </a>
+    </div>
+    <div class="credits-widget">
+      <div class="cw-label">Credits</div>
+      <div class="cw-num">{{ "{:,}".format(user.credits_remaining|default(0)) }}</div>
+      <div class="cw-sub">remaining this month</div>
+      <div class="cw-bar">
+        {% set pct = (user.credits_remaining / user.credits_monthly * 100) if user.credits_monthly else 100 %}
+        <div class="cw-fill" style="width:{{ pct|int }}%"></div>
+      </div>
+      <div class="cw-sub">of {{ "{:,}".format(user.credits_monthly|default(0)) }} remaining</div>
+      <a href="/billing" class="cw-upgrade">Upgrade plan &rarr;</a>
+    </div>
+  </div>
+  <div class="main-content">
+    {% block dashboard_content %}{% endblock %}
+  </div>
+</div>
+
+<script>window.__userPlan = "{{ user.plan_id|default('free') }}";</script>
+<script src="/static/js/workflow_toast.js"></script>
+<script src="/static/js/onboarding_tour.js"></script>
+{% if user.onboarding_completed and not user.onboarding_tour_completed %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    if (window.startOnboardingTour) {
+      setTimeout(window.startOnboardingTour, 600);
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}

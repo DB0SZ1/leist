@@ -1,0 +1,210 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Prospecting Engine | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+        <div class="page-title">Prospecting Engine</div>
+        <div class="page-sub">Define your Ideal Customer Profile (ICP) to automatically source and enrich leads.</div>
+    </div>
+    {% if user.plan_id in ['free', 'starter'] %}
+    <button class="btn-primary" style="opacity:0.6;cursor:not-allowed;" onclick="openBillingModal()">
+        <svg style="margin-right:8px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+        New Prospecting Job
+    </button>
+    {% else %}
+    <button class="btn-primary" onclick="document.getElementById('newJobModal').style.display='flex'">
+        <svg style="margin-right:8px;" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        New Prospecting Job
+    </button>
+    {% endif %}
+</div>
+
+{% if user.plan_id in ['free', 'starter'] %}
+<div style="background:#fff;border:1px dashed var(--border);border-radius:12px;padding:48px 32px;text-align:center;margin-bottom:32px;">
+    <div style="width:48px;height:48px;border-radius:12px;background:#fbfbfc;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+    </div>
+    <h3 style="font-size:16px;font-weight:700;margin-bottom:8px;">Prospecting is a Pro feature</h3>
+    <p style="font-size:13px;color:var(--muted);max-width:400px;margin:0 auto 24px;">Upgrade to the Pro plan to access the Prospecting Engine. Source leads directly from our massive B2B database, skipping the manual CSV process entirely.</p>
+    <button class="btn-primary" style="margin:0 auto;" onclick="openBillingModal()">View Upgrades</button>
+</div>
+{% endif %}
+
+<!-- History List -->
+<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;">Recent Prospecting Jobs</div>
+    {% if not jobs %}
+    <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px;">No prospecting jobs run yet.</div>
+    {% else %}
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <tr style="border-bottom:1px solid var(--border);background:#fbfbfc;">
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Job Name</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Status</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Target / Found</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Credits Used</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Date</th>
+            <th style="padding:12px 20px;text-align:right;"></th>
+        </tr>
+        {% for job in jobs %}
+        <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:16px 20px;font-weight:600;">{{ job.name or "Untitled Job" }}</td>
+            <td style="padding:16px 20px;">
+                {% if job.status == 'complete' %}
+                <span class="pill pg">Complete</span>
+                {% elif job.status == 'failed' %}
+                <span class="pill pr">Failed</span>
+                {% else %}
+                <span class="pill py" style="text-transform:capitalize;">{{ job.status }}...</span>
+                {% endif %}
+            </td>
+            <td style="padding:16px 20px;">{{ job.target_count }} / {{ job.found_count }}</td>
+            <td style="padding:16px 20px;">{{ job.credits_used }}</td>
+            <td style="padding:16px 20px;color:var(--muted);">{{ job.created_at.strftime("%b %d, %Y") }}</td>
+            <td style="padding:16px 20px;text-align:right;">
+                <a href="/prospects/{{ job.id }}" class="btn-ghost" style="padding:6px 12px;font-size:12px;">View Results</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</div>
+
+<!-- ICP Builder Modal -->
+<div id="newJobModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:12px;width:100%;max-width:680px;max-height:90vh;overflow-y:auto;display:flex;flex-direction:column;">
+        <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;z-index:10;">
+            <h3 style="font-weight:800;font-size:16px;margin:0;">ICP Builder</h3>
+            <button onclick="document.getElementById('newJobModal').style.display='none'" style="border:none;background:transparent;cursor:pointer;font-size:20px;color:var(--muted);">&times;</button>
+        </div>
+        
+        <form id="prospectForm" style="padding:20px;" onsubmit="submitProspectJob(event)">
+            <div style="margin-bottom:24px;">
+                <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Job Name</label>
+                <input type="text" id="jobName" placeholder="e.g. B2B SaaS Founders UK (Q2)" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;" required>
+            </div>
+
+            <!-- Company Filters -->
+            <div style="margin-bottom:24px;border:1px solid var(--border);border-radius:8px;padding:16px;background:#fbfbfc;">
+                <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:16px;">🏢 Company Filters</div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;">Industries (comma separated)</label>
+                        <input type="text" id="company_industries" placeholder="Software, Marketing, Finance" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;">Locations</label>
+                        <input type="text" id="company_locations" placeholder="United States, United Kingdom" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                    </div>
+                </div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;">Min Employees</label>
+                        <input type="number" id="company_size_min" placeholder="10" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;">Max Employees</label>
+                        <input type="number" id="company_size_max" placeholder="200" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Filters -->
+            <div style="margin-bottom:24px;border:1px solid var(--border);border-radius:8px;padding:16px;background:#fbfbfc;">
+                <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;margin-bottom:16px;">👤 Contact Filters</div>
+                
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;">Job Titles (comma separated)</label>
+                    <input type="text" id="contact_job_titles" placeholder="Founder, CEO, Head of Sales" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                </div>
+                
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;">Seniorities</label>
+                        <input type="text" id="contact_seniorities" placeholder="C-Suite, VP, Director" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:12px;font-weight:600;margin-bottom:6px;">Departments</label>
+                        <input type="text" id="contact_departments" placeholder="Sales, Marketing" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:6px;font-size:13px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Settings -->
+            <div style="margin-bottom:24px;">
+                <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;">Target Count</label>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <input type="number" id="target_count" value="500" min="1" max="5000" style="width:150px;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;" required oninput="updateCredits()">
+                    <span style="font-size:12px;color:var(--muted);">leads</span>
+                </div>
+                <div style="margin-top:8px;font-size:12px;color:var(--accent);font-weight:600;" id="creditEstimate">
+                    Estimated Cost: ~750 credits
+                </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:12px;position:sticky;bottom:0;background:#fff;padding-top:16px;border-top:1px solid var(--border);">
+                <button type="button" class="btn-ghost" onclick="document.getElementById('newJobModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn-primary" id="btnSubmit">
+                    Start Search & Enrich
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function updateCredits() {
+    const val = parseInt(document.getElementById('target_count').value) || 0;
+    const est = Math.floor(val * 1.5);
+    document.getElementById('creditEstimate').innerText = `Estimated Cost: ~${est} credits`;
+}
+
+async function submitProspectJob(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmit');
+    btn.innerText = "Starting...";
+    btn.disabled = true;
+
+    // Helper to parse comma separated fields
+    const parseList = (str) => str.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+    const payload = {
+        name: document.getElementById('jobName').value,
+        filters: {
+            target_count: parseInt(document.getElementById('target_count').value) || 500,
+            company_industries: parseList(document.getElementById('company_industries').value),
+            company_locations: parseList(document.getElementById('company_locations').value),
+            company_size_min: parseInt(document.getElementById('company_size_min').value) || null,
+            company_size_max: parseInt(document.getElementById('company_size_max').value) || null,
+            contact_job_titles: parseList(document.getElementById('contact_job_titles').value),
+            contact_seniorities: parseList(document.getElementById('contact_seniorities').value),
+            contact_departments: parseList(document.getElementById('contact_departments').value)
+        }
+    };
+
+    try {
+        const res = await fetch('/api/v1/prospects', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        
+        if(res.ok && data.success) {
+            window.location.reload();
+        } else {
+            alert("Error: " + (data.error || "Unknown error"));
+            btn.innerText = "Start Search & Enrich";
+            btn.disabled = false;
+        }
+    } catch(err) {
+        alert("Network error.");
+        btn.innerText = "Start Search & Enrich";
+        btn.disabled = false;
+    }
+}
+</script>
+
+{% endblock %}

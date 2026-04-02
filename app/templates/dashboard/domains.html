@@ -1,0 +1,82 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Domain Health | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;">
+  <div>
+    <div class="page-title">Domain Health Monitoring</div>
+    <div class="page-sub">Track your sending domains against 100+ global spam blacklists in real-time.</div>
+  </div>
+  <button class="btn-primary" onclick="document.getElementById('addDomainModal').style.display='flex'">+ Add Domain</button>
+</div>
+
+{% if domains %}
+<div class="table-card" style="margin-top:24px;">
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th>Domain Name</th>
+        <th>Status</th>
+        <th>Last Checked</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in domains %}
+      <tr>
+        <td><a href="/domains/{{ d.id }}" style="font-weight:700;color:var(--text);text-decoration:none;">{{ d.domain_name }}</a></td>
+        <td>
+          {% if d.status == 'Healthy' %}
+            <span class="status-pill sp-complete" style="display:inline-flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#1b6015;"></div> Healthy</span>
+          {% elif d.status == 'At Risk' %}
+            <span class="status-pill sp-enriching" style="display:inline-flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#b45309;"></div> At Risk</span>
+          {% elif d.status == 'Unreachable' %}
+            <span class="status-pill" style="display:inline-flex;align-items:center;gap:4px;background:#f3f4f6;color:#4b5563;border:1px solid #e5e7eb;"><div style="width:6px;height:6px;border-radius:50%;background:#9ca3af;"></div> Unreachable</span>
+          {% else %}
+            <span class="status-pill sp-failed" style="display:inline-flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#9b2c2c;"></div> Blacklisted</span>
+          {% endif %}
+        </td>
+        <td style="color:var(--muted);font-size:12px;">
+          {% if d.last_checked_at %}
+            {{ d.last_checked_at.strftime('%Y-%m-%d %H:%M') }} UTC
+          {% else %}
+            <i>Checking now...</i>
+            <script>setTimeout(()=>location.reload(), 3000);</script>
+          {% endif %}
+        </td>
+        <td style="text-align:right;display:flex;justify-content:flex-end;gap:8px;">
+          <form action="/domains/{{ d.id }}/check" method="POST" style="margin:0;"><button type="submit" class="btn-ghost" style="padding:4px 8px;font-size:11px;">Re-check</button></form>
+          <form action="/domains/{{ d.id }}/delete" method="POST" style="margin:0;"><button type="submit" class="btn-ghost" style="padding:4px 8px;font-size:11px;color:#e24b4a;">Remove</button></form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state" style="max-width:100%;margin-top:24px;">
+  <div class="es-icon" style="background:rgba(42,84,38,0.08);color:var(--primary);">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+  </div>
+  <div class="es-title">No domains tracked yet</div>
+  <div class="es-desc">Monitor your sending infrastructure reputation across major global blacklists to prevent inboxing issues before they happen.</div>
+  <button class="btn-primary" style="margin:0 auto;" onclick="document.getElementById('addDomainModal').style.display='flex'">Start Tracking</button>
+</div>
+{% endif %}
+
+<!-- Add Domain Modal -->
+<div id="addDomainModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:100%;max-width:400px;box-shadow:0 10px 40px rgba(0,0,0,0.1);">
+        <h3 style="font-weight:800;margin-bottom:8px;">Track New Domain</h3>
+        <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:20px;">Enter the sending domain exactly as it appears in your emails (e.g. outreach-team.com).</p>
+        
+        <form action="/domains" method="POST">
+            <input type="text" name="domain_name" placeholder="domain.com" style="width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:14px;background:var(--bg);margin-bottom:20px;" required>
+            <div style="display:flex;justify-content:flex-end;gap:8px;">
+                <button type="button" class="btn-ghost" onclick="document.getElementById('addDomainModal').style.display='none'">Cancel</button>
+                <button type="submit" class="btn-primary">Add Domain</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

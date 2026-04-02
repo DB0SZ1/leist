@@ -1,0 +1,263 @@
+# List Intel — Sidebar, Trial, Onboarding & Workflow Suggestions
+
+## Context
+
+The user has identified several improvements needed to stabilize the dashboard and prepare for the prospecting/outreach pillars. The `listintel_PROSPECTING_AND_OUTREACH.md` spec describes Pillars 2–4 but those are **future phases** (post $1k MRR). This plan focuses on what's needed **now**.
+
+---
+
+## Bug Fixes (Already Done ✅)
+
+| Issue | Root Cause | Fix |
+|---|---|---|
+| `/profile` → 500 | `Job.total_rows` doesn't exist (field is `total_emails`) | Changed to `Job.total_emails` |
+| `/sending/outreach` → 404 | Route defined as `/outreach` but sidebar links to `/sending/outreach` | Updated routes to include `/sending/` prefix |
+| Page routers not registered | `sending_page_router`, `sourcing_page_router`, `suppression_page_router` imported but never `include_router()`'d | Registered in `main.py` |
+
+---
+
+## Remaining Work
+
+### Phase A: Timing Page — Remove Hardcoded Data
+
+The timing page currently generates fake heatmap data via `random.Random(seed)`. Instead:
+- **Show an empty state** when the user has no completed jobs (most users on first visit)
+- **Build real heatmap from historical data**: aggregate completed job timestamps by day/hour  
+- Keep the deterministic seed fallback for demo/preview only if user specifically clicks "Show sample data"
+
+#### Files Changed
+
+##### [MODIFY] [timing_service.py](file:///c:/Users/hi/Desktop/listintel/app/features/burn/timing_service.py)
+- Replace random generation with a query against `jobs.completed_at` grouped by weekday + hour
+- Fall back to empty heatmap + message "Complete your first job to see timing intelligence"
+
+##### [MODIFY] [timing.html](file:///c:/Users/hi/Desktop/listintel/app/templates/dashboard/timing.html)
+- Add empty state card when no data available
+- Remove "Set your niche" fatal link (the crash the user hit)
+
+---
+
+### Phase B: Sidebar Reorganisation
+
+Current sidebar is crowded. Restructure into logical groups with a collapsible "Workflows" section.
+
+**New structure:**
+
+```
+Dashboard
+Notifications
+
+── Analysis ──
+  Job History
+  Domain Health
+  Marketplace
+  Lead Sourcing
+
+── Workflows ── (collapsible)
+  Diff Engine
+  Campaign Timing
+  Outreach Senders
+  Simulator
+  Integrations  ← moved here from Account
+
+── Account ──
+  API Keys
+  Billing
+  Settings
+    ↳ Suppression List
+```
+
+> [!IMPORTANT]
+> **Plan gating**: Free & Pro users should NOT see all tabs. The following should be **gated** (visible but locked with a 🔒 icon that opens the billing modal when clicked):
+> - **Free plan**: Lock Outreach Senders, Campaign Timing, Simulator, Diff Engine, Lead Sourcing
+> - **Starter plan**: Unlock all except Lead Sourcing (Pro+)
+> - **Pro plan**: Full access
+
+#### Files Changed
+
+##### [MODIFY] [dashboard_layout.html](file:///c:/Users/hi/Desktop/listintel/app/templates/dashboard_layout.html)
+- Restructure sidebar nav into groups with collapsible "Workflows" section  
+- Add plan-gating logic: `{% if user.plan_id in ['pro', 'starter'] %}` for visibility  
+- Add 🔒 icon + `onclick` to open billing modal for locked features
+- Add Alpine.js `x-data` for collapsible state
+
+---
+
+### Phase C: 5-Day Free Trial
+
+New signups get 5-day full access with fraud-light checks.
+
+#### Logic:
+1. On registration: set `plan_id = "trial"`, `trial_expires_at = now + 5 days`, `credits_remaining = 2500`
+2. **Fraud-light checks** at signup:
+   - Reject disposable email domains (mailinator, guerrilla, tempmail, etc.)
+   - Flag if registration IP has >3 accounts
+   - Flag if email domain age < 30 days (optional, not blocking)
+3. **On login/request**: middleware checks `trial_expires_at` — if expired, downgrade to `free` plan automatically
+4. **Trial expiry UX**: Show a countdown banner in the dashboard "3 days left on your trial → Upgrade now"
+
+#### Files Changed
+
+##### [MODIFY] [models.py (auth)](file:///c:/Users/hi/Desktop/listintel/app/features/auth/models.py)
+- Add `trial_expires_at = Column(DateTime(timezone=True), nullable=True)`
+
+##### [MODIFY] [router.py (auth)](file:///c:/Users/hi/Desktop/listintel/app/features/auth/router.py)
+- On register: set `plan_id="trial"`, `trial_expires_at`, `credits_remaining=2500`
+- Add disposable email domain check
+
+##### [NEW] [trial_service.py](file:///c:/Users/hi/Desktop/listintel/app/features/auth/trial_service.py)
+- `is_disposable_email(email)` — check against known disposable domains
+- `check_ip_abuse(db, ip)` — count accounts per IP
+- `check_trial_expired(user)` — returns True if trial has lapsed
+- `downgrade_expired_trial(db, user)` — set plan_id="free", credits to 500
+
+##### [MODIFY] [dashboard_layout.html](file:///c:/Users/hi/Desktop/listintel/app/templates/dashboard_layout.html)
+- Add trial countdown banner when `user.plan_id == "trial"`
+
+> [!WARNING]
+> The existing SQLite DB needs `ALTER TABLE users ADD COLUMN trial_expires_at DATETIME` after this change. I'll handle the migration.
+
+---
+
+### Phase D: Onboarding Introduction Guide
+
+A step-by-step overlay tour for new users after onboarding. Shows highlighted elements with arrows and descriptions.
+
+#### Behaviour:
+- Triggers on first dashboard visit after onboarding completion
+- 13 steps covering: Dashboard overview, Upload zone, Job History, Domain Health, Diff Engine, Timing, Outreach, Lead Sourcing, Marketplace, API Keys, Billing, Settings, Credits widget
+- Bottom bar: step counter `1/13`, Next button, Skip button
+- Stores completion state: `onboarding_tour_completed` on User model
+- CSS overlay with spotlight cutout + tooltip arrow
+
+#### Files Changed
+
+##### [NEW] [onboarding_tour.js](file:///c:/Users/hi/Desktop/listintel/app/static/js/onboarding_tour.js)
+- Pure JS tour engine — no library dependencies
+- Steps array with `{ selector, title, description, position }`
+- Overlay with spotlight hole (CSS clip-path) + tooltip with arrow
+- Step counter, Next, Back, Skip buttons
+- API call to mark tour complete on finish/skip
+
+##### [MODIFY] [dashboard_layout.html](file:///c:/Users/hi/Desktop/listintel/app/templates/dashboard_layout.html)
+- Include `onboarding_tour.js`
+- Add `data-tour-step` attributes to key sidebar items and content sections
+- Auto-trigger: `{% if user.onboarding_completed and not user.onboarding_tour_completed %}`
+
+##### [MODIFY] [models.py (auth)](file:///c:/Users/hi/Desktop/listintel/app/features/auth/models.py)
+- Add `onboarding_tour_completed = Column(Boolean, default=False)`
+
+##### [MODIFY] [router.py (settings)](file:///c:/Users/hi/Desktop/listintel/app/features/settings/router.py)
+- Add `POST /api/v1/settings/tour-complete` endpoint
+
+---
+
+### Phase E: Workflow Suggestion Toasts
+
+After completing a process (e.g., a job finishes), show a toast in the lower-right suggesting the next logical step.
+
+#### Flow Map:
+```
+Job complete → "Your list is verified! Launch an outreach campaign →"
+Campaign created → "Connect your SMTP accounts for best results →"  
+Domain health checked → "Review your send timing for this domain →"
+Diff run → "Export your freshest contacts to a campaign →"
+```
+
+If the suggested feature requires a higher plan, clicking the toast opens the pricing modal instead.
+
+#### Files Changed
+
+##### [NEW] [workflow_toast.js](file:///c:/Users/hi/Desktop/listintel/app/static/js/workflow_toast.js)
+- `showWorkflowSuggestion(title, description, actionUrl, requiredPlan)`
+- Checks `window.__userPlan` against `requiredPlan` — if insufficient, opens billing modal
+- Toast slides in from bottom-right, auto-dismisses after 10s or on click
+
+##### [MODIFY] [dashboard_layout.html](file:///c:/Users/hi/Desktop/listintel/app/templates/dashboard_layout.html)
+- Include `workflow_toast.js`  
+- Set `window.__userPlan = '{{ user.plan_id }}'`
+
+##### [MODIFY] [job_detail.html](file:///c:/Users/hi/Desktop/listintel/app/templates/dashboard/job_detail.html)
+- After job status == "complete": trigger toast suggesting outreach
+
+---
+
+### Phase F: Integrations Page Polish
+
+Move Integrations under "Workflows" group in sidebar (already in Phase B). Also improve the page design.
+
+> [!NOTE]  
+> The Integrations page will get a proper redesign — current state is functional but plain. Will add connection cards with status indicators, provider logos (using SVG icons), and a cleaner grid layout.
+
+---
+
+## Open Questions
+
+> [!IMPORTANT]
+> 1. **Trial credits**: I've set trial at 2,500 credits (same as Starter plan). Is that right, or should it be higher/lower?
+> 2. **Which features should be locked per plan?** Current proposal:
+>    - **Free**: Dashboard, Job History, Domain Health, Settings, Billing only
+>    - **Starter**: + Diff Engine, Campaign Timing, Outreach, Simulator, Marketplace
+>    - **Pro**: + Lead Sourcing, Integrations
+>    - **Trial**: Full Pro access for 5 days
+> 3. **Onboarding tour**: Should it re-trigger if the user clicks "Take tour again" from Settings? Or one-time only?
+> 4. **Prospecting & Outreach Engine** (from the spec doc): These are Phase 2–5 features. Should I scaffold the prospect job models + ICP builder UI now as empty placeholders, or leave that for when you're ready to build the actual backend integrations?
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- `python -c "import app.main; print('OK')"` — boot check
+- Visit `/profile`, `/sending/outreach`, `/sourcing`, `/settings/suppression`, `/timing` — no 500s
+- Register a new user → verify `plan_id="trial"`, `trial_expires_at` is set
+- Test disposable email rejection (e.g., `test@mailinator.com`)
+
+### Manual Verification
+- Sidebar visually correct, collapsible sections work
+- Locked features show 🔒 and open billing modal
+- Onboarding tour plays through all 13 steps
+- Workflow toast appears after job completion
+- Trial countdown banner visible during trial period
+
+
+
+
+# Current Objective: Stabilization, Trial, and Prospecting/Outreach Integration
+
+- [ ] **Phase A: Timing Page**
+  - [ ] Update `timing_service.py` to use real data from `jobs` table (or fallback to empty state).
+  - [ ] Update `timing.html` with empty state.
+- [ ] **Phase B: Sidebar Reorganisation & Plan Gating**
+  - [ ] Update `dashboard_layout.html` to group features and make "Workflows" collapsible.
+  - [ ] Implement plan gating (lock icons + billing modal trigger based on plan level).
+- [ ] **Phase C: 5-Day Free Trial**
+  - [ ] Add `trial_expires_at` to User model & apply Alembic migration.
+  - [ ] Update `/api/v1/auth/register` to assign trial plan, 2500 credits, and `trial_expires_at`.
+  - [ ] Add fraud-light checks (disposable email domain block).
+  - [ ] Add trial expiry downgrade logic to auth middleware/service.
+  - [ ] Add countdown banner to dashboard.
+- [ ] **Phase D: Onboarding Introduction Guide**
+  - [ ] Add `onboarding_tour_completed` to User model & apply migration.
+  - [ ] Create `onboarding_tour.js`.
+  - [ ] Wire up tour attributes in `dashboard_layout.html`.
+  - [ ] Add re-trigger button in settings page.
+- [ ] **Phase E: Workflow Suggestion Toasts**
+  - [ ] Create `workflow_toast.js`.
+  - [ ] Add triggers to job completion/diff completion.
+- [ ] **Phase F: Integrations Polish**
+  - [ ] Enhance integrations UI with connection cards.
+- [ ] **Phase G: Prospecting Engine (List Source)** *(Approved to build actual integrations)*
+  - [ ] Create database models (`ProspectJob`, `Prospect`) & migration.
+  - [ ] Build ICP Builder UI.
+  - [ ] Setup Apollo API integration (`app/features/prospects/sources/apollo.py`).
+  - [ ] Setup Hunter/Proxycurl fallbacks.
+  - [ ] Implement Celery worker logic for sourcing and enrichment.
+- [ ] **Phase H: Outreach Engine** *(Approved to build actual integrations)*
+  - [ ] Build backend models (`SendingAccount`, `EmailTemplate`, `Campaign`, `SequenceStep`, `CampaignSend`, `TrackingEvent`) & migration.
+  - [ ] Build OAuth integration for Gmail/Outlook.
+  - [ ] Build AI Sequence Generator (`app/features/outreach/templates/ai_generator.py`).
+  - [ ] Build Sending Engine via Celery (Smart timing, rendering, merge tags).
+  - [ ] Build Tracking Subdomain System (pixels and links).
+  - [ ] Build Reply Detection (IMAP Polling) and AI Classification.
+  - [ ] Build Analytics Dashboard for campaigns.

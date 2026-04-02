@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}List Intel — Information & Resources{% endblock %}
+{% block description %}Detailed information, resources, and customer stories for the List Intel platform.{% endblock %}
+
+{% block content %}
+<div class="info-page" x-data="infoRouter()">
+  <!-- Nav -->
+  <nav class="landing-nav">
+    <div class="nav-inner">
+      <a href="/" style="display:flex;align-items:center;gap:8px;text-decoration:none;">
+        <div class="lmark-landing">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="5" height="5" rx="1.2" fill="#2a5426" opacity=".95"/>
+            <rect x="9" y="2" width="5" height="5" rx="1.2" fill="#2a5426" opacity=".65"/>
+            <rect x="2" y="9" width="5" height="5" rx="1.2" fill="#2a5426" opacity=".65"/>
+            <rect x="9" y="9" width="5" height="5" rx="1.2" fill="#2a5426" opacity=".3"/>
+          </svg>
+        </div>
+        <span style="font-weight:800;font-size:15px;color:#1a1a1a;">List<span style="opacity:.5;">Intel</span></span>
+      </a>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="/#features" class="nav-link">Features</a>
+        <a href="/#pricing" class="nav-link">Pricing</a>
+        <a href="/login" class="nav-link">Log in</a>
+        <a href="/signup" class="landing-cta">Start free &rarr;</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="info-container">
+    <div class="info-sidebar">
+      <div class="sidebar-group">
+        <h4>Solution</h4>
+        <a href="#burn-score" :class="{ 'active': currentSection === 'burn-score' }">Burn Score</a>
+        <a href="#spam-filters" :class="{ 'active': currentSection === 'spam-filters' }">Spam Filters</a>
+        <a href="#domain-age" :class="{ 'active': currentSection === 'domain-age' }">Domain Age</a>
+        <a href="#marketplace" :class="{ 'active': currentSection === 'marketplace' }">Marketplace</a>
+        <a href="#rest-api" :class="{ 'active': currentSection === 'rest-api' }">REST API</a>
+      </div>
+      <div class="sidebar-group">
+        <h4>Customers</h4>
+        <a href="#agencies" :class="{ 'active': currentSection === 'agencies' }">Agencies</a>
+        <a href="#solo-operators" :class="{ 'active': currentSection === 'solo-operators' }">Solo Operators</a>
+        <a href="#developers" :class="{ 'active': currentSection === 'developers' }">Developers</a>
+        <a href="#enterprise" :class="{ 'active': currentSection === 'enterprise' }">Enterprise</a>
+      </div>
+      <div class="sidebar-group">
+        <h4>Resources</h4>
+        <a href="#pricing" :class="{ 'active': currentSection === 'pricing' }">Pricing Details</a>
+        <a href="#api-docs" :class="{ 'active': currentSection === 'api-docs' }">API Docs</a>
+        <a href="#changelog" :class="{ 'active': currentSection === 'changelog' }">Changelog</a>
+        <a href="#blog" :class="{ 'active': currentSection === 'blog' }">Blog</a>
+      </div>
+    </div>
+
+    <div class="info-content">
+      <template x-if="getContent()">
+        <div class="content-block r" x-init="setTimeout(() => $el.classList.add('v'), 10)">
+          <div class="category-eyebrow" x-text="getContent().category"></div>
+          <h1 class="content-title" x-text="getContent().title"></h1>
+          <div class="content-body" x-html="getContent().body"></div>
+        </div>
+      </template>
+      <template x-if="!getContent()">
+        <div class="content-block r" x-init="setTimeout(() => $el.classList.add('v'), 10)">
+          <h1 class="content-title">Information &amp; Resources</h1>
+          <div class="content-body">
+            <p>Select a topic from the sidebar to view detailed information about the List Intel platform, our solutions for specific use cases, and technical resources.</p>
+          </div>
+        </div>
+      </template>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="landing-footer">
+    <div class="footer-inner">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="2" width="5" height="5" rx="1.2" fill="#999" opacity=".95"/>
+          <rect x="9" y="2" width="5" height="5" rx="1.2" fill="#999" opacity=".65"/>
+          <rect x="2" y="9" width="5" height="5" rx="1.2" fill="#999" opacity=".65"/>
+          <rect x="9" y="9" width="5" height="5" rx="1.2" fill="#999" opacity=".3"/>
+        </svg>
+        <span style="font-weight:700;color:#666;">List<span style="opacity:.5;">Intel</span></span>
+      </div>
+      <div style="font-size:12px;color:#999;">&copy; 2026 List Intel. All rights reserved.</div>
+    </div>
+  </footer>
+</div>
+
+<style>
+/* Info Page Styles */
+.info-page { font-family: 'Inter', -apple-system, sans-serif; min-height: 100vh; display: flex; flex-direction: column; background: #fdfdfc; }
+.landing-nav { padding: 14px 24px; border-bottom: 1px solid #eee; position: sticky; top: 0; background: rgba(253,253,252,0.95); backdrop-filter: blur(10px); z-index: 100; }
+.nav-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+.nav-link { font-size: 13px; color: #555; text-decoration: none; font-weight: 500; }
+.nav-link:hover { color: #1a1a1a; }
+.landing-cta { background: #2a5426; color: #fff; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none; transition: all .15s; }
+.landing-cta:hover { background: #1b3a18; }
+.lmark-landing { width: 24px; height: 24px; background: #e8f5e9; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+
+.info-container { max-width: 1200px; width: 100%; margin: 60px auto; flex: 1; display: grid; grid-template-columns: 240px 1fr; gap: 60px; padding: 0 24px; }
+
+.info-sidebar { position: sticky; top: 100px; height: max-content; }
+.sidebar-group { margin-bottom: 32px; }
+.sidebar-group h4 { font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+.sidebar-group a { display: block; font-size: 14px; color: #555; text-decoration: none; margin-bottom: 10px; transition: color 0.2s, padding-left 0.2s; position: relative; }
+.sidebar-group a:hover { color: #1a1a1a; }
+.sidebar-group a.active { color: #2a5426; font-weight: 600; padding-left: 12px; }
+.sidebar-group a.active::before { content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 4px; height: 4px; border-radius: 50%; background: #2a5426; }
+
+.info-content { padding-bottom: 80px; max-width: 720px; }
+.category-eyebrow { display: inline-block; font-size: 12px; font-weight: 700; color: #2a5426; background: rgba(42,84,38,0.08); padding: 4px 12px; border-radius: 100px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
+.content-title { font-size: 42px; font-weight: 800; color: #1a1a1a; letter-spacing: -0.03em; margin-bottom: 32px; line-height: 1.1; }
+.content-body { font-size: 16px; color: #444; line-height: 1.8; }
+.content-body p { margin-bottom: 24px; }
+.content-body h2 { font-size: 24px; font-weight: 700; color: #1a1a1a; margin: 40px 0 16px; letter-spacing: -0.02em; }
+.content-body h3 { font-size: 18px; font-weight: 700; color: #1a1a1a; margin: 32px 0 16px; }
+.content-body ul { margin-bottom: 24px; padding-left: 20px; }
+.content-body li { margin-bottom: 12px; position: relative; list-style-type: none; }
+
+.landing-footer { padding: 32px 24px; border-top: 1px solid #eee; background: #fff; }
+.footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+
+.r { opacity: 0; transform: translateY(12px); transition: opacity 0.4s ease, transform 0.4s ease; }
+.r.v { opacity: 1; transform: none; }
+
+@media (max-width: 768px) {
+  .info-container { grid-template-columns: 1fr; gap: 40px; }
+  .info-sidebar { position: static; display: flex; overflow-x: auto; gap: 32px; padding-bottom: 16px; border-bottom: 1px solid #eee; }
+  .sidebar-group h4 { display: none; }
+  .sidebar-group a { white-space: nowrap; margin-bottom: 0; }
+  .content-title { font-size: 32px; }
+}
+</style>
+
+<script>
+const infoData = {
+  'burn-score': {
+    category: 'Solution',
+    title: 'Burn Score Intelligence',
+    body: `
+      <p>The <strong>Burn Score</strong> is List Intel's proprietary metric designed to measure the fatigue of an email address across the global outbound ecosystem.</p>
+      <h2>How It Works</h2>
+      <p>Every time a user uploads a list, our system securely hashes the email addresses (using SHA-256 for GDPR compliance) and checks them against our massive, anonymized global ledger. The more frequently a hash appears in recent outbound attempts across our network, the higher its Burn Score.</p>
+      <ul>
+        <li><strong>Fresh (0-15)</strong>: Rarely targeted. High likelihood of landing in the primary inbox if your infrastructure is sound.</li>
+        <li><strong>Warm (16-65)</strong>: Currently receiving moderate to high volume. Expect standard open rates.</li>
+        <li><strong>Burned (66-89)</strong>: Heavily targeted by multiple senders. High likelihood of being routed to spam or promotions.</li>
+        <li><strong>Torched (90+)</strong>: Ubiquitous on scraped lists. Sending to these addresses will actively harm your sender reputation.</li>
+      </ul>
+      <h2>Why It Matters</h2>
+      <p>Traditional verification only tells you if an inbox <em>exists</em>. It doesn't tell you if the inbox is so overwhelmed with cold outreach that the recipient never sees your mail. By utilizing Burn Scores, you can filter out technically valid but practically useless leads, protecting your domain reputation and drastically improving your ROI on cold email volume.</p>
+    `
+  },
+  'spam-filters': {
+    category: 'Solution',
+    title: 'Spam Filter Detection',
+    body: `
+      <p>Before you send a single email, List Intel proactively identifies the security gateways guarding your target inboxes.</p>
+      <h2>The Problem with "Valid" Emails</h2>
+      <p>An email address can be syntactically perfect and have passing MX records, yet still bounce immediately or get silently quarantined. This is typically due to enterprise spam filters imposing strict policies on external, unauthenticated, or suspicious mail.</p>
+      <h2>Our Detection Engine</h2>
+      <p>List Intel analyzes DNS records, MX routing behavior, and proprietary infrastructure fingerprints to detect the presence of over 25 major security gateways, including:</p>
+      <ul>
+        <li><strong>Mimecast</strong>: Known for aggressive attachment filtering and strict SPF/DKIM enforcement.</li>
+        <li><strong>Proofpoint</strong>: Employs dynamic reputation scoring and advanced URL defense.</li>
+        <li><strong>Barracuda</strong>: Utilizes extensive historical blocking networks and intent analysis.</li>
+        <li><strong>Cisco IronPort</strong>: High enterprise adoption with strict reputation thresholds.</li>
+      </ul>
+      <p>By identifying these filters before you send, you can route these specific leads to older, highly-warmed domains, or choose to exclude them entirely from your campaigns to protect your newer infrastructure.</p>
+    `
+  },
+  'agencies': {
+    category: 'Customers',
+    title: 'Built for Cold Email Agencies',
+    body: `
+      <p>List Intel is the ultimate operations advantage for lead generation and cold email agencies.</p>
+      <h2>Protect Your Assets</h2>
+      <p>Agencies manage hundreds of domains and thousands of sending accounts. A single bad client list can torch your infrastructure overnight, leading to cascading deliverability failures across your portfolio. By mandating that all client lists run through List Intel, you establish an uncompromising firewall against spam traps, torched leads, and risky infrastructure.</p>
+      <h2>Increase Client Retention</h2>
+      <p>Deliverability is the lifeblood of your service. By utilizing our Burn Score to target only the freshest leads, your open rates and reply rates will soar. You can offer "Premium Verified" lists to clients as an upsell, demonstrating clearly that your data hygiene is vastly superior to competitors relying on standard syntax verification.</p>
+      <h2>Agency Features</h2>
+      <ul>
+        <li><strong>Workspace Seats:</strong> Invite your entire operations and SDR team to one billing account.</li>
+        <li><strong>Aggregated History:</strong> Keep a permanent, auditable ledger of every list processed for every client.</li>
+        <li><strong>API Automation:</strong> Plug List Intel directly into Zapier or Make to automatically verify lists the moment a client drops them in a shared folder.</li>
+      </ul>
+    `
+  },
+  'marketplace': {
+    category: 'Solution',
+    title: 'Burned List Marketplace',
+    body: `
+      <p>Turn your exhausted data into fresh opportunities with the industry's first automated, server-matched list exchange.</p>
+      <h2>The Concept</h2>
+      <p>A list that has been fully exhausted (burned) by your specific outreach sequence might be completely fresh for someone selling a non-competing product to the same demographic. The Marketplace facilitates anonymous, secure exchanges of this data.</p>
+      <h2>How Exchanges Work</h2>
+      <ol>
+        <li><strong>Deposit:</strong> You upload a list of leads that have a high burn score or that you've finished sequencing.</li>
+        <li><strong>Anonymization:</strong> The list is scrubbed of any campaign-specific data. Only the core contact info and niche tags remain.</li>
+        <li><strong>Matching:</strong> Our algorithmic matching engine finds another user looking for leads in your niche, who has deposited an equivalent volume of leads that are <em>fresh</em> to you.</li>
+        <li><strong>Exchange:</strong> You securely download the new list. A nominal credit fee is applied only upon successful matching.</li>
+      </ol>
+      <p>This creates a continuous cycle of fresh data for active users, drastically reducing the cost of acquiring net-new leads from traditional databases.</p>
+    `
+  }
+};
+
+document.addEventListener('alpine:init', () => {
+  Alpine.data('infoRouter', () => ({
+    currentSection: '',
+    
+    init() {
+      this.handleHashChange();
+      window.addEventListener('hashchange', () => this.handleHashChange());
+    },
+    
+    handleHashChange() {
+      const hash = window.location.hash.replace('#', '');
+      this.currentSection = infoData[hash] ? hash : '';
+      
+      // Trigger animation re-run
+      const contentEl = document.querySelector('.content-block');
+      if (contentEl) {
+        contentEl.classList.remove('v');
+        setTimeout(() => contentEl.classList.add('v'), 50);
+      }
+    },
+    
+    getContent() {
+      return this.currentSection ? infoData[this.currentSection] : null;
+    }
+  }));
+});
+</script>
+{% endblock %}
+

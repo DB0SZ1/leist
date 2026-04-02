@@ -1,0 +1,114 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Campaign Timing Intelligence | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Campaign Timing</div>
+    <div class="page-sub">Historical send window analysis for: <b>{{ user.niche or "All Industries" }}</b></div>
+  </div>
+  <div>
+    {% if not has_data and not is_sample %}
+    <a href="/timing?show_sample=1" class="btn-ghost" style="text-decoration:none;">Show sample data</a>
+    {% endif %}
+    {% if is_sample %}
+    <a href="/timing" class="btn-ghost" style="text-decoration:none;">Back to real data</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if not has_data and not is_sample %}
+<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:48px 24px;text-align:center;margin-bottom:20px;">
+  <div style="width:64px;height:64px;border-radius:16px;background:rgba(42,84,38,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="12 6 12 12 16 14"></polyline>
+    </svg>
+  </div>
+  <div style="font-size:18px;font-weight:800;margin-bottom:8px;">No timing data available yet</div>
+  <div style="font-size:14px;color:var(--muted);max-width:400px;margin:0 auto 24px;line-height:1.5;">
+    We generate a custom send-window heatmap based on the aggregate performance of your lists. Complete your first job to start building your intelligence graph.
+  </div>
+  <div style="display:flex;gap:12px;justify-content:center;">
+    <a href="/jobs/new" class="btn-primary" style="text-decoration:none;">Upload a list</a>
+    <a href="/timing?show_sample=1" class="btn-ghost" style="text-decoration:none;">Show sample data</a>
+  </div>
+</div>
+{% else %}
+<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:20px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+    <div style="font-size:14px;font-weight:800;">Send Window Heatmap</div>
+    {% if is_sample %}
+    <div class="status-pill sp-trial" style="font-size:11px;">Viewing Sample Data</div>
+    {% endif %}
+  </div>
+  <div style="font-size:12px;color:var(--muted);margin-bottom:24px;">Aggregated from historical list decay speeds. Darker green indicates lower saturation and higher inbox placement potential.</div>
+
+  <!-- Heatmap Grid -->
+  <div style="overflow-x:auto;">
+    <div style="display:flex;flex-direction:column;gap:4px;min-width:600px;">
+      
+      <!-- Header row for hours -->
+      <div style="display:flex;gap:4px;margin-bottom:4px;">
+        <div style="width:40px;"></div> <!-- Empty corner -->
+        {% for h in range(24) %}
+        <div style="flex:1;text-align:center;font-size:10px;color:var(--muted);">{{ h }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Days -->
+      {% for day_data in heatmap %}
+      <div style="display:flex;gap:4px;align-items:center;">
+        <div style="width:40px;font-size:11px;font-weight:700;color:var(--text);">{{ day_data.day }}</div>
+        {% for hour_data in day_data.hours %}
+        <!-- Score 0-100. Lower is worse (red), higher is better (green). But we'll use an opacity scale of green. -->
+        {% set opacity = (hour_data.score / 100)|round(2) %}
+        <div style="flex:1;aspect-ratio:1;background:rgba(27, 96, 21, {{ opacity }});border-radius:4px;cursor:crosshair;position:relative;" title="{{ day_data.day }} at {{ hour_data.hour }}:00 - Score: {{ hour_data.score }}">
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:20px;">
+  <!-- Optimal Windows -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;">
+    <div style="font-size:13px;font-weight:800;margin-bottom:12px;">Top 3 Optimal Windows</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      {% if optimal|length > 0 %}
+      {% for match in optimal %}
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:32px;height:32px;border-radius:8px;background:rgba(27,96,21,0.1);color:#1b6015;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;">
+            #{{ loop.index }}
+          </div>
+          <div>
+            <div style="font-weight:700;font-size:13px;">{{ match.day }} at {{ match.hour }}:00</div>
+            <div style="font-size:11px;color:var(--muted);">Based on {{ user.niche or "global" }} market trends</div>
+          </div>
+        </div>
+        <div style="font-size:16px;font-weight:800;color:#1b6015;">
+          {{ match.score }}
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div style="font-size:12px;color:var(--muted);padding:12px;text-align:center;">Not enough data to calculate optimal windows.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stealth Segmentation Link -->
+  <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;flex-direction:column;justify-content:center;text-align:center;">
+    <div style="width:48px;height:48px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    </div>
+    <div style="font-weight:800;font-size:14px;margin-bottom:8px;">Ready to send?</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Use Stealth Segmentation to automatically stagger your exports by infrastructure to avoid ISP throttling.</div>
+    <a href="/jobs" class="btn-primary" style="margin:0 auto;text-decoration:none;">Go to Job History</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

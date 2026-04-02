@@ -1,0 +1,72 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Dashboard | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Dashboard</div>
+    <div class="page-sub">Upload a list to get started</div>
+  </div>
+  <button class="btn-primary" onclick="document.querySelector('.upload-card').scrollIntoView({behavior:'smooth'})">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M4 6l4-4 4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Upload list
+  </button>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card"><div class="sc-label">Total uploaded</div><div class="sc-val">{{ "{:,}".format(total_uploaded|default(0)) }}</div><div class="sc-delta delta-up">↑ this month</div></div>
+  <div class="stat-card"><div class="sc-label">Fresh rate</div><div class="sc-val">{{ fresh_rate|default(0) }}%</div><div class="sc-delta" style="color:var(--muted);">Across all jobs</div></div>
+  <div class="stat-card"><div class="sc-label">Mimecast found</div><div class="sc-val">{{ "{:,}".format(mimecast_total|default(0)) }}</div><div class="sc-delta" style="color:var(--muted);">Across all jobs</div></div>
+  <div class="stat-card"><div class="sc-label">Jobs run</div><div class="sc-val">{{ recent_jobs|length|default(0) }}</div><div class="sc-delta" style="color:var(--muted);">Last 30 days</div></div>
+</div>
+
+{% include "components/upload_zone.html" %}
+
+<!-- Recent jobs -->
+{% if recent_jobs %}
+<div class="table-card" style="margin-top:20px;">
+  <div class="table-header">
+    <div class="th-title">Recent jobs</div>
+    <a href="/jobs" class="btn-ghost" style="font-size:12px;padding:6px 12px;text-decoration:none;">View all →</a>
+  </div>
+  <table class="tbl">
+    <thead><tr><th>File</th><th>Emails</th><th>Status</th><th>Date</th><th></th></tr></thead>
+    <tbody>
+      {% for job in recent_jobs %}
+      <tr>
+        <td><b style="font-size:13px;">{{ job.input_file_path.split('_', 1)[1] if '_' in job.input_file_path else job.input_file_path }}</b></td>
+        <td>{{ "{:,}".format(job.total_emails) }}</td>
+        <td>
+          <span class="status-pill sp-{{ job.status|lower }}">{{ job.status|title }}</span>
+        </td>
+        <td>{{ job.created_at.strftime('%b %d') }}</td>
+        <td>
+          <a href="/jobs/{{ job.id }}" class="icon-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6h10M6 1l5 5-5 5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="table-card" style="margin-top:20px;">
+  <div class="table-header">
+    <div class="th-title">Recent jobs</div>
+    <a href="/jobs" class="btn-ghost" style="font-size:12px;padding:6px 12px;text-decoration:none;">View all →</a>
+  </div>
+  <div class="empty-state">
+    <div class="es-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#2a5426" stroke-width="1.7"/><path d="M14 2v6h6M12 11v6M9 14h6" stroke="#2a5426" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </div>
+    <div class="es-title">No jobs yet</div>
+    <div class="es-sub">Upload your first CSV list to start enriching and discovering burn scores.</div>
+    <button class="btn-primary" onclick="document.querySelector('.upload-card').scrollIntoView({behavior:'smooth'})">Upload first list →</button>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/poll.js"></script>
+<script src="/static/js/upload.js"></script>
+{% endblock %}

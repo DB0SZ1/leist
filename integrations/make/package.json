@@ -1,0 +1,12 @@
+{
+  "name": "listintel-make",
+  "version": "1.0.0",
+  "description": "List Intel Make.com Integration",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@makehq/integromat-apps": "^1.0.0"
+  }
+}

@@ -1,0 +1,141 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Profile | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-title">Profile</div>
+<div class="page-sub">Manage your account information and preferences</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+  <!-- Personal info -->
+  <div class="card" x-data="profileForm">
+    <div class="card-head"><div class="card-title">Personal info</div><button class="btn-sm-p" style="font-size:11px;padding:5px 12px;" @click="saveProfile()" :disabled="saving" x-text="saving ? 'Saving...' : 'Save'"></button></div>
+    <div class="card-body">
+      <div class="fg"><label class="fl">Full name</label><input class="fi ok" x-model="fullName"/></div>
+      <div class="fg"><label class="fl">Email address</label><input class="fi" value="{{ user.email }}" disabled style="opacity:.55;cursor:not-allowed;"/><div class="fh" style="font-size:11px;color:var(--muted);margin-top:6px;">Email changes require identity verification. <span style="color:var(--accent);font-weight:700;cursor:pointer;">Contact support →</span></div></div>
+    </div>
+  </div>
+  
+  <!-- Account status -->
+  <div class="card">
+    <div class="card-head"><div class="card-title">Account status</div></div>
+    <div class="card-body">
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <span style="color:var(--muted);">Plan</span>
+        <span class="pv" style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;">{{ user.plan_id|default('free')|title }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <span style="color:var(--muted);">Email verified</span>
+        {% if user.email_verified %}
+        <span class="pill pg">Verified</span>
+        {% else %}
+        <span class="pill py">Pending</span>
+        {% endif %}
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <span style="color:var(--muted);">Member since</span>
+        <span>{{ user.created_at.strftime("%B %Y") if user.created_at else "Now" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <span style="color:var(--muted);">Credits this month</span>
+        <span>{{ "{:,}".format(user.credits_remaining|default(0)) }} / {{ "{:,}".format(user.credits_monthly|default(0)) }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;align-items:center;">
+        <span style="color:var(--muted);">App Guide</span>
+        <button class="btn-sm-g" onclick="fetch('/api/v1/settings/tour-reset', {method:'POST'}).then(() => window.location.href='/dashboard')">Replay tour</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+  <!-- Password Change -->
+  <div class="card" x-data="passwordForm">
+    <div class="card-head"><div class="card-title">Change Password</div><button class="btn-sm-p" style="font-size:11px;padding:5px 12px;" @click="changePassword()" :disabled="saving || !isValid" x-text="saving ? 'Updating...' : 'Update'"></button></div>
+    <div class="card-body">
+      <div class="fg"><label class="fl">Current password</label><input class="fi ok" type="password" x-model="currentPassword"/></div>
+      <div class="fg"><label class="fl">New password</label><input class="fi" type="password" x-model="newPassword" @input="window.checkPw && window.checkPw($event.target.value)"/></div>
+      <div class="fg"><label class="fl">Confirm new password</label><input class="fi" type="password" x-model="confirmPassword"/></div>
+    </div>
+  </div>
+
+  <!-- Danger zone -->
+  <div class="card" style="border-color:#fcd8d8;" x-data="{ showLogoutModal: false, showDeleteModal: false, loadingLogout: false, loadingDelete: false }">
+    <div class="card-head" style="border-color:#fcd8d8;"><div class="card-title" style="color:#b31c1c;">Danger zone</div></div>
+    <div class="card-body">
+      <div style="font-size:13px;font-weight:600;margin-bottom:3px;">Log out all devices</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Revokes all active sessions, including this one.</div>
+      <button class="btn-danger-sm" @click="sysConfirm('Log out everywhere?', 'This will sign you out of List Intel on all devices.', 'Log out', false, async () => { try { await fetch('/api/v1/auth/logout_all', {method:'POST'}); } catch(e){} window.location.href='/login'; })">Log out everywhere</button>
+      <div style="margin-top:14px;padding-top:14px;border-top:1px solid #fcd8d8;">
+        <div style="font-size:13px;font-weight:600;color:#b31c1c;margin-bottom:3px;">Delete account</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Permanently deletes everything. Cannot be undone.</div>
+        <button class="btn-danger-sm" @click="sysConfirm('Delete account?', 'This will permanently delete your account and all data. This action cannot be undone.', 'Delete forever', true, async () => { try { await fetch('/api/v1/settings/account', {method:'DELETE'}); } catch(e){} window.location.href='/signup'; })">Delete my account</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/password.js"></script>
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('profileForm', () => ({
+        fullName: '{{ user.full_name or "" }}',
+        saving: false,
+        async saveProfile() {
+            this.saving = true;
+            try {
+                const res = await apiFetch('/api/v1/settings/profile', {
+                    method: 'PUT',
+                    body: JSON.stringify({ full_name: this.fullName })
+                });
+                if(res.success) {
+                    window.toastStore && toastStore.show('success', 'Saved', 'Profile updated.');
+                    setTimeout(() => location.reload(), 800);
+                }
+            } catch(err) {
+                window.toastStore && toastStore.show('error', 'Error', 'Failed to save profile.');
+            } finally {
+                this.saving = false;
+            }
+        }
+    }));
+
+    Alpine.data('passwordForm', () => ({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+        saving: false,
+        get isValid() {
+            return this.currentPassword.length > 0 && this.newPassword.length >= 8 && this.newPassword === this.confirmPassword;
+        },
+        async changePassword() {
+            if(!this.isValid) return;
+            this.saving = true;
+            try {
+                const res = await apiFetch('/api/v1/settings/password', {
+                    method: 'PUT',
+                    body: JSON.stringify({
+                        current_password: this.currentPassword,
+                        new_password: this.newPassword
+                    })
+                });
+                if(res.success) {
+                    window.toastStore && toastStore.show('success', 'Updated', 'Password changed successfully.');
+                    this.currentPassword = '';
+                    this.newPassword = '';
+                    this.confirmPassword = '';
+                } else {
+                    window.toastStore && toastStore.show('error', 'Error', res.message || 'Failed to change password');
+                }
+            } catch(err) {
+                window.toastStore && toastStore.show('error', 'Error', 'Failed to change password.');
+            } finally {
+                this.saving = false;
+            }
+        }
+    }));
+});
+</script>
+{% endblock %}
+

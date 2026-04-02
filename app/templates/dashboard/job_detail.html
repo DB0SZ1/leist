@@ -1,0 +1,459 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Job Detail | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+  <div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:4px;"><a href="/jobs" style="color:var(--muted);text-decoration:none;">&larr; Dashboard</a></div>
+    <div class="page-title">{{ job.input_file_path.split('_', 1)[1] if '_' in job.input_file_path else job.input_file_path }} <span class="status-pill sp-{{ job.status|lower }}" style="font-size:12px;vertical-align:middle;margin-left:8px;">{{ job.status|title }}</span></div>
+  </div>
+  <div>
+    {% if job.status == 'complete' %}
+    <div style="display:flex;gap:8px;">
+      <a href="/api/v1/exports/{{ job.id }}/download" class="btn-primary" style="padding:8px 16px;text-decoration:none;">Download CSV</a>
+      {% if user.plan_id in ['growth', 'agency'] %}
+      <a href="/api/v1/jobs/{{ job.id }}/report" class="btn-ghost" style="padding:8px 16px;text-decoration:none;display:inline-flex;align-items:center;" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Generate Report
+      </a>
+      {% endif %}
+      <button class="btn-ghost" style="color:#b91c1c;border-color:#fecaca;background:#fef2f2;" @click="$dispatch('open-report-dialog')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+        Report Issue
+      </button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 280px;gap:20px;">
+  <!-- Left Column -->
+  <div>
+    {% if job.status != 'complete' %}
+      <div style="padding:40px;background:#fff;border:1px solid var(--border);border-radius:12px;text-align:center;">
+        <div style="font-weight:700;margin-bottom:12px;">Job is currently: {{ job.status }}</div>
+        <div style="margin:0 auto;max-width:300px;">
+          {% include 'components/progress_bar.html' %}
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:12px;">Updates automatically...</div>
+      </div>
+      <script>
+        setTimeout(() => location.reload(), 3000);
+      </script>
+    {% else %}
+      {% set s = job.summary or {} %}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+        <div class="stat-card"><div class="sc-label">Total emails</div><div class="sc-val">{{ "{:,}".format(job.total_emails) }}</div></div>
+        <div class="stat-card"><div class="sc-label">Fresh</div><div class="sc-val">{{ "{:,}".format(s.get('fresh', 0)) }}</div></div>
+        <div class="stat-card"><div class="sc-label">Burned</div><div class="sc-val">{{ "{:,}".format(s.get('burned', 0)) }}</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header"><div class="th-title">Intelligence breakdown</div></div>
+        <div style="padding:16px;">
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Mimecast detected: <b style="color:var(--text);">{{ s.get('mimecast', 0) }}</b></div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Proofpoint: <b style="color:var(--text);">{{ s.get('proofpoint', 0) }}</b></div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">High Risk Domains (<180d): <b style="color:var(--text);">{{ s.get('high_risk', 0) }}</b></div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Catchall: <b style="color:var(--text);">{{ s.get('catchall', 0) }}</b></div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:12px;">Disposable/Role: <b style="color:var(--text);">{{ s.get('disposable', 0) }}</b></div>
+        </div>
+      </div>
+
+      {% if 'merge_stats' in s %}
+      <div class="table-card" style="margin-top:20px;">
+        <div class="table-header"><div class="th-title">Merge Overlap Matrix</div></div>
+        <div style="padding:16px;">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Duplicate overlaps cross-referenced by email hash between uploaded files.</div>
+          <div style="overflow-x:auto;">
+            <table class="tbl" style="border:1px solid var(--border);">
+              <thead style="background:#f9fafb;">
+                <tr>
+                  <th style="padding:8px;font-size:11px;">Source File</th>
+                  {% for col in s.merge_stats.keys() %}
+                  <th style="padding:8px;font-size:11px;">{{ col }}</th>
+                  {% endfor %}
+                </tr>
+              </thead>
+              <tbody>
+                {% for row_key, cols in s.merge_stats.items() %}
+                <tr>
+                  <td style="padding:8px;font-weight:700;font-size:11px;">{{ row_key }}</td>
+                  {% for col_key, count in cols.items() %}
+                  <td style="padding:8px;font-family:monospace;font-size:12px;color:{% if count>0 %}var(--accent){% else %}var(--muted){% endif %};">
+                    {{ "{:,}".format(count) }}
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="table-card" style="margin-top:20px;">
+        <div class="table-header"><div class="th-title">Enriched results (Preview)</div></div>
+        <table class="tbl">
+          <thead><tr><th>Email</th><th>Infrastructure</th><th>Burn Score</th><th>Tag</th></tr></thead>
+          <tbody>
+            {% if results %}
+              {% for row in results %}
+              <tr>
+                <td><b>{{ row.email }}</b></td>
+                <td>{{ row.infrastructure or 'Unknown' }}</td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="width:40px;height:4px;background:#eee;border-radius:2px;overflow:hidden;"><div style="width:{{ row.burn_score }}%;height:100%;background:{{ '#e24b4a' if row.burn_score > 70 else '#f59e0b' if row.burn_score > 30 else '#1b6015' }};"></div></div>
+                    <span style="font-size:11px;font-weight:700;">{{ row.burn_score }}</span>
+                  </div>
+                </td>
+                <td><span class="status-pill sp-{{ 'complete' if row.burn_score < 30 else 'failed' }}">{{ 'Fresh' if row.burn_score < 30 else 'Burned' }}</span></td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:24px;">Results data will populate here.</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </div>
+  
+  <!-- Right Column -->
+  <div>
+    {% if job.status == 'complete' %}
+      {% if readiness %}
+      <!-- Send Readiness Score -->
+      <div style="background:#fff;border:1px solid {% if readiness.kill_switch %}#e24b4a{% elif readiness.score >= 80 %}#2a5426{% else %}var(--border){% endif %};border-radius:12px;padding:20px;margin-bottom:20px;box-shadow:0 4px 12px rgba(0,0,0,0.02);position:relative;overflow:hidden;">
+        {% if readiness.kill_switch %}
+        <div style="position:absolute;top:0;left:0;right:0;background:#e24b4a;color:#fff;font-size:11px;font-weight:700;text-align:center;padding:4px;text-transform:uppercase;letter-spacing:0.5px;">Deliverability Kill Switch Engaged</div>
+        <div style="margin-top:16px;"></div>
+        {% endif %}
+        
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Send Readiness Score</div>
+        <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:4px;">
+          <div style="font-size:42px;font-weight:800;line-height:1;color:{% if readiness.kill_switch %}#e24b4a{% elif readiness.score >= 80 %}#2a5426{% elif readiness.score >= 60 %}#f59e0b{% elif readiness.score >= 40 %}#f59e0b{% else %}#e24b4a{% endif %};">{{ readiness.score }}</div>
+          <div style="padding-bottom:6px;">
+            <div style="font-weight:700;font-size:14px;color:var(--text);">{{ readiness.label }}</div>
+            <div style="font-size:12px;color:var(--muted);">Safe daily volume: {% if readiness.safe_volume > 0 %}<b>~{{ readiness.safe_volume }}</b>{% else %}<b>0</b>{% endif %}</div>
+          </div>
+        </div>
+        
+        {% if readiness.kill_switch %}
+        <div style="margin-top:12px;padding:12px;background:rgba(226,75,74,0.08);border-radius:8px;border:1px solid rgba(226,75,74,0.2);">
+          <div style="font-size:12px;font-weight:700;color:#e24b4a;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4M12 17h.01"/></svg>
+            High Risk Detected
+          </div>
+          <div style="font-size:12px;color:#9b2c2c;line-height:1.5;">{{ readiness.kill_reason }} Sending this list as-is will severely damage your domain reputation.</div>
+        </div>
+        {% endif %}
+
+        <!-- Factors Breakdown -->
+        <div style="margin-top:20px;">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:12px;">Score Factors</div>
+          {% for factor in readiness.factors %}
+          <div style="margin-bottom:10px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+              <span>{{ factor.name }}</span>
+              <span style="font-weight:700;color:{% if factor.score >= 80 %}#1b6015{% elif factor.score >= 50 %}#964800{% else %}#9b2c2c{% endif %};">{{ factor.score }}/100</span>
+            </div>
+            <div style="width:100%;height:4px;background:#eee;border-radius:2px;overflow:hidden;margin-bottom:2px;">
+              <div style="width:{{ factor.score }}%;height:100%;background:{% if factor.score >= 80 %}#2a5426{% elif factor.score >= 50 %}#f59e0b{% else %}#e24b4a{% endif %};"></div>
+            </div>
+            <div style="font-size:10.5px;color:var(--muted);">{{ factor.detail }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      
+      <!-- Niche Comparison Widget -->
+      {% if niche_benchmark and readiness %}
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:800;">Niche Comparison <span style="font-weight:400;color:var(--muted);font-size:12px;">({{ user.niche }})</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+            <div style="color:var(--text);flex:1;">List Freshness</div>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="text-align:right;">
+                <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">You</div>
+                <div style="font-weight:700;">{{ ((s.get('fresh',0) / s.get('total',1)) * 100)|round(1) }}%</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Avg</div>
+                <div style="font-weight:700;">{{ niche_benchmark.avg_fresh_pct }}%</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;">
+            <div style="color:var(--text);flex:1;">Torched Trap %</div>
+            <div style="display:flex;gap:12px;align-items:center;">
+              <div style="text-align:right;color:{% if ((s.get('torched',0) / s.get('total',1)) * 100) > niche_benchmark.avg_torched_pct %}#e24b4a{% else %}#1b6015{% endif %};">
+                <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">You</div>
+                <div style="font-weight:700;">{{ ((s.get('torched',0) / s.get('total',1)) * 100)|round(1) }}%</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:10px;color:var(--muted);text-transform:uppercase;">Avg</div>
+                <div style="font-weight:700;">{{ niche_benchmark.avg_torched_pct }}%</div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      {% elif not user.niche %}
+      <div style="background:#f9fafb;border:1px dashed var(--border);border-radius:12px;padding:16px;margin-bottom:20px;text-align:center;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Want to see how your list compares to others in your industry?</div>
+        <a href="/profile" class="btn-ghost" style="font-size:11px;padding:6px 12px;text-decoration:none;display:inline-block;">Set your Niche in Profile</a>
+      </div>
+      {% endif %}
+      
+      <!-- List Aging Monitor -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="font-size:13px;font-weight:800;">List Aging Monitor</div>
+          <div style="font-size:11px;color:var(--muted);background:var(--bg);padding:3px 8px;border-radius:4px;">Nightly sync</div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Tracks how fast this list is decaying as other senders hit these emails.</div>
+        
+        <div id="aging-empty" style="text-align:center;padding:24px 0;display:none;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" style="margin-bottom:8px;opacity:0.5;"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <div style="font-size:12px;color:var(--muted);">Decay data appears 24h after completion.</div>
+        </div>
+        
+        <div id="aging-chart-container" style="display:none;position:relative;height:140px;width:100%;">
+          <canvas id="agingChart"></canvas>
+        </div>
+      </div>
+      
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script>
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const res = await fetch("/api/v1/jobs/{{ job.id }}/aging");
+          if (!res.ok) return;
+          const json = await res.json();
+          const data = json.data || [];
+          
+          if (data.length === 0) {
+            document.getElementById('aging-empty').style.display = 'block';
+            return;
+          }
+          
+          document.getElementById('aging-chart-container').style.display = 'block';
+          
+          const ctx = document.getElementById('agingChart').getContext('2d');
+          
+          // Current job info starting point
+          const labels = ['Day 0', ...data.map(d => 'Day ' + d.day)];
+          const freshness = [
+            // Start reading (if data is available, else extrapolate from summary)
+            {% if s and s.get('total', 1) > 0 %}{{ (s.get('fresh', 0) / s.get('total', 1) * 100)|round(1) }}{% else %}100{% endif %}, 
+            ...data.map(d => d.freshness_pct)
+          ];
+
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: 'Freshness %',
+                data: freshness,
+                borderColor: '#1b6015',
+                backgroundColor: 'rgba(27, 96, 21, 0.1)',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: '#fff',
+                pointBorderColor: '#1b6015',
+                fill: true,
+                tension: 0.3
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: function(ctx) { return ctx.raw + '% Fresh'; }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  grid: { display: false, drawBorder: false },
+                  ticks: { font: { size: 10, family: 'Arial' }, color: '#999' }
+                },
+                y: {
+                  beginAtZero: false,
+                  min: 0,
+                  max: 100,
+                  grid: { color: '#f0f0f0', drawBorder: false },
+                  ticks: {
+                    font: { size: 10, family: 'Arial' },
+                    color: '#999',
+                    stepSize: 25,
+                    callback: function(v) { return v + '%'; }
+                  }
+                }
+              }
+            }
+          });
+        } catch(e) { console.error('Error fetching aging data:', e); }
+      });
+      </script>
+
+      <!-- Action Center -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:800;margin-bottom:12px;">Next Actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          {% for action in readiness.action_items %}
+          <div style="display:flex;gap:10px;font-size:12px;line-height:1.5;color:var(--text);background:var(--bg);padding:10px 12px;border-radius:8px;border:1px solid var(--border);">
+            <div style="color:var(--primary);margin-top:2px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></div>
+            <div>{{ action }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Auto Fix & Exports -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;">
+        <div style="font-size:13px;font-weight:800;margin-bottom:6px;">Auto Fix & Export</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.5;">Clean out traps, bounces, and invalid emails, then segment by provider.</div>
+        <button class="btn-primary" style="width:100%;justify-content:center;margin-bottom:10px;" onclick="document.getElementById('autoFixModal').style.display='flex'">Fix & Segment List &rarr;</button>
+        <a href="/api/v1/exports/{{ job.id }}/download?preset=fresh" class="btn-ghost" style="display:block;text-align:center;text-decoration:none;font-size:12px;">Download Fresh Only</a>
+      </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<!-- Auto Fix Modal -->
+<div id="autoFixModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;padding:24px;width:100%;max-width:440px;">
+        <h3 style="font-weight:800;margin-bottom:8px;">Auto Fix List</h3>
+        <p style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:20px;">We'll automatically filter out high-risk emails and generate a ZIP file containing clean segments grouped by infrastructure (Google, Outlook, etc.).</p>
+        
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:var(--text);">
+          <div style="font-weight:700;margin-bottom:8px;">Filters applied:</div>
+          <ul style="margin:0;padding-left:16px;color:var(--muted);display:flex;flex-direction:column;gap:4px;">
+            <li>Remove invalid syntax & disposable domains</li>
+            <li>Remove AI-flagged spam traps</li>
+            <li>Remove blacklisted domains</li>
+            <li>Remove torched burn-score emails</li>
+            <li>Remove high-risk bounce history</li>
+          </ul>
+        </div>
+        
+        <div style="display:flex;justify-content:flex-end;gap:8px;">
+            <button class="btn-ghost" onclick="document.getElementById('autoFixModal').style.display='none'">Cancel</button>
+            <a href="/api/v1/exports/{{ job.id }}/autofix" class="btn-primary" style="text-decoration:none;" onclick="document.getElementById('autoFixModal').style.display='none'">Generate & Download ZIP</a>
+        </div>
+    </div>
+</div>
+<!-- Report Spam Dialog -->
+<div x-data="reportDialog" @open-report-dialog.window="open = true">
+  <div x-show="open" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(2px);" class="flex">
+    <div @click.away="open = false" style="background:#fff;border-radius:12px;width:100%;max-width:500px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);overflow:hidden;">
+      <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-weight:800;font-size:16px;">Report List Quality Issue</div>
+        <div style="cursor:pointer;color:var(--muted);" @click="open = false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </div>
+      </div>
+      <div style="padding:24px;">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Help us map the global BurnPool. Paste any emails from this list that bounced, hit spam traps, or were undeliverable.</div>
+        
+        <div style="margin-bottom:16px;">
+          <label class="form-label">Issue Type</label>
+          <select class="form-input" x-model="reason">
+            <option value="hit_spam">Hit Spam Folder</option>
+            <option value="bounced">Hard Bounced</option>
+            <option value="honeypot">Spam Trap / Honeypot</option>
+          </select>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <label class="form-label">Raw Emails (comma or line separated)</label>
+          <textarea class="form-input" style="height:120px;resize:vertical;" x-model="rawEmails" placeholder="example1@domain.com\nexample2@domain.com"></textarea>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label class="form-label">Notes (optional)</label>
+          <input type="text" class="form-input" x-model="notes" placeholder="e.g., Blocked by Proofpoint">
+        </div>
+
+        <button class="btn-primary" style="width:100%;justify-content:center;" @click="submit()" :disabled="loading || !rawEmails">
+          <span x-show="!loading">Submit Report</span>
+          <span x-show="loading">Submitting...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('reportDialog', () => ({
+        open: false,
+        loading: false,
+        reason: 'hit_spam',
+        rawEmails: '',
+        notes: '',
+        job_id: '{{ job.id }}',
+
+        async submit() {
+            if (!this.rawEmails) return;
+            this.loading = true;
+            try {
+                const res = await apiFetch('/api/v1/reports', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        job_id: this.job_id,
+                        raw_emails: this.rawEmails,
+                        reason: this.reason,
+                        notes: this.notes
+                    })
+                });
+                if (res.success) {
+                    window.toastStore && toastStore.show('success', 'Report Submitted', res.message);
+                    this.open = false;
+                    this.rawEmails = '';
+                    this.notes = '';
+                } else {
+                    window.toastStore && toastStore.show('error', 'Error', res.error || 'Failed to submit report');
+                }
+            } catch(e) {
+                window.toastStore && toastStore.show('error', 'Error', 'Something went wrong');
+            } finally {
+                this.loading = false;
+            }
+        }
+    }));
+});
+
+{% if job.status == 'complete' %}
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.showWorkflowSuggestion) {
+        setTimeout(() => {
+            window.showWorkflowSuggestion(
+                "Your list is verified!", 
+                "Launch a high-deliverability outreach campaign.", 
+                "/sending/outreach", 
+                "Start campaign →", 
+                "starter"
+            );
+        }, 1500);
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

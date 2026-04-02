@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}List Intel{% endblock %}</title>
+    <meta name="description" content="{% block description %}Cold email list intelligence. Know before you send.{% endblock %}">
+    <link rel="stylesheet" href="/static/css/app.css">
+    <link rel="stylesheet" href="/static/css/auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="/static/js/app.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+    
+    <!-- Toast container -->
+    <div x-data="toastStore" id="toast-container" style="position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div :class="'toast-' + toast.type"
+                 x-show="toast.visible"
+                 x-transition:enter="toast-enter"
+                 x-transition:leave="toast-leave"
+                 @click="dismiss(toast.id)"
+                 style="pointer-events:auto; display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); min-width: 280px; max-width: 360px; cursor: pointer; font-family: var(--font);">
+                <div class="toast-icon" x-text="toast.icon"></div>
+                <div style="flex:1;">
+                    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;" x-text="toast.title"></div>
+                    <div style="font-size:12px;color:var(--text);opacity:0.85;line-height:1.4;" x-text="toast.message" x-show="toast.message"></div>
+                </div>
+                <div class="toast-close">✕</div>
+            </div>
+        </template>
+    </div>
+    
+    <!-- System Confirm Modal -->
+    <div id="sys-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+        <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:380px;box-shadow:0 10px 40px rgba(0,0,0,0.1);text-align:center;">
+            <div id="sys-modal-icon" style="width:48px;height:48px;border-radius:14px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;"></div>
+            <div id="sys-modal-title" style="font-size:16px;font-weight:800;margin-bottom:6px;line-height:1.2;"></div>
+            <div id="sys-modal-msg" style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5;"></div>
+            <div style="display:flex;gap:10px;">
+                <button class="btn-ghost" style="flex:1;" onclick="document.getElementById('sys-modal').style.display='none'">Cancel</button>
+                <button id="sys-modal-confirm" class="btn-primary" style="flex:1;">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CSRF token -->
+    <meta name="csrf-token" content="{{ csrf_token() if csrf_token is defined else '' }}">
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

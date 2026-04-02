@@ -1,0 +1,789 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f2f1ec;--white:#fff;--dark:#172617;
+  --accent:#2a5426;--accent2:#3d7a36;--yellow:#cce836;
+  --text:#172617;--muted:#6a796a;--border:#d8d8cf;--surface:#fafaf6;
+  --font:'Bricolage Grotesque',Georgia,sans-serif;
+}
+body{font-family:var(--font);background:#e8e7e2;color:var(--text);}
+.nav-tabs{display:flex;gap:4px;padding:14px 16px 0;background:#e8e7e2;border-bottom:1px solid var(--border);overflow-x:auto;flex-wrap:nowrap;}
+.tab{padding:7px 14px;border-radius:8px 8px 0 0;font-size:12px;font-weight:700;cursor:pointer;border:1px solid transparent;border-bottom:none;white-space:nowrap;color:var(--muted);background:transparent;font-family:var(--font);}
+.tab.active{background:var(--bg);color:var(--accent);border-color:var(--border);}
+.tab:hover:not(.active){color:var(--text);}
+.screen{display:none;background:var(--bg);min-height:560px;}
+.screen.active{display:block;}
+
+/* AUTH */
+.auth-wrap{min-height:560px;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;}
+.auth-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:32px;width:100%;max-width:390px;}
+.logo-row{display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:22px;}
+.lmark{width:26px;height:26px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;}
+.lname{font-size:15px;font-weight:800;color:var(--text);}
+.lname span{color:var(--accent);}
+.auth-title{font-size:21px;font-weight:800;text-align:center;margin-bottom:4px;letter-spacing:-.02em;}
+.auth-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:22px;line-height:1.5;}
+.fg{margin-bottom:14px;}
+.fl{display:block;font-size:12px;font-weight:700;color:var(--text);margin-bottom:5px;}
+.fi{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;color:var(--text);background:#fff;transition:border .15s;outline:none;}
+.fi:focus{border-color:var(--accent);}
+.fi.err{border-color:#e24b4a;}
+.fi.ok{border-color:#1b8c12;}
+.fh{font-size:11px;color:var(--muted);margin-top:4px;}
+.ferr{font-size:11px;color:#b31c1c;margin-top:4px;}
+.fok{font-size:11px;color:#1b6015;margin-top:4px;}
+.btn-p{width:100%;background:var(--accent);color:#fff;border:none;padding:11px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-p:hover{background:var(--accent2);}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;}
+.btn-g{width:100%;background:transparent;color:var(--muted);border:1px solid var(--border);padding:10px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;margin-top:8px;}
+.btn-g:hover{border-color:var(--accent);color:var(--accent);}
+.link-row{text-align:center;font-size:12px;color:var(--muted);margin-top:14px;}
+.link-row span{color:var(--accent);font-weight:700;cursor:pointer;}
+.divider{display:flex;align-items:center;gap:8px;margin:14px 0;font-size:11px;color:var(--muted);}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* PASSWORD STRENGTH */
+.pw-strength{margin-top:8px;}
+.pw-bars{display:flex;gap:3px;margin-bottom:5px;}
+.pw-bar{height:3px;border-radius:2px;flex:1;background:#e8e8e0;transition:background .2s;}
+.pw-bar.weak{background:#e24b4a;}
+.pw-bar.fair{background:#f59e0b;}
+.pw-bar.good{background:#3d7a36;}
+.pw-bar.strong{background:#1b6015;}
+.pw-label{font-size:10px;font-weight:700;}
+.pw-label.weak{color:#b31c1c;}
+.pw-label.fair{color:#964800;}
+.pw-label.good{color:#2a5426;}
+.pw-label.strong{color:#1b6015;}
+
+/* RULES */
+.pw-rules{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
+.rule{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);transition:color .2s;}
+.rule.met{color:#1b6015;}
+.rule-dot{width:5px;height:5px;border-radius:50%;background:#e8e8e0;flex-shrink:0;transition:background .2s;}
+.rule.met .rule-dot{background:#1b6015;}
+
+/* TOPBAR + SIDEBAR shared */
+.topbar{height:52px;background:rgba(242,241,236,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 24px;}
+.app-layout{display:grid;grid-template-columns:210px 1fr;min-height:calc(560px - 52px);}
+.sidebar{background:#fff;border-right:1px solid var(--border);padding:16px 0;}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;margin:0 10px 2px;transition:all .15s;}
+.nav-item:hover{background:var(--surface);color:var(--text);}
+.nav-item.active{background:rgba(42,84,38,.08);color:var(--accent);font-weight:700;}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;}
+.main{padding:24px;overflow:auto;}
+.page-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.card-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-size:13px;font-weight:700;}
+.card-body{padding:16px;}
+
+/* STATUS / PILLS */
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;}
+.pg{background:#d4eecf;color:#1b6015;}.pr{background:#fcd8d8;color:#b31c1c;}
+.po{background:#fde3c0;color:#964800;}.pb{background:#d6e8fc;color:#1a4c9a;}
+.py{background:#fdf5c0;color:#786500;}.pv{background:rgba(42,84,38,.1);color:var(--accent);}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:44px 20px;}
+.empty-icon{width:44px;height:44px;border-radius:12px;background:rgba(42,84,38,.07);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;}
+.empty-title{font-size:14px;font-weight:700;margin-bottom:5px;}
+.empty-sub{font-size:12px;color:var(--muted);max-width:240px;margin:0 auto 16px;line-height:1.5;}
+
+/* NOTIFICATION LIST */
+.notif{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.notif:last-child{border:none;}
+.notif-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+.notif-body{flex:1;}
+.notif-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.notif-sub{font-size:11px;color:var(--muted);line-height:1.4;}
+.notif-time{font-size:11px;color:var(--muted);flex-shrink:0;margin-top:1px;}
+.notif.unread .notif-title{color:var(--text);font-weight:700;}
+
+/* TOGGLE */
+.tog{width:32px;height:18px;border-radius:100px;position:relative;cursor:pointer;transition:background .15s;flex-shrink:0;}
+.tog.on{background:var(--accent);}.tog.off{background:#d0d0c8;}
+.tog::after{content:'';position:absolute;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .12s;}
+.tog.on::after{left:16px;}.tog.off::after{left:2px;}
+
+/* UPLOAD STATES */
+.upload-zone{border:1.5px dashed var(--border);border-radius:14px;padding:32px;text-align:center;cursor:pointer;transition:all .2s;background:#fff;}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(42,84,38,.02);}
+.upload-zone.uploading{border-color:var(--accent);border-style:solid;}
+.upload-zone.error{border-color:#e24b4a;border-style:solid;background:#fff8f8;}
+
+/* PROG */
+.prog-track{height:5px;background:#eee;border-radius:3px;overflow:hidden;margin-top:10px;}
+.prog-fill{height:100%;border-radius:3px;background:var(--accent);transition:width .4s;}
+
+/* MISC */
+.btn-sm-p{background:var(--accent);color:#fff;border:none;padding:7px 14px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;}
+.btn-sm-p:hover{background:var(--accent2);}
+.btn-sm-g{background:transparent;color:var(--muted);border:1px solid var(--border);padding:7px 14px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.btn-sm-g:hover{border-color:var(--accent);color:var(--accent);}
+.btn-danger-sm{background:#fcd8d8;color:#b31c1c;border:none;padding:7px 14px;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:700;cursor:pointer;}
+
+/* ONBOARDING */
+.step-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+.step-row:last-child{border:none;}
+.step-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;}
+.step-done{background:#d4eecf;color:#1b6015;}
+.step-active{background:var(--accent);color:#fff;}
+.step-todo{background:#f0f0e8;color:var(--muted);}
+.step-title{font-size:13px;font-weight:700;color:var(--text);}
+.step-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+</style>
+
+<div class="nav-tabs">
+  <button class="tab active" onclick="show('signup')">Sign Up + Validator</button>
+  <button class="tab" onclick="show('forgot')">Forgot Password</button>
+  <button class="tab" onclick="show('reset')">Reset Password</button>
+  <button class="tab" onclick="show('onboarding')">Onboarding</button>
+  <button class="tab" onclick="show('upload-states')">Upload States</button>
+  <button class="tab" onclick="show('notifications')">Notifications</button>
+  <button class="tab" onclick="show('empty-states')">Empty States</button>
+  <button class="tab" onclick="show('error-pages')">Error Pages</button>
+  <button class="tab" onclick="show('profile')">Profile</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- SIGNUP + PASSWORD VALIDATOR -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-signup" class="screen active">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="logo-row">
+        <div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/><rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".65"/><rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".3"/></svg></div>
+        <span class="lname">List<span>Intel</span></span>
+      </div>
+      <div class="auth-title">Create your account</div>
+      <div class="auth-sub">Free to start · 500 credits included · No card required</div>
+
+      <div class="fg">
+        <label class="fl">Full name</label>
+        <input class="fi ok" type="text" value="Marcus Okafor" id="name-input"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Email address</label>
+        <input class="fi ok" type="email" value="marcus@agency.co" id="email-input"/>
+      </div>
+      <div class="fg">
+        <label class="fl">Password</label>
+        <input class="fi ok" type="password" value="MySecureP@ss1" id="pw-input" oninput="checkPw(this.value)"/>
+        <div class="pw-strength">
+          <div class="pw-bars">
+            <div class="pw-bar strong" id="b1"></div>
+            <div class="pw-bar strong" id="b2"></div>
+            <div class="pw-bar strong" id="b3"></div>
+            <div class="pw-bar strong" id="b4"></div>
+          </div>
+          <span class="pw-label strong" id="pw-lbl">Strong</span>
+        </div>
+        <div class="pw-rules" id="pw-rules">
+          <div class="rule met" id="r-len"><div class="rule-dot"></div>At least 8 characters</div>
+          <div class="rule met" id="r-up"><div class="rule-dot"></div>One uppercase letter</div>
+          <div class="rule met" id="r-num"><div class="rule-dot"></div>One number</div>
+          <div class="rule met" id="r-sym"><div class="rule-dot"></div>One special character</div>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Confirm password</label>
+        <input class="fi ok" type="password" value="MySecureP@ss1" id="pw2-input" oninput="checkMatch(this.value)"/>
+        <div class="fok" id="match-msg">Passwords match</div>
+      </div>
+
+      <button class="btn-p" id="signup-btn">Create account</button>
+      <div style="margin-top:12px;padding:9px;background:rgba(42,84,38,.05);border-radius:8px;font-size:11px;color:var(--muted);text-align:center;">By signing up you agree to our <span style="color:var(--accent);font-weight:700;cursor:pointer;">Terms</span> and <span style="color:var(--accent);font-weight:700;cursor:pointer;">Privacy Policy</span></div>
+      <div class="link-row">Already have an account? <span>Log in</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- FORGOT PASSWORD -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-forgot" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="logo-row">
+        <div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div>
+        <span class="lname">List<span>Intel</span></span>
+      </div>
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(42,84,38,.09);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2a5 5 0 015 5v2H7V7a5 5 0 015-5z" stroke="#2a5426" stroke-width="1.8"/><rect x="4" y="9" width="16" height="12" rx="2" stroke="#2a5426" stroke-width="1.8"/><circle cx="12" cy="15" r="1.5" fill="#2a5426"/></svg>
+      </div>
+      <div class="auth-title">Forgot password?</div>
+      <div class="auth-sub">No worries. Enter your email and we'll send a reset link. It expires in 1 hour.</div>
+      <div class="fg">
+        <label class="fl">Email address</label>
+        <input class="fi" type="email" placeholder="you@company.com"/>
+      </div>
+      <button class="btn-p">Send reset link</button>
+      <button class="btn-g">← Back to login</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- RESET PASSWORD -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-reset" class="screen">
+  <div class="auth-wrap">
+    <div style="display:flex;flex-direction:column;gap:20px;width:100%;max-width:390px;">
+
+      <!-- State 1: set new password -->
+      <div class="auth-card">
+        <div class="logo-row"><div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div><span class="lname">List<span>Intel</span></span></div>
+        <div class="auth-title">Set new password</div>
+        <div class="auth-sub">Must be at least 8 characters</div>
+        <div class="fg">
+          <label class="fl">New password</label>
+          <input class="fi" type="password" placeholder="Min 8 characters" oninput="checkPw2(this.value)"/>
+          <div class="pw-strength">
+            <div class="pw-bars">
+              <div class="pw-bar" id="c1"></div>
+              <div class="pw-bar" id="c2"></div>
+              <div class="pw-bar" id="c3"></div>
+              <div class="pw-bar" id="c4"></div>
+            </div>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="fl">Confirm new password</label>
+          <input class="fi" type="password" placeholder="Repeat password"/>
+        </div>
+        <button class="btn-p">Reset password</button>
+      </div>
+
+      <!-- State 2: success -->
+      <div class="auth-card" style="text-align:center;">
+        <div style="width:44px;height:44px;border-radius:50%;background:#d4eecf;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#1b6015" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-size:15px;font-weight:800;margin-bottom:6px;">Password reset!</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Your password has been updated. You can now log in with your new password.</div>
+        <button class="btn-p">Go to login</button>
+      </div>
+
+      <!-- State 3: expired link -->
+      <div class="auth-card" style="text-align:center;">
+        <div style="width:44px;height:44px;border-radius:50%;background:#fcd8d8;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 8v4m0 4h.01" stroke="#b31c1c" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#b31c1c" stroke-width="2"/></svg>
+        </div>
+        <div style="font-size:15px;font-weight:800;margin-bottom:6px;color:#b31c1c;">Link expired</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">This reset link expired after 1 hour. Request a new one below.</div>
+        <button class="btn-p">Request new link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- ONBOARDING (post-signup checklist) -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-onboarding" class="screen">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div>
+      <span class="lname">List<span>Intel</span></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);">
+      <div style="width:20px;height:20px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">MO</div>
+      Marcus O.
+    </div>
+  </div>
+  <div style="padding:32px;max-width:600px;margin:0 auto;">
+    <div style="font-size:11px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;">Getting started</div>
+    <div class="page-title">Welcome to List Intel, Marcus</div>
+    <div class="page-sub">Complete these steps to get the most out of your account</div>
+
+    <div class="card">
+      <div class="card-body" style="padding:8px 16px;">
+        <div class="step-row">
+          <div class="step-num step-done">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3.5 3.5 5.5-6" stroke="#1b6015" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div class="step-title" style="text-decoration:line-through;opacity:.5;">Create your account</div>
+            <div class="step-sub" style="opacity:.5;">Done</div>
+          </div>
+          <span class="pill pg">Done</span>
+        </div>
+        <div class="step-row">
+          <div class="step-num step-done">
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3.5 3.5 5.5-6" stroke="#1b6015" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div style="flex:1;">
+            <div class="step-title" style="text-decoration:line-through;opacity:.5;">Verify your email</div>
+            <div class="step-sub" style="opacity:.5;">marcus@agency.co confirmed</div>
+          </div>
+          <span class="pill pg">Done</span>
+        </div>
+        <div class="step-row">
+          <div class="step-num step-active">3</div>
+          <div style="flex:1;">
+            <div class="step-title">Upload your first list</div>
+            <div class="step-sub">Drop a CSV and see 8 intelligence layers in action</div>
+          </div>
+          <button class="btn-sm-p">Upload now →</button>
+        </div>
+        <div class="step-row">
+          <div class="step-num step-todo">4</div>
+          <div style="flex:1;">
+            <div class="step-title" style="color:var(--muted);">Submit your first bounce report</div>
+            <div class="step-sub">Help the community. Upload a bounce CSV to improve the pool.</div>
+          </div>
+          <span class="pill py">Pending</span>
+        </div>
+        <div class="step-row">
+          <div class="step-num step-todo">5</div>
+          <div style="flex:1;">
+            <div class="step-title" style="color:var(--muted);">Explore the Marketplace</div>
+            <div class="step-sub">Trade a burned list for a fresh one anonymously</div>
+          </div>
+          <span class="pill py">Pending</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:space-between;margin-top:14px;">
+      <div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:2px;">You're on the Free plan</div>
+        <div style="font-size:12px;color:var(--muted);">500 credits/month · Upgrade anytime for more</div>
+      </div>
+      <button class="btn-sm-p">View plans →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- UPLOAD STATES -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-upload-states" class="screen">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:8px;"><div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div><span class="lname">List<span>Intel</span></span></div>
+    <div style="font-size:12px;color:var(--muted);">Upload states</div>
+  </div>
+  <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+    <!-- Default -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Default</div>
+      <div class="upload-zone">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(42,84,38,.08);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 4v12M6 8l6-6 6 6" stroke="#2a5426" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18h16" stroke="#2a5426" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:3px;">Drop your CSV here</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">or click to browse · .csv .xlsx · Max 50MB</div>
+        <div style="display:inline-block;padding:3px 10px;background:rgba(42,84,38,.08);color:var(--accent);border-radius:100px;font-size:10px;font-weight:700;">8 intelligence layers</div>
+      </div>
+    </div>
+
+    <!-- Drag over -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Drag over</div>
+      <div class="upload-zone drag">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(42,84,38,.15);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 4v12M6 8l6-6 6 6" stroke="#2a5426" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 18h16" stroke="#2a5426" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:3px;">Drop to upload</div>
+        <div style="font-size:12px;color:var(--accent);opacity:.7;">Release to start processing</div>
+      </div>
+    </div>
+
+    <!-- File selected / uploading -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">File selected — uploading</div>
+      <div class="upload-zone uploading" style="padding:20px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+          <div style="width:36px;height:36px;border-radius:8px;background:rgba(42,84,38,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#2a5426" stroke-width="1.8"/><path d="M14 2v6h6" stroke="#2a5426" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <div style="flex:1;text-align:left;">
+            <div style="font-size:13px;font-weight:700;">uk_leads_q1.csv</div>
+            <div style="font-size:11px;color:var(--muted);">3.2 MB · 12,400 rows detected</div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:var(--accent);">62%</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" style="width:62%"></div></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;">Uploading... 3.2s remaining</div>
+      </div>
+    </div>
+
+    <!-- Error state -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Error</div>
+      <div class="upload-zone error">
+        <div style="width:40px;height:40px;border-radius:10px;background:#fcd8d8;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 8v4m0 4h.01" stroke="#b31c1c" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#b31c1c" stroke-width="1.8"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:#b31c1c;margin-bottom:3px;">No email column found</div>
+        <div style="font-size:12px;color:#b31c1c;opacity:.8;margin-bottom:10px;">We couldn't detect an email column. Make sure your CSV has a column with email addresses.</div>
+        <button class="btn-sm-g" style="font-size:12px;">Try again</button>
+      </div>
+    </div>
+
+    <!-- No credits -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Insufficient credits</div>
+      <div class="upload-zone error" style="border-color:#f59e0b;background:#fffbee;">
+        <div style="width:40px;height:40px;border-radius:10px;background:#fde3c0;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" stroke="#964800" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:#964800;margin-bottom:3px;">Not enough credits</div>
+        <div style="font-size:12px;color:#964800;opacity:.8;margin-bottom:10px;">This list has 25,000 rows. You have 342 credits remaining.</div>
+        <button class="btn-sm-p" style="font-size:12px;background:#f59e0b;">Buy credits →</button>
+      </div>
+    </div>
+
+    <!-- Processing done -->
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">Complete</div>
+      <div class="upload-zone" style="border-color:#1b8c12;border-style:solid;background:#f4fbf2;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#d4eecf;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12l5 5L19 7" stroke="#1b6015" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:#1b6015;margin-bottom:4px;">Processing complete</div>
+        <div style="font-size:12px;color:#1b6015;opacity:.8;margin-bottom:10px;">12,400 emails · 8,210 fresh · 3,105 burned</div>
+        <button class="btn-sm-p" style="font-size:12px;">View results →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- NOTIFICATIONS -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-notifications" class="screen">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:8px;"><div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div><span class="lname">List<span>Intel</span></span></div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="position:relative;cursor:pointer;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" stroke="#172617" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div style="position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:#e24b4a;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:800;">3</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);">Notifications</div>
+    </div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div class="nav-item active"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 00-5 5v1l-1 2h12l-1-2V7a5 5 0 00-5-5zM6.5 13a1.5 1.5 0 003 0" stroke="currentColor" stroke-width="1.3"/></svg>Notifications <span style="margin-left:auto;background:#e24b4a;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:100px;">3</span></div>
+      <div style="margin:8px 10px;border-top:1px solid var(--border);padding-top:8px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);padding:0 8px;margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;">Preferences</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 8px;font-size:12px;color:var(--text);">Job complete <div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 8px;font-size:12px;color:var(--text);">Trade matched <div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 8px;font-size:12px;color:var(--text);">Credits low <div class="tog on" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 8px;font-size:12px;color:var(--text);">Billing alerts <div class="tog off" onclick="this.classList.toggle('on');this.classList.toggle('off')"></div></div>
+      </div>
+    </div>
+    <div class="main">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="page-title">Notifications</div>
+        <button class="btn-sm-g" style="font-size:11px;padding:5px 12px;">Mark all read</button>
+      </div>
+      <div class="card">
+        <div class="card-body" style="padding:0 16px;">
+          <div class="notif unread">
+            <div class="notif-dot" style="background:#1b6015;"></div>
+            <div class="notif-body">
+              <div class="notif-title">Job complete — uk_leads_q1.csv</div>
+              <div class="notif-sub">12,400 emails processed · 8,210 fresh (66%) · 847 Mimecast flagged · 12,400 credits used</div>
+            </div>
+            <div class="notif-time">2m ago</div>
+          </div>
+          <div class="notif unread">
+            <div class="notif-dot" style="background:#f59e0b;"></div>
+            <div class="notif-body">
+              <div class="notif-title">Credits running low</div>
+              <div class="notif-sub">You have 342 credits remaining this month. Upgrade or buy a credit pack to continue.</div>
+            </div>
+            <div class="notif-time">1h ago</div>
+          </div>
+          <div class="notif unread">
+            <div class="notif-dot" style="background:#1a4c9a;"></div>
+            <div class="notif-body">
+              <div class="notif-title">Trade matched — SaaS list (8,400 leads)</div>
+              <div class="notif-sub">A match was found for your listing. Confirm the trade before it expires in 48 hours.</div>
+            </div>
+            <div class="notif-time">3h ago</div>
+          </div>
+          <div class="notif">
+            <div class="notif-dot" style="background:#d8d8cf;"></div>
+            <div class="notif-body">
+              <div class="notif-title" style="font-weight:600;opacity:.7;">Job complete — saas_prospects.csv</div>
+              <div class="notif-sub">8,900 emails processed · 5,440 fresh (61%)</div>
+            </div>
+            <div class="notif-time">Yesterday</div>
+          </div>
+          <div class="notif">
+            <div class="notif-dot" style="background:#d8d8cf;"></div>
+            <div class="notif-body">
+              <div class="notif-title" style="font-weight:600;opacity:.7;">Welcome to List Intel</div>
+              <div class="notif-sub">Your account is active. You have 500 free credits to start.</div>
+            </div>
+            <div class="notif-time">Mar 20</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- EMPTY STATES -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-empty-states" class="screen">
+  <div class="topbar"><div style="display:flex;align-items:center;gap:8px;"><div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div><span class="lname">List<span>Intel</span></span></div><div style="font-size:12px;color:var(--muted);">Empty states</div></div>
+  <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">No jobs yet</div></div>
+      <div class="empty">
+        <div class="empty-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#2a5426" stroke-width="1.7"/><path d="M14 2v6h6M12 11v6M9 14h6" stroke="#2a5426" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <div class="empty-title">No jobs yet</div>
+        <div class="empty-sub">Upload your first CSV list to start enriching and discovering burn scores.</div>
+        <button class="btn-sm-p">Upload first list →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Marketplace empty</div></div>
+      <div class="empty">
+        <div class="empty-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M2 5l2-2h16l2 2v14a1 1 0 01-1 1H3a1 1 0 01-1-1V5z" stroke="#2a5426" stroke-width="1.7"/><path d="M9 21V11h6v10" stroke="#2a5426" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <div class="empty-title">No active listings</div>
+        <div class="empty-sub">Submit a burned list to trade for a fresher one in the same niche. Anonymous and instant.</div>
+        <button class="btn-sm-p">Submit a list →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">No API keys</div></div>
+      <div class="empty">
+        <div class="empty-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 7a4 4 0 11-8 0 4 4 0 018 0zM21 21l-5-5" stroke="#2a5426" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <div class="empty-title">No API keys yet</div>
+        <div class="empty-sub">Create an API key to integrate List Intel into your tools, scripts, and automations.</div>
+        <button class="btn-sm-p">Create first key →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">No notifications</div></div>
+      <div class="empty">
+        <div class="empty-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#2a5426" stroke-width="1.7" stroke-linecap="round"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke="#2a5426" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+        <div class="empty-title">All caught up</div>
+        <div class="empty-sub">No new notifications. We'll let you know when jobs complete, trades are matched, or credits run low.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">No billing history</div></div>
+      <div class="empty">
+        <div class="empty-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="2" y="4" width="20" height="16" rx="2" stroke="#2a5426" stroke-width="1.7"/><path d="M2 9h20M6 14h4" stroke="#2a5426" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <div class="empty-title">No transactions yet</div>
+        <div class="empty-sub">You're on the free plan. Upgrade to see billing history here.</div>
+        <button class="btn-sm-p">View plans →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Plan required</div></div>
+      <div class="empty">
+        <div class="empty-icon" style="background:rgba(245,158,11,.1);"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z" stroke="#964800" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+        <div class="empty-title">Growth plan required</div>
+        <div class="empty-sub">The Marketplace is available on Growth and above. Upgrade to access list trading.</div>
+        <button class="btn-sm-p" style="background:#f59e0b;">Upgrade to Growth →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- ERROR PAGES -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-error-pages" class="screen">
+  <div class="topbar"><div style="display:flex;align-items:center;gap:8px;"><div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div><span class="lname">List<span>Intel</span></span></div></div>
+  <div style="padding:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">404 — Not found</div></div>
+      <div class="empty" style="padding:36px 20px;">
+        <div style="font-size:52px;font-weight:800;color:#e8e8e0;letter-spacing:-.04em;margin-bottom:12px;">404</div>
+        <div class="empty-title">Page not found</div>
+        <div class="empty-sub">This page doesn't exist or was moved. Check the URL or go back to the dashboard.</div>
+        <button class="btn-sm-p">← Back to dashboard</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">500 — Server error</div></div>
+      <div class="empty" style="padding:36px 20px;">
+        <div style="font-size:52px;font-weight:800;color:#fcd8d8;letter-spacing:-.04em;margin-bottom:12px;">500</div>
+        <div class="empty-title" style="color:#b31c1c;">Something went wrong</div>
+        <div class="empty-sub">An error occurred on our end. We've been notified. Please try again in a moment.</div>
+        <button class="btn-sm-p" style="background:#e24b4a;">Try again</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">403 — Access denied</div></div>
+      <div class="empty" style="padding:36px 20px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:#fde3c0;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2a5 5 0 015 5v2H7V7a5 5 0 015-5z" stroke="#964800" stroke-width="1.8"/><rect x="4" y="9" width="16" height="12" rx="2" stroke="#964800" stroke-width="1.8"/></svg>
+        </div>
+        <div class="empty-title" style="color:#964800;">Plan required</div>
+        <div class="empty-sub">This feature requires the Growth plan or above. Upgrade to access the Marketplace, bounce history, and more.</div>
+        <button class="btn-sm-p" style="background:#f59e0b;">Upgrade plan →</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title">Session expired</div></div>
+      <div class="empty" style="padding:36px 20px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:#d6e8fc;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#1a4c9a" stroke-width="1.8"/><path d="M12 7v5l3 3" stroke="#1a4c9a" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </div>
+        <div class="empty-title" style="color:#1a4c9a;">Session expired</div>
+        <div class="empty-sub">Your session timed out for security. Log in again to continue where you left off.</div>
+        <button class="btn-sm-p" style="background:#1a4c9a;">Log in again →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- PROFILE / ACCOUNT PAGE -->
+<!-- ═══════════════════════════════════════ -->
+<div id="screen-profile" class="screen">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:8px;"><div class="lmark"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".95"/></svg></div><span class="lname">List<span>Intel</span></span></div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;">MO</div>
+      <span style="font-size:12px;color:var(--muted);">marcus@agency.co</span>
+    </div>
+  </div>
+  <div class="app-layout">
+    <div class="sidebar">
+      <div style="padding:16px 12px 12px;">
+        <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--surface);border-radius:10px;border:1px solid var(--border);">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;flex-shrink:0;">MO</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text);">Marcus Okafor</div>
+            <div style="font-size:11px;color:var(--muted);">Free plan</div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-item active"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>Profile</div>
+      <div class="nav-item"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2a4 4 0 014 4v2H4V6a4 4 0 014-4z" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="8" width="12" height="7" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg>Security</div>
+      <div class="nav-item"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2a5 5 0 00-5 5v1l-1 2h12l-1-2V7a5 5 0 00-5-5z" stroke="currentColor" stroke-width="1.3"/><path d="M6.5 13a1.5 1.5 0 003 0" stroke="currentColor" stroke-width="1.3"/></svg>Notifications</div>
+      <div class="nav-item"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="4" width="12" height="9" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M2 7h12" stroke="currentColor" stroke-width="1.2"/></svg>Billing</div>
+      <div style="margin:8px 10px;border-top:1px solid var(--border);padding-top:8px;">
+        <div class="nav-item" style="color:#b31c1c;"><svg viewBox="0 0 16 16" fill="none"><path d="M6 3H3a1 1 0 00-1 1v8a1 1 0 001 1h3M10 11l3-3-3-3M13 8H7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Log out</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="page-title">Profile</div>
+      <div class="page-sub">Manage your account information</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Personal info</div><button class="btn-sm-p" style="font-size:11px;padding:5px 12px;">Save</button></div>
+          <div class="card-body">
+            <div class="fg"><label class="fl">Full name</label><input class="fi ok" value="Marcus Okafor"/></div>
+            <div class="fg"><label class="fl">Email address</label><input class="fi" value="marcus@agency.co" disabled style="opacity:.55;cursor:not-allowed;"/><div class="fh">Email changes require identity verification. <span style="color:var(--accent);font-weight:700;cursor:pointer;">Contact support →</span></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Account status</div></div>
+          <div class="card-body">
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+              <span style="color:var(--muted);">Plan</span>
+              <span class="pv" style="font-size:12px;font-weight:700;padding:2px 8px;border-radius:4px;">Free</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+              <span style="color:var(--muted);">Email verified</span>
+              <span class="pill pg">Verified</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+              <span style="color:var(--muted);">Member since</span>
+              <span>March 2026</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;">
+              <span style="color:var(--muted);">Credits this month</span>
+              <span>342 / 500</span>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="border-color:#fcd8d8;">
+          <div class="card-head" style="border-color:#fcd8d8;"><div class="card-title" style="color:#b31c1c;">Danger zone</div></div>
+          <div class="card-body">
+            <div style="font-size:13px;font-weight:600;margin-bottom:3px;">Log out all devices</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Revokes all sessions, including this one.</div>
+            <button class="btn-danger-sm">Log out everywhere</button>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid #fcd8d8;">
+              <div style="font-size:13px;font-weight:600;color:#b31c1c;margin-bottom:3px;">Delete account</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Permanently deletes everything. Cannot be undone.</div>
+              <button class="btn-danger-sm">Delete my account</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  const map = {'signup':0,'forgot':1,'reset':2,'onboarding':3,'upload-states':4,'notifications':5,'empty-states':6,'error-pages':7,'profile':8};
+  if(map[id] !== undefined) document.querySelectorAll('.tab')[map[id]].classList.add('active');
+}
+
+function checkPw(val) {
+  const rules = {len: val.length >= 8, up: /[A-Z]/.test(val), num: /[0-9]/.test(val), sym: /[^a-zA-Z0-9]/.test(val)};
+  const met = Object.values(rules).filter(Boolean).length;
+  const bars = ['b1','b2','b3','b4'];
+  const cl = met <= 1 ? 'weak' : met === 2 ? 'fair' : met === 3 ? 'good' : 'strong';
+  const labels = ['','Weak','Fair','Good','Strong'];
+  bars.forEach((b,i) => { const el = document.getElementById(b); el.className = 'pw-bar' + (i < met ? ' ' + cl : ''); });
+  const lbl = document.getElementById('pw-lbl');
+  if(lbl) { lbl.className = 'pw-label ' + cl; lbl.textContent = labels[met] || ''; }
+  ['len','up','num','sym'].forEach(k => {
+    const el = document.getElementById('r-' + k);
+    if(el) el.className = 'rule' + (rules[k] ? ' met' : '');
+  });
+  const inp = document.getElementById('pw-input');
+  if(inp) inp.className = 'fi ' + (met >= 3 ? 'ok' : met >= 1 ? '' : '');
+}
+
+function checkPw2(val) {
+  const bars = ['c1','c2','c3','c4'];
+  const pw = document.getElementById('pw-input');
+  const met = pw ? [pw.value.length >= 8, /[A-Z]/.test(pw.value), /[0-9]/.test(pw.value), /[^a-zA-Z0-9]/.test(pw.value)].filter(Boolean).length : 0;
+  const cl = met <= 1 ? 'weak' : met === 2 ? 'fair' : met === 3 ? 'good' : 'strong';
+  bars.forEach((b,i) => { const el = document.getElementById(b); if(el) el.className = 'pw-bar' + (i < met ? ' ' + cl : ''); });
+}
+
+function checkMatch(val) {
+  const pw1 = document.getElementById('pw-input');
+  const msg = document.getElementById('match-msg');
+  const inp = document.getElementById('pw2-input');
+  if(!pw1 || !msg || !inp) return;
+  if(val === pw1.value && val.length > 0) {
+    msg.className = 'fok'; msg.textContent = 'Passwords match';
+    inp.className = 'fi ok';
+  } else if(val.length > 0) {
+    msg.className = 'ferr'; msg.textContent = 'Passwords do not match';
+    inp.className = 'fi err';
+  } else {
+    msg.textContent = ''; inp.className = 'fi';
+  }
+}
+</script>

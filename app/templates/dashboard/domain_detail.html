@@ -1,0 +1,89 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Domain Health | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-end;">
+  <div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:4px;"><a href="/domains" style="color:var(--muted);text-decoration:none;">&larr; All Domains</a></div>
+    <div class="page-title">{{ domain.domain_name }}
+      {% if domain.status == 'Healthy' %}
+        <span class="status-pill sp-complete" style="font-size:12px;vertical-align:middle;margin-left:8px;display:inline-flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#1b6015;"></div> Healthy</span>
+      {% elif domain.status == 'At Risk' %}
+        <span class="status-pill sp-enriching" style="font-size:12px;vertical-align:middle;margin-left:8px;display:inline-flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#b45309;"></div> At Risk</span>
+      {% elif domain.status == 'Unreachable' %}
+        <span class="status-pill" style="font-size:12px;vertical-align:middle;margin-left:8px;display:inline-flex;align-items:center;gap:4;background:#f3f4f6;color:#4b5563;border:1px solid #e5e7eb;"><div style="width:6px;height:6px;border-radius:50%;background:#9ca3af;"></div> Unreachable</span>
+      {% else %}
+        <span class="status-pill sp-failed" style="font-size:12px;vertical-align:middle;margin-left:8px;display:inline-flex;align-items:center;gap:4px;"><div style="width:6px;height:6px;border-radius:50%;background:#9b2c2c;"></div> Blacklisted</span>
+      {% endif %}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <form action="/domains/{{ domain.id }}/check" method="POST" style="margin:0;">
+      <button type="submit" class="btn-primary" style="padding:8px 16px;">Force Re-check</button>
+    </form>
+  </div>
+</div>
+
+{% if warmup %}
+<div style="margin-top:24px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px;display:flex;align-items:center;gap:20px;box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+  <div style="flex-shrink:0;">
+    <div style="width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--bg);border:1px dashed var(--border);">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--text);"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+    </div>
+  </div>
+  <div style="flex:1;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <div style="font-size:14px;font-weight:800;">Warmup Advisor</div>
+      <span class="status-pill {{ warmup.color }}" style="font-size:10px;">{{ warmup.status }}</span>
+    </div>
+    <div style="font-size:13px;color:var(--muted);max-width:600px;line-height:1.5;">{{ warmup.desc }}</div>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700;margin-bottom:4px;">Recommended Volume</div>
+    <div style="font-size:24px;font-weight:800;color:var(--primary);">{{ warmup.volume }}<span style="font-size:12px;color:var(--muted);font-weight:600;margin-left:4px;">emails/day</span></div>
+  </div>
+</div>
+{% endif %}
+
+<div class="table-card" style="margin-top:24px;">
+  <div class="table-header"><div class="th-title">Health Check History</div></div>
+  <table class="tbl">
+    <thead>
+      <tr>
+        <th style="width:180px;">Date Analyzed</th>
+        <th style="width:120px;">Global Status</th>
+        <th>Blacklists Found</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if logs %}
+        {% for log in logs %}
+        <tr>
+          <td style="font-size:12px;color:var(--muted);">{{ log.checked_at.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+          <td>
+            {% if log.status == 'Healthy' %}
+              <b style="color:#1b6015;">Clean</b>
+            {% else %}
+              <b style="color:#9b2c2c;">Failed</b>
+            {% endif %}
+          </td>
+          <td>
+            {% if log.blacklisted_on and log.blacklisted_on|length > 0 %}
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              {% for bl in log.blacklisted_on %}
+                <span style="font-size:11px;font-weight:700;color:#9b2c2c;background:rgba(226,75,74,0.1);padding:2px 6px;border-radius:4px;border:1px solid rgba(226,75,74,0.2);">{{ bl }}</span>
+              {% endfor %}
+              </div>
+            {% else %}
+              <span style="color:var(--muted);font-size:12px;">None detected</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr><td colspan="3" style="text-align:center;padding:32px;color:var(--muted);font-size:13px;">No history logs available yet. Wait for the background worker or force a re-check.</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

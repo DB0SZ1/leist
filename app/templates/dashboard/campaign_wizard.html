@@ -1,0 +1,222 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}New Campaign | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header" style="margin-bottom:32px;">
+    <a href="/outreach" style="font-size:13px;color:var(--muted);text-decoration:none;display:inline-flex;align-items:center;margin-bottom:12px;">
+        &larr; Back to Outreach
+    </a>
+    <div class="page-title">New AI Campaign</div>
+    <div class="page-sub">Generate a cold email sequence using Claude Haiku and launch it.</div>
+</div>
+
+<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:32px;">
+
+    <!-- Step 1 & 2: Setup -->
+    <div id="setupView">
+        <div style="margin-bottom:24px;">
+            <label style="display:block;font-size:13px;font-weight:700;margin-bottom:8px;">Campaign Name</label>
+            <input type="text" id="campaignName" placeholder="e.g. Q3 Founders Outreach" style="width:100%;max-width:400px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+        </div>
+        
+        <div style="margin-bottom:24px;">
+            <label style="display:block;font-size:13px;font-weight:700;margin-bottom:8px;">Select Prospect List</label>
+            <select id="prospectJobId" style="width:100%;max-width:400px;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;">
+                <option value="">-- Choose an enriched list --</option>
+                {% for job in prospect_jobs %}
+                <option value="{{ job.id }}">{{ job.name }} ({{ job.enriched_count }} leads)</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div style="margin-bottom:24px;">
+            <label style="display:block;font-size:13px;font-weight:700;margin-bottom:8px;">Target ICP Context</label>
+            <textarea id="targetIcp" rows="2" placeholder="e.g. B2B SaaS Founders in the UK doing $1M+ ARR" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);"></textarea>
+            <p style="font-size:11px;color:var(--muted);margin-top:4px;">Helps the AI understand who it is talking to.</p>
+        </div>
+
+        <div style="margin-bottom:32px;">
+            <label style="display:block;font-size:13px;font-weight:700;margin-bottom:8px;">Value Proposition / Goal</label>
+            <textarea id="valueProp" rows="4" placeholder="e.g. We help SaaS founders reduce churn by 20% using AI-driven onboarding. Our goal is to book a 15-minute demo call." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:var(--font);"></textarea>
+            <p style="font-size:11px;color:var(--muted);margin-top:4px;">This forms the core message of the AI-generated sequence.</p>
+        </div>
+
+        <button class="btn-primary" id="btnGenerate" onclick="generateSequence()">
+            Generate AI Sequence &rarr;
+        </button>
+    </div>
+
+    <!-- Step 3: Review Sequence -->
+    <div id="sequenceView" style="display:none;">
+        <div style="border-bottom:1px solid var(--border);padding-bottom:16px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="font-size:16px;font-weight:700;margin:0;">Review Generated Sequence</h3>
+            <button class="btn-ghost" onclick="resetView()">Start Over</button>
+        </div>
+
+        <div id="sequenceList"></div>
+
+        <div style="margin-top:32px;display:flex;justify-content:flex-end;">
+            <button class="btn-primary" id="btnSaveCampaign" onclick="saveCampaign()">
+                Save & Launch Campaign
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let generatedSteps = [];
+
+async function generateSequence() {
+    const jobName = document.getElementById('campaignName').value;
+    const targetIcp = document.getElementById('targetIcp').value;
+    const valueProp = document.getElementById('valueProp').value;
+
+    if(!jobName || !targetIcp || !valueProp) {
+        alert("Please fill out all fields.");
+        return;
+    }
+
+    const btn = document.getElementById('btnGenerate');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = `<span class="spinner" style="width:16px;height:16px;border-width:2px;display:inline-block;margin-right:8px;border-top-color:#fff;"></span> Generating (takes ~15s)...`;
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/v1/outreach/generate-sequence', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                job_name: jobName,
+                target_icp: targetIcp,
+                value_proposition: valueProp,
+                num_steps: 3
+            })
+        });
+
+        const data = await res.json();
+        if(res.ok && data.success) {
+            generatedSteps = data.data.sequence;
+            renderSequence();
+            document.getElementById('setupView').style.display = 'none';
+            document.getElementById('sequenceView').style.display = 'block';
+        } else {
+            alert("Error: " + (data.error || "Unknown error generating sequence"));
+        }
+    } catch(err) {
+        alert("Network Error");
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+function renderSequence() {
+    const container = document.getElementById('sequenceList');
+    container.innerHTML = '';
+
+    generatedSteps.forEach((step, index) => {
+        const delayHtml = index === 0 ? `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px;">Email 1 (Immediate)</div>` 
+                                      : `<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px;">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                            Wait 3 days
+                                         </div>`;
+
+        const html = `
+            <div style="background:#fbfbfc;border:1px solid var(--border);border-radius:8px;padding:24px;margin-bottom:16px;">
+                ${delayHtml}
+                <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;">Subject Line</label>
+                    <input type="text" value="${step.subject || ''}" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;font-weight:600;font-size:14px;" readonly>
+                </div>
+                <div>
+                    <label style="display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;">Body</label>
+                    <div style="background:#fff;border:1px solid var(--border);border-radius:6px;padding:16px;font-size:13px;line-height:1.6;color:var(--text);">
+                        ${step.body_html || ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += html;
+    });
+}
+
+function resetView() {
+    document.getElementById('setupView').style.display = 'block';
+    document.getElementById('sequenceView').style.display = 'none';
+}
+
+async function saveCampaign() {
+    const btn = document.getElementById('btnSaveCampaign');
+    btn.disabled = true;
+    btn.innerText = "Saving...";
+
+    const campaignName = document.getElementById('campaignName').value;
+    const prospectJobId = document.getElementById('prospectJobId').value;
+
+    try {
+        // We'll map the AI output back to the CampaignCreate schema format.
+        // In a full implementation, we'd create the Templates via the /api/v1/outreach/templates endpoint first
+        // and then map their IDs to the steps. 
+        // For brevity, we pass this to a specialized endpoint (which we should build) or we iteratively create them on the client.
+        
+        const preparedSteps = [];
+        for (let i=0; i<generatedSteps.length; i++) {
+            const st = generatedSteps[i];
+            
+            // 1. Create Template
+            const tRes = await fetch('/api/v1/outreach/templates', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    name: `${campaignName} - Step ${i+1}`,
+                    subject: st.subject,
+                    body_html: st.body_html
+                })
+            });
+            const tData = await tRes.json();
+            
+            if(tRes.ok) {
+                preparedSteps.push({
+                    template_id: tData.data.id,
+                    step_number: i+1,
+                    delay_days: i === 0 ? 0 : 3,
+                    stop_if_replied: true
+                });
+            }
+        }
+
+        // 2. Create Campaign
+        const cRes = await fetch('/api/v1/outreach/campaigns', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: campaignName,
+                source_prospect_job_id: prospectJobId || null,
+                steps: preparedSteps
+            })
+        });
+        
+        if (cRes.ok) {
+            alert("Campaign successfully built!");
+            window.location.href = "/outreach";
+        } else {
+            alert("Failed to create campaign.");
+        }
+    } catch(err) {
+        alert("Network Error");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "Save & Launch Campaign";
+    }
+}
+</script>
+
+<style>
+.spinner {
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    border: 2px solid rgba(0,0,0,0.1);
+}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+{% endblock %}

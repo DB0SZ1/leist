@@ -1,0 +1,101 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Spam Reports Queue | Admin{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header">
+  <div>
+    <div class="page-title">Spam Reports Hub</div>
+    <div class="page-sub">Review community-flagged lists to add them to the global BurnPool.</div>
+  </div>
+</div>
+
+<div x-data="reportsAdmin">
+  <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    {% if reports %}
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:#f9fafb;border-bottom:1px solid var(--border);text-align:left;color:var(--muted);font-weight:600;">
+            <th style="padding:12px 16px;">Submitted</th>
+            <th style="padding:12px 16px;">User</th>
+            <th style="padding:12px 16px;">Job Context</th>
+            <th style="padding:12px 16px;">Reason</th>
+            <th style="padding:12px 16px;">Emails</th>
+            <th style="padding:12px 16px;text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in reports %}
+          <tr style="border-bottom:1px solid var(--border);" id="row-{{ r.id }}">
+            <td style="padding:12px 16px;">{{ r.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td style="padding:12px 16px;">
+               <div style="font-weight:700;">User {{ r.user_id|string|truncate(8, True, '') }}</div>
+               <div style="font-size:11px;color:var(--muted);">{{ r.notes[:30] + '...' if r.notes|length > 30 else r.notes }}</div>
+            </td>
+            <td style="padding:12px 16px;">
+              {% if r.job_id %}
+                <a href="/jobs/{{ r.job_id }}" style="color:var(--primary);text-decoration:none;font-weight:600;">View Job</a>
+              {% else %}
+                <span style="color:var(--muted);">Manual</span>
+              {% endif %}
+            </td>
+            <td style="padding:12px 16px;">
+              <span style="background:#fef2f2;color:#b91c1c;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">{{ r.reason }}</span>
+            </td>
+            <td style="padding:12px 16px;">
+              <div style="max-height:60px;overflow-y:auto;font-family:monospace;font-size:11px;background:#f9fafb;padding:6px;border-radius:4px;white-space:pre-wrap;">{{ r.raw_emails }}</div>
+            </td>
+            <td style="padding:12px 16px;text-align:right;">
+              <div style="display:flex;gap:6px;justify-content:flex-end;">
+                <button class="btn-primary" style="padding:4px 10px;font-size:11px;" @click="approve('{{ r.id }}')">Burn Em</button>
+                <button class="btn-ghost" style="padding:4px 10px;font-size:11px;color:#e24b4a;" @click="reject('{{ r.id }}')">Reject</button>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div style="padding:40px;text-align:center;color:var(--muted);">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:16px;opacity:0.5;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3"/></svg>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Queue is clear</div>
+        <div style="font-size:13px;">No pending community spam reports to review.</div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('reportsAdmin', () => ({
+        async approve(id) {
+            try {
+                const res = await apiFetch(`/api/v1/reports/${id}/approve`, { method: 'POST' });
+                if(res.success) {
+                    window.toastStore && toastStore.show('success', 'Approved', `Added ${res.emails_burned} emails to BurnPool.`);
+                    document.getElementById('row-' + id).remove();
+                } else {
+                    window.toastStore && toastStore.show('error', 'Error', res.error || 'Failed to approve');
+                }
+            } catch(e) {
+                window.toastStore && toastStore.show('error', 'Error', 'Something went wrong.');
+            }
+        },
+        async reject(id) {
+            try {
+                const res = await apiFetch(`/api/v1/reports/${id}/reject`, { method: 'POST' });
+                if(res.success) {
+                    window.toastStore && toastStore.show('success', 'Rejected', 'Report ignored.');
+                    document.getElementById('row-' + id).remove();
+                } else {
+                    window.toastStore && toastStore.show('error', 'Error', res.error || 'Failed to reject');
+                }
+            } catch(e) {
+                window.toastStore && toastStore.show('error', 'Error', 'Something went wrong.');
+            }
+        }
+    }));
+});
+</script>
+{% endblock %}

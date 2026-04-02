@@ -1,0 +1,146 @@
+{% extends "dashboard_layout.html" %}
+{% block title %}Outreach Engine | List Intel{% endblock %}
+
+{% block dashboard_content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+    <div>
+        <div class="page-title">Outreach Engine</div>
+        <div class="page-sub">Connect your email accounts and launch automated campaigns.</div>
+    </div>
+    <a href="/outreach/new" class="btn-primary" style="text-decoration:none;">
+        <svg style="margin-right:8px;" width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        New Campaign
+    </a>
+</div>
+
+<!-- Connected Accounts -->
+<div style="margin-bottom:32px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="font-size:16px;font-weight:700;">Sending Accounts</h3>
+        <button class="btn-ghost" style="font-size:12px;padding:6px 12px;" onclick="document.getElementById('addAccountModal').style.display='flex'">+ Add Account</button>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;">
+        {% for account in accounts %}
+        <div class="card" style="margin:0;">
+            <div class="card-body" style="padding:20px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:12px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div style="width:36px;height:36px;border-radius:50%;background:#fbfbfc;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--text);">
+                            {{ account.email[0]|upper }}
+                        </div>
+                        <div>
+                            <div style="font-weight:600;font-size:14px;">{{ account.email }}</div>
+                            <div style="font-size:11px;color:var(--muted);text-transform:capitalize;">{{ account.provider }}</div>
+                        </div>
+                    </div>
+                    {% if account.is_active %}
+                    <span class="pill pg">Active</span>
+                    {% else %}
+                    <span class="pill pr">Paused</span>
+                    {% endif %}
+                </div>
+                
+                <div style="background:#fbfbfc;border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">Daily Limit</div>
+                        <div style="font-size:13px;font-weight:600;">{{ account.current_day_sent }} / {{ account.daily_send_limit }}</div>
+                    </div>
+                    <div style="height:24px;border-left:1px solid var(--border);"></div>
+                    <div>
+                        <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;">Warmup</div>
+                        <div style="font-size:13px;font-weight:600;color:var(--accent);">{{ 'ON' if account.warmup_mode else 'OFF' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if not accounts %}
+        <div style="grid-column:1/-1;background:#fbfbfc;border:1px dashed var(--border);border-radius:12px;padding:32px;text-align:center;">
+            <h4 style="font-size:14px;font-weight:600;margin-bottom:8px;">No accounts connected</h4>
+            <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">You need to connect an email account via OAuth or SMTP to send campaigns.</p>
+            <button class="btn-secondary" onclick="document.getElementById('addAccountModal').style.display='flex'">Connect Account</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Campaigns -->
+<div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;">Active Campaigns</div>
+    {% if not campaigns %}
+    <div style="padding:40px 20px;text-align:center;color:var(--muted);font-size:13px;">No active campaigns. Create one to get started.</div>
+    {% else %}
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <tr style="border-bottom:1px solid var(--border);background:#fbfbfc;">
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Campaign Name</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Status</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Sent</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Opened</th>
+            <th style="padding:12px 20px;text-align:left;font-weight:600;color:var(--muted);">Replied</th>
+            <th style="padding:12px 20px;text-align:right;"></th>
+        </tr>
+        {% for campaign in campaigns %}
+        <tr style="border-bottom:1px solid var(--border);">
+            <td style="padding:16px 20px;font-weight:600;">{{ campaign.name or "Untitled Campaign" }}</td>
+            <td style="padding:16px 20px;">
+                <span class="pill py" style="text-transform:capitalize;">{{ campaign.status }}</span>
+            </td>
+            <td style="padding:16px 20px;">-</td>
+            <td style="padding:16px 20px;">-</td>
+            <td style="padding:16px 20px;">-</td>
+            <td style="padding:16px 20px;text-align:right;">
+                <a href="/outreach/campaigns/{{ campaign.id }}" class="btn-ghost" style="padding:6px 12px;font-size:12px;text-decoration:none;">Manage</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</div>
+
+<!-- Add Account Modal -->
+<div id="addAccountModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:12px;width:100%;max-width:400px;">
+        <div style="padding:20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="font-weight:800;font-size:16px;margin:0;">Connect Account</h3>
+            <button onclick="document.getElementById('addAccountModal').style.display='none'" style="border:none;background:transparent;cursor:pointer;font-size:20px;color:var(--muted);">&times;</button>
+        </div>
+        
+        <div style="padding:20px;">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:20px;">Choose a provider to connect your sending inbox.</p>
+            
+            <button class="btn-secondary" style="width:100%;justify-content:center;margin-bottom:12px;padding:12px;" onclick="connectGoogle()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-right:8px;"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Connect Gmail / Workspace
+            </button>
+            
+            <button class="btn-secondary" style="width:100%;justify-content:center;margin-bottom:12px;padding:12px;" disabled title="Coming soon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style="margin-right:8px;"><path d="M11.4 24l-11.4-3.3v-8.2h11.4v11.5zm1.2 0v-11.5h11.4l-.1 11.5-11.3 0zm-1.2-12.7h-11.4v-8l11.4-3.3v11.3zm1.2 0v-11.3l11.4 3.3.1 8h-11.5z" fill="#00a4ef"/></svg>
+                Connect Microsoft 365
+            </button>
+            
+            <button class="btn-ghost" style="width:100%;justify-content:center;" disabled title="Coming soon">
+                Use Custom SMTP
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+async function connectGoogle() {
+    try {
+        const res = await fetch("/api/v1/outreach/accounts/connect/gmail");
+        const data = await res.json();
+        if(res.ok && data.success && data.data.auth_url) {
+            window.location.href = data.data.auth_url;
+        } else {
+            alert("Could not generate OAuth URL. Check your Google config.");
+        }
+    } catch(err) {
+        alert("Network Error");
+    }
+}
+</script>
+
+{% endblock %}

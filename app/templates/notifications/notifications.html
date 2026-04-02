@@ -1,0 +1,45 @@
+{% extends "dashboard_layout.html" %}
+
+{% block dashboard_content %}
+<div class="main" x-data="{
+    async markAllRead() {
+        try {
+            await apiFetch('/api/v1/notifications/read-all', { method: 'POST' });
+            window.location.reload();
+        } catch (e) {
+            toastStore.show('error', 'Error', 'Failed to mark all as read');
+        }
+    }
+}">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="page-title">Notifications</div>
+        <button class="btn-sm-g" style="font-size:11px;padding:5px 12px;" @click="markAllRead()">Mark all read</button>
+    </div>
+
+    {% if notifications %}
+    <div class="card">
+        <div class="card-body" style="padding:0 16px;">
+            {% for notif in notifications %}
+            <div class="notif {{ 'unread' if not notif.is_read else '' }}" 
+                 @click="if(!{{ 'true' if notif.is_read else 'false' }}) { apiFetch('/api/v1/notifications/{{ notif.id }}/read', { method: 'POST' }); } if('{{ notif.link }}') window.location.href='{{ notif.link }}'">
+                <div class="notif-dot" style="background: {{ 'var(--accent)' if notif.type == 'job_complete' else '#f59e0b' if notif.type == 'credits_low' else '#1a4c9a' }};"></div>
+                <div class="notif-body">
+                    <div class="notif-title">{{ notif.title }}</div>
+                    <div class="notif-sub">{{ notif.subtitle }}</div>
+                </div>
+                <div class="notif-time">{{ notif.created_at.strftime('%H:%M') if notif.created_at.date() == today else notif.created_at.strftime('%b %d') }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="card empty-card">
+        <div class="empty" style="padding:44px 20px;text-align:center;">
+            <div class="empty-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#2a5426" stroke-width="1.7" stroke-linecap="round"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke="#2a5426" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+            <div class="empty-title">All caught up</div>
+            <div class="empty-sub">No new notifications. We'll let you know when jobs complete, trades are matched, or credits run low.</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
